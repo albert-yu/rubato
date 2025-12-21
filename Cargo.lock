@@ -1136,6 +1136,7 @@ dependencies = [
  "anyhow",
  "askama",
  "axum",
+ "dotenvy",
  "serde",
  "sqlx",
  "tokio",
