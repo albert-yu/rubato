@@ -4,13 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build:css": "tailwindcss -i ./input.css -o ./assets/main.css --watch"
+    "build:css": "tailwindcss -i ./input.css -o ./assets/main.css --watch",
+    "dev": "dotenv -e .env -- cargo run"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
+    "dotenv-cli": "^11.0.0",
     "tailwindcss": "^4.1.18"
   }
 }

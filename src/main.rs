@@ -59,18 +59,18 @@ async fn main() -> anyhow::Result<()> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let db_url = "postgres://user:password@localhost:5432/rubato";
+    let db_url = std::env::var("DB_URL").expect("DB_URL must be set");
 
-    if !Postgres::database_exists(db_url).await.unwrap_or(false) {
+    if !Postgres::database_exists(&db_url).await.unwrap_or(false) {
         tracing::info!("Creating database {}", db_url);
-        Postgres::create_database(db_url).await?;
+        Postgres::create_database(&db_url).await?;
     } else {
         tracing::info!("Database already exists");
     }
 
     let pool = PgPoolOptions::new()
         .max_connections(5)
-        .connect(db_url)
+        .connect(&db_url)
         .await?;
 
     // Run migrations
