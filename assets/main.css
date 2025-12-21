@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Fallback if build fails */
+body { background-color: #f3f4f6; color: #1f2937; }
+.container { max-width: 1200px; margin: 0 auto; padding: 1rem; }
+.text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+.font-bold { font-weight: 700; }
+.mb-4 { margin-bottom: 1rem; }
+.bg-white { background-color: #ffffff; }
+.shadow { box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); }
+.rounded-lg { border-radius: 0.5rem; }
+.p-6 { padding: 1.5rem; }
+.divide-y { border-top-width: 1px; border-bottom-width: 0; border-color: #e5e7eb; }
+.py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+.flex { display: flex; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+.text-gray-500 { color: #6b7280; }
+.line-through { text-decoration: line-through; }
+.text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+.text-gray-400 { color: #9ca3af; }

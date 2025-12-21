@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Todo List{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-4">Todo List</h1>
+
+<div class="mb-6">
+    <form hx-post="/todos" hx-target="#todo-list" hx-swap="beforeend" hx-on::after-request="this.reset()">
+        <div class="flex gap-2">
+            <input type="text" name="task" placeholder="Add a new task..." required
+                   class="flex-1 rounded-md border-gray-300 shadow-sm px-4 py-2 border focus:ring-indigo-500 focus:border-indigo-500">
+            <button type="submit"
+                    class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Add
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="bg-white shadow rounded-lg p-6">
+    <ul id="todo-list" class="divide-y divide-gray-200">
+        {% for todo in todos %}
+            {% include "todo_item.html" %}
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
