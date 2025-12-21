@@ -61,7 +61,7 @@ async fn main() -> anyhow::Result<()> {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let db_url = std::env::var("DB_URL").expect("DB_URL must be set");
+    let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
     if !Postgres::database_exists(&db_url).await.unwrap_or(false) {
         tracing::info!("Creating database {}", db_url);
