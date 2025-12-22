@@ -1,17 +1,17 @@
 {
   "name": "rubato",
   "version": "1.0.0",
-  "description": "",
+  "author": "",
   "main": "index.js",
+  "description": "",
+  "keywords": [],
+  "license": "ISC",
   "scripts": {
     "build:css": "tailwindcss -i ./input.css -o ./assets/main.css --watch",
     "dev": "cargo run"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "tailwindcss": "^4.1.18"
+    "tailwindcss": "3.4.1"
   }
 }
