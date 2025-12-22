@@ -8,7 +8,8 @@
   "license": "ISC",
   "scripts": {
     "build:css": "tailwindcss -i ./input.css -o ./assets/main.css --watch",
-    "dev": "cargo run"
+    "dev": "cargo run",
+    "db:nuke": "docker compose down -v && docker compose up -d"
   },
   "type": "commonjs",
   "devDependencies": {
