@@ -10,6 +10,9 @@ use std::net::SocketAddr;
 use tower_http::services::ServeDir;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use serde::Deserialize;
+use argon2::{password_hash::{PasswordHasher, SaltString}, Argon2};
+use rand::rngs::OsRng;
+use std::io::Write;
 
 // --- Todo Structs ---
 #[derive(sqlx::FromRow, serde::Serialize)]
@@ -37,6 +40,24 @@ struct TodoItemTemplate {
 }
 
 // --- Music Structs ---
+
+#[derive(sqlx::Type, serde::Serialize, Clone, Debug, PartialEq)]
+#[sqlx(type_name = "user_role", rename_all = "lowercase")]
+enum UserRole {
+    Root,
+    Admin,
+    User,
+}
+
+#[derive(sqlx::FromRow, serde::Serialize, Clone)]
+struct User {
+    id: i32,
+    email: String,
+    password_hash: String,
+    salt: String,
+    musician_id: i32,
+    role: UserRole,
+}
 
 #[derive(sqlx::FromRow, serde::Serialize, Clone, Default)]
 struct Musician {
@@ -230,6 +251,57 @@ async fn main() -> anyhow::Result<()> {
         .run(&pool)
         .await?;
     tracing::info!("Migrations executed successfully.");
+
+    // Check for root user
+    let root_user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE role = 'root'")
+        .fetch_optional(&pool)
+        .await?;
+
+    if root_user.is_none() {
+        println!("Root user not found. Please create one.");
+        
+        print!("Email: ");
+        std::io::stdout().flush()?;
+        let mut email = String::new();
+        std::io::stdin().read_line(&mut email)?;
+        let email = email.trim();
+
+        print!("Password: ");
+        std::io::stdout().flush()?;
+        let password = rpassword::read_password()?;
+
+        // Create Musician for root
+        let musician = sqlx::query_as::<_, Musician>(
+            "INSERT INTO musicians (handle, given_name, family_name) VALUES ($1, $2, $3) RETURNING *"
+        )
+        .bind("root")
+        .bind("Root")
+        .bind("User")
+        .fetch_one(&pool)
+        .await?;
+
+        // Hash password
+        let salt = SaltString::generate(&mut OsRng);
+        let argon2 = Argon2::default();
+        let password_hash = argon2.hash_password(password.as_bytes(), &salt)
+            .map_err(|e| anyhow::anyhow!("Password hashing failed: {}", e))?
+            .to_string();
+
+        // Create User
+        sqlx::query(
+            "INSERT INTO users (email, password_hash, salt, musician_id, role) VALUES ($1, $2, $3, $4, 'root')"
+        )
+        .bind(email)
+        .bind(password_hash)
+        .bind(salt.as_str())
+        .bind(musician.id)
+        .execute(&pool)
+        .await?;
+
+        println!("Root user created successfully.");
+    } else {
+        tracing::info!("Root user already exists.");
+    }
 
     let app = Router::new()
         .route("/", get(index))
