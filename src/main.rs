@@ -21,6 +21,8 @@ use tower_http::services::ServeDir;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod storage;
+mod db;
+use db::*;
 use std::sync::Arc;
 
 // --- Todo Structs ---
@@ -30,24 +32,6 @@ use std::sync::Arc;
 struct IndexTemplate;
 
 // --- Music Structs ---
-
-#[derive(sqlx::Type, serde::Serialize, Clone, Debug, PartialEq)]
-#[sqlx(type_name = "user_role", rename_all = "lowercase")]
-enum UserRole {
-    Root,
-    Admin,
-    User,
-}
-
-#[derive(sqlx::FromRow, serde::Serialize, Clone, Debug)]
-struct User {
-    id: i32,
-    email: String,
-    password_hash: String,
-    salt: String,
-    musician_id: i32,
-    role: UserRole,
-}
 
 struct AuthUser(User);
 
@@ -133,100 +117,9 @@ where
         Err((StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response())
     }
 }
-#[derive(sqlx::FromRow, serde::Serialize, Clone, Default)]
-struct Musician {
-    id: i32,
-    handle: String,
-    given_name: String,
-    family_name: String,
-}
 
-#[derive(serde::Deserialize)]
-struct CreateMusician {
-    handle: String,
-    given_name: String,
-    family_name: String,
-}
 
-#[derive(sqlx::FromRow, serde::Serialize, Clone, Default)]
-struct Composition {
-    id: i32,
-    slug: String,
-    title: String,
-    publish_date: Option<chrono::NaiveDate>,
-    composer_id: i32,
-}
 
-#[derive(serde::Deserialize)]
-struct CreateComposition {
-    slug: String,
-    title: String,
-    #[serde(default)]
-    #[serde(deserialize_with = "empty_string_as_none")]
-    publish_date: Option<chrono::NaiveDate>,
-    composer_id: i32,
-}
-
-#[derive(sqlx::FromRow, serde::Serialize, Clone, Default)]
-struct Movement {
-    id: i32,
-    slug: String,
-    title: String,
-    index: i32,
-    composition_id: i32,
-}
-
-#[derive(serde::Deserialize)]
-struct CreateMovement {
-    slug: String,
-    title: String,
-    index: i32,
-}
-
-#[derive(sqlx::FromRow, serde::Serialize, Clone, Default)]
-struct Recording {
-    id: i32,
-    artist_id: i32,
-    composition_id: i32,
-    movement_id: Option<i32>,
-    content_hash: String,
-    file_key: String,
-}
-
-#[derive(serde::Deserialize)]
-struct CreateRecording {
-    artist_id: i32,
-    composition_id: i32,
-    #[serde(default)]
-    #[serde(deserialize_with = "empty_string_as_none_i32")]
-    movement_id: Option<i32>,
-    content_hash: String,
-    file_key: String,
-}
-
-// Helpers for deserialization
-fn empty_string_as_none<'de, D, T>(de: D) -> Result<Option<T>, D::Error>
-where
-    D: serde::Deserializer<'de>,
-    T: serde::Deserialize<'de>,
-{
-    let opt = Option::<String>::deserialize(de)?;
-    match opt.as_deref() {
-        None | Some("") => Ok(None),
-        Some(s) => T::deserialize(serde::de::value::StrDeserializer::new(s)).map(Some),
-    }
-}
-
-fn empty_string_as_none_i32<'de, D>(de: D) -> Result<Option<i32>, D::Error>
-where
-    D: serde::Deserializer<'de>,
-{
-    let opt = Option::<String>::deserialize(de)?;
-    match opt.as_deref() {
-        None | Some("") => Ok(None),
-        Some(s) => s.parse::<i32>().map(Some).map_err(serde::de::Error::custom),
-    }
-}
 
 // --- Admin Templates ---
 
