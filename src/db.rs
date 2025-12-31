@@ -1,5 +1,3 @@
-
-
 use serde::Deserialize;
 
 #[derive(sqlx::Type, serde::Serialize, Clone, Debug, PartialEq)]

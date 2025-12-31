@@ -1,0 +1,81 @@
+use crate::db::*;
+use askama::Template;
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
+
+#[derive(Template)]
+#[template(path = "index.html")]
+pub struct IndexTemplate;
+
+#[derive(Template)]
+#[template(path = "admin/index.html")]
+pub struct AdminIndexTemplate;
+
+#[derive(Template)]
+#[template(path = "admin/musicians.html")]
+pub struct AdminMusiciansTemplate {
+    pub musicians: Vec<Musician>,
+}
+
+#[derive(Template)]
+#[template(path = "admin/musician_edit.html")]
+pub struct AdminMusicianEditTemplate {
+    pub musician: Musician,
+}
+
+#[derive(Template)]
+#[template(path = "admin/compositions.html")]
+pub struct AdminCompositionsTemplate {
+    pub compositions: Vec<Composition>,
+}
+
+#[derive(Template)]
+#[template(path = "admin/composition_edit.html")]
+pub struct AdminCompositionEditTemplate {
+    pub composition: Composition,
+    pub movements: Vec<Movement>,
+    pub musicians: Vec<Musician>,
+}
+
+#[derive(Template)]
+#[template(path = "admin/recordings.html")]
+pub struct AdminRecordingsTemplate {
+    pub recordings: Vec<Recording>,
+}
+
+#[derive(Template)]
+#[template(path = "admin/recording_edit.html")]
+pub struct AdminRecordingEditTemplate {
+    pub recording: Recording,
+    pub musicians: Vec<Musician>,
+    pub compositions: Vec<Composition>,
+    pub movements: Vec<Movement>,
+}
+
+#[derive(Template)]
+#[template(path = "login.html")]
+pub struct LoginTemplate {
+    pub error: Option<String>,
+}
+
+#[derive(Template)]
+#[template(path = "404.html")]
+pub struct NotFoundTemplate;
+
+pub struct HtmlTemplate<T>(pub T);
+
+impl<T> IntoResponse for HtmlTemplate<T>
+where
+    T: Template,
+{
+    fn into_response(self) -> axum::response::Response {
+        match self.0.render() {
+            Ok(html) => axum::response::Html(html).into_response(),
+            Err(err) => (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                format!("Failed to render template: {}", err),
+            )
+                .into_response(),
+        }
+    }
+}

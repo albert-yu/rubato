@@ -2,7 +2,6 @@ use argon2::{
     Argon2, PasswordHash,
     password_hash::{PasswordHasher, PasswordVerifier, SaltString},
 };
-use askama::Template;
 use axum::{
     Form, Router,
     extract::{FromRequestParts, Path, State},
@@ -20,16 +19,14 @@ use std::net::SocketAddr;
 use tower_http::services::ServeDir;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-mod storage;
 mod db;
+mod storage;
+mod view;
 use db::*;
 use std::sync::Arc;
+use view::*;
 
 // --- Todo Structs ---
-
-#[derive(Template)]
-#[template(path = "index.html")]
-struct IndexTemplate;
 
 // --- Music Structs ---
 
@@ -118,66 +115,7 @@ where
     }
 }
 
-
-
-
-// --- Admin Templates ---
-
-#[derive(Template)]
-#[template(path = "admin/index.html")]
-struct AdminIndexTemplate;
-
-#[derive(Template)]
-#[template(path = "admin/musicians.html")]
-struct AdminMusiciansTemplate {
-    musicians: Vec<Musician>,
-}
-
-#[derive(Template)]
-#[template(path = "admin/musician_edit.html")]
-struct AdminMusicianEditTemplate {
-    musician: Musician,
-}
-
-#[derive(Template)]
-#[template(path = "admin/compositions.html")]
-struct AdminCompositionsTemplate {
-    compositions: Vec<Composition>,
-}
-
-#[derive(Template)]
-#[template(path = "admin/composition_edit.html")]
-struct AdminCompositionEditTemplate {
-    composition: Composition,
-    movements: Vec<Movement>,
-    musicians: Vec<Musician>,
-}
-
-#[derive(Template)]
-#[template(path = "admin/recordings.html")]
-struct AdminRecordingsTemplate {
-    recordings: Vec<Recording>,
-}
-
-#[derive(Template)]
-#[template(path = "admin/recording_edit.html")]
-struct AdminRecordingEditTemplate {
-    recording: Recording,
-    musicians: Vec<Musician>,
-    compositions: Vec<Composition>,
-    movements: Vec<Movement>,
-}
-
 // --- Auth Templates ---
-#[derive(Template)]
-#[template(path = "login.html")]
-struct LoginTemplate {
-    error: Option<String>,
-}
-
-#[derive(Template)]
-#[template(path = "404.html")]
-struct NotFoundTemplate;
 
 #[derive(Deserialize)]
 struct LoginPayload {
@@ -186,24 +124,6 @@ struct LoginPayload {
 }
 
 // --- Common ---
-
-struct HtmlTemplate<T>(T);
-
-impl<T> IntoResponse for HtmlTemplate<T>
-where
-    T: Template,
-{
-    fn into_response(self) -> axum::response::Response {
-        match self.0.render() {
-            Ok(html) => axum::response::Html(html).into_response(),
-            Err(err) => (
-                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-                format!("Failed to render template: {}", err),
-            )
-                .into_response(),
-        }
-    }
-}
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
