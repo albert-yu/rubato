@@ -20,6 +20,9 @@ use std::net::SocketAddr;
 use tower_http::services::ServeDir;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
+mod storage;
+use std::sync::Arc;
+
 // --- Todo Structs ---
 
 #[derive(Template)]
@@ -60,6 +63,7 @@ struct AppState {
     key: Key,
     jwt_encoding_key: EncodingKey,
     jwt_decoding_key: DecodingKey,
+    storage: Arc<dyn storage::StorageService>,
 }
 
 impl FromRef<AppState> for Pool<Postgres> {
@@ -71,6 +75,12 @@ impl FromRef<AppState> for Pool<Postgres> {
 impl FromRef<AppState> for Key {
     fn from_ref(state: &AppState) -> Self {
         state.key.clone()
+    }
+}
+
+impl FromRef<AppState> for Arc<dyn storage::StorageService> {
+    fn from_ref(state: &AppState) -> Self {
+        state.storage.clone()
     }
 }
 
@@ -393,11 +403,29 @@ async fn main() -> anyhow::Result<()> {
 
     let jwt_decoding_key = DecodingKey::from_secret(jwt_secret.as_bytes());
 
+    let storage: Arc<dyn storage::StorageService> =
+        if std::env::var("APP_ENV").unwrap_or_default() == "production" {
+            tracing::info!("Initializing S3 Storage");
+
+            let config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
+
+            let client = aws_sdk_s3::Client::new(&config);
+            let bucket =
+                std::env::var("S3_BUCKET_NAME").expect("S3_BUCKET_NAME must be set in production");
+            let public_url = std::env::var("S3_PUBLIC_URL")
+                .unwrap_or_else(|_| format!("https://{}.s3.amazonaws.com", bucket));
+            Arc::new(storage::S3Storage::new(client, bucket, public_url))
+        } else {
+            tracing::info!("Initializing Local Storage");
+            Arc::new(storage::LocalStorage::new("uploads", "/uploads"))
+        };
+
     let app_state = AppState {
         pool,
         key,
         jwt_encoding_key,
         jwt_decoding_key,
+        storage,
     };
 
     let app = Router::new()
@@ -445,6 +473,7 @@ async fn main() -> anyhow::Result<()> {
                 .delete(admin_recording_delete),
         )
         .nest_service("/assets", ServeDir::new("assets"))
+        .nest_service("/uploads", ServeDir::new("uploads"))
         .layer(tower_http::trace::TraceLayer::new_for_http())
         .with_state(app_state);
 

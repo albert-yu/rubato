@@ -20,3 +20,6 @@ rand = "0.8.5"
 rpassword = "7.3.1"
 axum-extra = { version = "0.10.0", features = ["cookie-signed"] }
 jsonwebtoken = "9.2.0"
+aws-config = "1.5.10"
+aws-sdk-s3 = "1.65.0"
+async-trait = "0.1.77"
