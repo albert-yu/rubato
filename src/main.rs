@@ -10,7 +10,7 @@ use axum::{
     response::{IntoResponse, Redirect, Response},
     routing::{delete, get, post},
 };
-use axum_extra::extract::cookie::{Cookie, Key, SameSite, SignedCookieJar};
+use axum_extra::extract::cookie::{Cookie, CookieJar, Key, SameSite};
 use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use rand::rngs::OsRng;
 use serde::{Deserialize, Serialize};
@@ -91,7 +91,6 @@ use axum::extract::FromRef;
 impl<S> FromRequestParts<S> for AuthUser
 where
     Pool<Postgres>: FromRef<S>,
-    Key: FromRef<S>,
     DecodingKey: FromRef<S>,
     S: Send + Sync,
 {
@@ -100,7 +99,7 @@ where
     async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
         let pool = Pool::<Postgres>::from_ref(state);
         let decoding_key = DecodingKey::from_ref(state);
-        let jar: SignedCookieJar<Key> = SignedCookieJar::from_request_parts(parts, state)
+        let jar = CookieJar::from_request_parts(parts, state)
             .await
             .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "Cookie error").into_response())?;
 
@@ -119,12 +118,11 @@ where
                 }
             }
         }
-
+        
         tracing::debug!("Auth failed: No valid session found.");
         Err((StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response())
     }
 }
-
 #[derive(sqlx::FromRow, serde::Serialize, Clone, Default)]
 struct Musician {
     id: i32,
@@ -466,7 +464,7 @@ async fn login_form() -> impl IntoResponse {
 async fn login_post(
     State(pool): State<Pool<Postgres>>,
     State(encoding_key): State<EncodingKey>,
-    jar: SignedCookieJar<Key>,
+    jar: CookieJar,
     Form(payload): Form<LoginPayload>,
 ) -> impl IntoResponse {
     let user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE email = $1")
@@ -505,7 +503,7 @@ async fn login_post(
         .into_response()
 }
 
-async fn logout(jar: SignedCookieJar<Key>) -> impl IntoResponse {
+async fn logout(jar: CookieJar) -> impl IntoResponse {
     (
         jar.remove(Cookie::from("auth_token")),
         Redirect::to("/login"),
