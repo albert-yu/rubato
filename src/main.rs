@@ -143,7 +143,7 @@ where
                 }
             }
         }
-        
+
         Ok(OptionalAuthUser(None))
     }
 }
@@ -276,6 +276,7 @@ async fn main() -> anyhow::Result<()> {
 
     let app = Router::new()
         .route("/", get(index))
+        .route("/settings", get(settings))
         .route("/login", get(login_form).post(login_post))
         .route("/logout", post(logout))
         // Admin
@@ -387,7 +388,15 @@ async fn logout(jar: CookieJar) -> impl IntoResponse {
 
 // --- Todo Handlers ---
 async fn index(auth: OptionalAuthUser) -> impl IntoResponse {
-    HtmlTemplate(IndexTemplate { current_user: auth.0 })
+    HtmlTemplate(IndexTemplate {
+        current_user: auth.0,
+    })
+}
+
+async fn settings(auth: AuthUser) -> impl IntoResponse {
+    HtmlTemplate(SettingsTemplate {
+        current_user: Some(auth.0),
+    })
 }
 
 // --- Auth Handlers ---
@@ -397,7 +406,10 @@ async fn admin_index(auth: AuthUser) -> impl IntoResponse {
     if !matches!(user.role, UserRole::Root | UserRole::Admin) {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
-    HtmlTemplate(AdminIndexTemplate { current_user: Some(user) }).into_response()
+    HtmlTemplate(AdminIndexTemplate {
+        current_user: Some(user),
+    })
+    .into_response()
 }
 
 // Musicians
@@ -409,7 +421,11 @@ async fn admin_musicians(auth: AuthUser, State(pool): State<Pool<Postgres>>) -> 
         .fetch_all(&pool)
         .await
         .unwrap_or_default();
-    HtmlTemplate(AdminMusiciansTemplate { musicians, current_user: Some(auth.0) }).into_response()
+    HtmlTemplate(AdminMusiciansTemplate {
+        musicians,
+        current_user: Some(auth.0),
+    })
+    .into_response()
 }
 
 async fn admin_musician_new(auth: AuthUser) -> impl IntoResponse {
@@ -455,7 +471,11 @@ async fn admin_musician_edit(
         .fetch_one(&pool)
         .await
         .unwrap();
-    HtmlTemplate(AdminMusicianEditTemplate { musician, current_user: Some(auth.0) }).into_response()
+    HtmlTemplate(AdminMusicianEditTemplate {
+        musician,
+        current_user: Some(auth.0),
+    })
+    .into_response()
 }
 
 async fn admin_musician_update(
@@ -508,7 +528,11 @@ async fn admin_compositions(
         .fetch_all(&pool)
         .await
         .unwrap_or_default();
-    HtmlTemplate(AdminCompositionsTemplate { compositions, current_user: Some(auth.0) }).into_response()
+    HtmlTemplate(AdminCompositionsTemplate {
+        compositions,
+        current_user: Some(auth.0),
+    })
+    .into_response()
 }
 
 async fn admin_composition_new(
@@ -708,7 +732,11 @@ async fn admin_recordings(auth: AuthUser, State(pool): State<Pool<Postgres>>) ->
         .fetch_all(&pool)
         .await
         .unwrap_or_default();
-    HtmlTemplate(AdminRecordingsTemplate { recordings, current_user: Some(auth.0) }).into_response()
+    HtmlTemplate(AdminRecordingsTemplate {
+        recordings,
+        current_user: Some(auth.0),
+    })
+    .into_response()
 }
 
 async fn admin_recording_new(

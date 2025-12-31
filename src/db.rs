@@ -8,6 +8,16 @@ pub enum UserRole {
     User,
 }
 
+impl std::fmt::Display for UserRole {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            UserRole::Root => write!(f, "Root"),
+            UserRole::Admin => write!(f, "Admin"),
+            UserRole::User => write!(f, "User"),
+        }
+    }
+}
+
 #[derive(sqlx::FromRow, serde::Serialize, Clone, Debug)]
 pub struct User {
     pub id: i32,

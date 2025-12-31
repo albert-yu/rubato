@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% block title %}Settings{% endblock %}
+
+{% block nav %}
+    {% include "nav.html" %}
+{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-6">Settings</h1>
+<div class="bg-white shadow rounded-lg p-6">
+    <p class="text-gray-600 mb-4">User settings profile details.</p>
+    <div class="space-y-4">
+        <div>
+            <label class="block text-sm font-medium text-gray-500">Email Address</label>
+            <p class="mt-1 text-lg text-gray-900">{{ current_user.as_ref().unwrap().email }}</p>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-500">Role</label>
+            <p class="mt-1 text-lg text-gray-900">{{ current_user.as_ref().unwrap().role }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

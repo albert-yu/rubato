@@ -10,6 +10,12 @@ pub struct IndexTemplate {
 }
 
 #[derive(Template)]
+#[template(path = "settings.html")]
+pub struct SettingsTemplate {
+    pub current_user: Option<User>,
+}
+
+#[derive(Template)]
 #[template(path = "admin/index.html")]
 pub struct AdminIndexTemplate {
     pub current_user: Option<User>,
