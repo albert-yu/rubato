@@ -118,7 +118,7 @@ where
                 }
             }
         }
-        
+
         tracing::debug!("Auth failed: No valid session found.");
         Err((StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response())
     }
@@ -385,13 +385,13 @@ async fn main() -> anyhow::Result<()> {
         tracing::info!("Root user already exists.");
     }
 
-        let key = Key::generate();
+    let key = Key::generate();
 
-        let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
+    let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
 
-        let jwt_encoding_key = EncodingKey::from_secret(jwt_secret.as_bytes());
+    let jwt_encoding_key = EncodingKey::from_secret(jwt_secret.as_bytes());
 
-        let jwt_decoding_key = DecodingKey::from_secret(jwt_secret.as_bytes());
+    let jwt_decoding_key = DecodingKey::from_secret(jwt_secret.as_bytes());
 
     let app_state = AppState {
         pool,
