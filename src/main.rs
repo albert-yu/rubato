@@ -1,20 +1,23 @@
-use axum::{
-    extract::{Path, State, FromRequestParts},
-    response::{IntoResponse, Redirect, Response},
-    routing::{get, patch, post, delete},
-    Form, Router,
-    http::{StatusCode, request::Parts},
+use argon2::{
+    Argon2, PasswordHash,
+    password_hash::{PasswordHasher, PasswordVerifier, SaltString},
 };
 use askama::Template;
-use sqlx::{postgres::PgPoolOptions, Pool, Postgres, migrate::MigrateDatabase};
+use axum::{
+    Form, Router,
+    extract::{FromRequestParts, Path, State},
+    http::{StatusCode, request::Parts},
+    response::{IntoResponse, Redirect, Response},
+    routing::{delete, get, patch, post},
+};
+use axum_extra::extract::cookie::{Cookie, Key, SameSite, SignedCookieJar};
+use rand::rngs::OsRng;
+use serde::Deserialize;
+use sqlx::{Pool, Postgres, migrate::MigrateDatabase, postgres::PgPoolOptions};
+use std::io::Write;
 use std::net::SocketAddr;
 use tower_http::services::ServeDir;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
-use serde::Deserialize;
-use argon2::{password_hash::{PasswordHasher, SaltString, PasswordVerifier}, Argon2, PasswordHash};
-use rand::rngs::OsRng;
-use std::io::Write;
-use axum_extra::extract::cookie::{Cookie, Key, SameSite, SignedCookieJar};
 
 // --- Todo Structs ---
 #[derive(sqlx::FromRow, serde::Serialize)]
@@ -51,7 +54,7 @@ enum UserRole {
     User,
 }
 
-#[derive(sqlx::FromRow, serde::Serialize, Clone)]
+#[derive(sqlx::FromRow, serde::Serialize, Clone, Debug)]
 struct User {
     id: i32,
     email: String,
@@ -108,7 +111,8 @@ where
                 }
             }
         }
-
+        
+        tracing::debug!("Auth failed: No valid session found.");
         Err((StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response())
     }
 }
@@ -208,7 +212,6 @@ where
     }
 }
 
-
 // --- Admin Templates ---
 
 #[derive(Template)]
@@ -273,7 +276,6 @@ struct LoginPayload {
     password: String,
 }
 
-
 // --- Common ---
 
 struct HtmlTemplate<T>(T);
@@ -299,7 +301,10 @@ async fn main() -> anyhow::Result<()> {
     dotenvy::dotenv().ok();
 
     tracing_subscriber::registry()
-        .with(tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| "rubato=debug,tower_http=debug".into()))
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "rubato=debug,tower_http=debug".into()),
+        )
         .with(tracing_subscriber::fmt::layer())
         .init();
 
@@ -319,9 +324,7 @@ async fn main() -> anyhow::Result<()> {
 
     // Run migrations
     tracing::info!("Running migrations...");
-    sqlx::migrate!("./migrations")
-        .run(&pool)
-        .await?;
+    sqlx::migrate!("./migrations").run(&pool).await?;
     tracing::info!("Migrations executed successfully.");
 
     // Check for root user
@@ -331,7 +334,7 @@ async fn main() -> anyhow::Result<()> {
 
     if root_user.is_none() {
         println!("Root user not found. Please create one.");
-        
+
         print!("Email: ");
         std::io::stdout().flush()?;
         let mut email = String::new();
@@ -355,7 +358,8 @@ async fn main() -> anyhow::Result<()> {
         // Hash password
         let salt = SaltString::generate(&mut OsRng);
         let argon2 = Argon2::default();
-        let password_hash = argon2.hash_password(password.as_bytes(), &salt)
+        let password_hash = argon2
+            .hash_password(password.as_bytes(), &salt)
             .map_err(|e| anyhow::anyhow!("Password hashing failed: {}", e))?
             .to_string();
 
@@ -386,18 +390,44 @@ async fn main() -> anyhow::Result<()> {
         .route("/todos/{id}", patch(toggle_todo).delete(delete_todo))
         // Admin
         .route("/admin", get(admin_index))
-        .route("/admin/musicians", get(admin_musicians).post(admin_musician_create))
+        .route(
+            "/admin/musicians",
+            get(admin_musicians).post(admin_musician_create),
+        )
         .route("/admin/musician/new", get(admin_musician_new))
-        .route("/admin/musician/{id}", get(admin_musician_edit).post(admin_musician_update).delete(admin_musician_delete))
-        .route("/admin/compositions", get(admin_compositions).post(admin_composition_create))
+        .route(
+            "/admin/musician/{id}",
+            get(admin_musician_edit)
+                .post(admin_musician_update)
+                .delete(admin_musician_delete),
+        )
+        .route(
+            "/admin/compositions",
+            get(admin_compositions).post(admin_composition_create),
+        )
         .route("/admin/composition/new", get(admin_composition_new))
-        .route("/admin/composition/{id}", get(admin_composition_edit).post(admin_composition_update).delete(admin_composition_delete))
-        .route("/admin/composition/{id}/movements", post(admin_movement_create))
+        .route(
+            "/admin/composition/{id}",
+            get(admin_composition_edit)
+                .post(admin_composition_update)
+                .delete(admin_composition_delete),
+        )
+        .route(
+            "/admin/composition/{id}/movements",
+            post(admin_movement_create),
+        )
         .route("/admin/movements/{id}", delete(admin_movement_delete))
-        .route("/admin/recordings", get(admin_recordings).post(admin_recording_create))
+        .route(
+            "/admin/recordings",
+            get(admin_recordings).post(admin_recording_create),
+        )
         .route("/admin/recording/new", get(admin_recording_new))
-        .route("/admin/recording/{id}", get(admin_recording_edit).post(admin_recording_update).delete(admin_recording_delete))
-        
+        .route(
+            "/admin/recording/{id}",
+            get(admin_recording_edit)
+                .post(admin_recording_update)
+                .delete(admin_recording_delete),
+        )
         .nest_service("/assets", ServeDir::new("assets"))
         .layer(tower_http::trace::TraceLayer::new_for_http())
         .with_state(app_state);
@@ -428,7 +458,10 @@ async fn login_post(
 
     if let Some(user) = user {
         let parsed_hash = PasswordHash::new(&user.password_hash).unwrap();
-        if Argon2::default().verify_password(payload.password.as_bytes(), &parsed_hash).is_ok() {
+        if Argon2::default()
+            .verify_password(payload.password.as_bytes(), &parsed_hash)
+            .is_ok()
+        {
             let mut cookie = Cookie::new("user_id", user.id.to_string());
             cookie.set_http_only(true);
             cookie.set_same_site(SameSite::Lax);
@@ -475,10 +508,7 @@ async fn add_todo(
     HtmlTemplate(TodoItemTemplate { todo })
 }
 
-async fn toggle_todo(
-    State(pool): State<Pool<Postgres>>,
-    Path(id): Path<i32>,
-) -> impl IntoResponse {
+async fn toggle_todo(State(pool): State<Pool<Postgres>>, Path(id): Path<i32>) -> impl IntoResponse {
     let todo = sqlx::query_as::<_, Todo>(
         "UPDATE todos SET completed = NOT completed WHERE id = $1 RETURNING id, task, completed",
     )
@@ -502,7 +532,9 @@ async fn delete_todo(State(pool): State<Pool<Postgres>>, Path(id): Path<i32>) ->
 // --- Admin Handlers ---
 
 async fn admin_index(auth: AuthUser) -> impl IntoResponse {
-    if !matches!(auth.0.role, UserRole::Root | UserRole::Admin) {
+    let user = auth.0;
+    tracing::info!("Admin access by user: {:?}", user);
+    if !matches!(user.role, UserRole::Root | UserRole::Admin) {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
     HtmlTemplate(AdminIndexTemplate).into_response()
@@ -524,7 +556,10 @@ async fn admin_musician_new(auth: AuthUser) -> impl IntoResponse {
     if !matches!(auth.0.role, UserRole::Root | UserRole::Admin) {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
-    HtmlTemplate(AdminMusicianEditTemplate { musician: Musician::default() }).into_response()
+    HtmlTemplate(AdminMusicianEditTemplate {
+        musician: Musician::default(),
+    })
+    .into_response()
 }
 
 async fn admin_musician_create(
@@ -535,13 +570,14 @@ async fn admin_musician_create(
     if !matches!(auth.0.role, UserRole::Root | UserRole::Admin) {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
-    let _ = sqlx::query("INSERT INTO musicians (handle, given_name, family_name) VALUES ($1, $2, $3)")
-        .bind(form.handle)
-        .bind(form.given_name)
-        .bind(form.family_name)
-        .execute(&pool)
-        .await
-        .unwrap();
+    let _ =
+        sqlx::query("INSERT INTO musicians (handle, given_name, family_name) VALUES ($1, $2, $3)")
+            .bind(form.handle)
+            .bind(form.given_name)
+            .bind(form.family_name)
+            .execute(&pool)
+            .await
+            .unwrap();
     Redirect::to("/admin/musicians").into_response()
 }
 
@@ -570,14 +606,16 @@ async fn admin_musician_update(
     if !matches!(auth.0.role, UserRole::Root | UserRole::Admin) {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
-    let _ = sqlx::query("UPDATE musicians SET handle = $1, given_name = $2, family_name = $3 WHERE id = $4")
-        .bind(form.handle)
-        .bind(form.given_name)
-        .bind(form.family_name)
-        .bind(id)
-        .execute(&pool)
-        .await
-        .unwrap();
+    let _ = sqlx::query(
+        "UPDATE musicians SET handle = $1, given_name = $2, family_name = $3 WHERE id = $4",
+    )
+    .bind(form.handle)
+    .bind(form.given_name)
+    .bind(form.family_name)
+    .bind(id)
+    .execute(&pool)
+    .await
+    .unwrap();
     Redirect::to("/admin/musicians").into_response()
 }
 
@@ -589,13 +627,19 @@ async fn admin_musician_delete(
     if !matches!(auth.0.role, UserRole::Root | UserRole::Admin) {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
-    sqlx::query("DELETE FROM musicians WHERE id = $1").bind(id).execute(&pool).await.unwrap();
+    sqlx::query("DELETE FROM musicians WHERE id = $1")
+        .bind(id)
+        .execute(&pool)
+        .await
+        .unwrap();
     Redirect::to("/admin/musicians").into_response()
 }
 
-
 // Compositions
-async fn admin_compositions(auth: AuthUser, State(pool): State<Pool<Postgres>>) -> impl IntoResponse {
+async fn admin_compositions(
+    auth: AuthUser,
+    State(pool): State<Pool<Postgres>>,
+) -> impl IntoResponse {
     if !matches!(auth.0.role, UserRole::Root | UserRole::Admin) {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
@@ -606,7 +650,10 @@ async fn admin_compositions(auth: AuthUser, State(pool): State<Pool<Postgres>>) 
     HtmlTemplate(AdminCompositionsTemplate { compositions }).into_response()
 }
 
-async fn admin_composition_new(auth: AuthUser, State(pool): State<Pool<Postgres>>) -> impl IntoResponse {
+async fn admin_composition_new(
+    auth: AuthUser,
+    State(pool): State<Pool<Postgres>>,
+) -> impl IntoResponse {
     if !matches!(auth.0.role, UserRole::Root | UserRole::Admin) {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
@@ -614,7 +661,12 @@ async fn admin_composition_new(auth: AuthUser, State(pool): State<Pool<Postgres>
         .fetch_all(&pool)
         .await
         .unwrap_or_default();
-    HtmlTemplate(AdminCompositionEditTemplate { composition: Composition::default(), movements: vec![], musicians }).into_response()
+    HtmlTemplate(AdminCompositionEditTemplate {
+        composition: Composition::default(),
+        movements: vec![],
+        musicians,
+    })
+    .into_response()
 }
 
 async fn admin_composition_create(
@@ -625,14 +677,16 @@ async fn admin_composition_create(
     if !matches!(auth.0.role, UserRole::Root | UserRole::Admin) {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
-    let _ = sqlx::query("INSERT INTO compositions (slug, title, publish_date, composer_id) VALUES ($1, $2, $3, $4)")
-        .bind(form.slug)
-        .bind(form.title)
-        .bind(form.publish_date)
-        .bind(form.composer_id)
-        .execute(&pool)
-        .await
-        .unwrap();
+    let _ = sqlx::query(
+        "INSERT INTO compositions (slug, title, publish_date, composer_id) VALUES ($1, $2, $3, $4)",
+    )
+    .bind(form.slug)
+    .bind(form.title)
+    .bind(form.publish_date)
+    .bind(form.composer_id)
+    .execute(&pool)
+    .await
+    .unwrap();
     Redirect::to("/admin/compositions").into_response()
 }
 
@@ -649,16 +703,23 @@ async fn admin_composition_edit(
         .fetch_one(&pool)
         .await
         .unwrap();
-    let movements = sqlx::query_as::<_, Movement>("SELECT * FROM movements WHERE composition_id = $1 ORDER BY index")
-        .bind(id)
-        .fetch_all(&pool)
-        .await
-        .unwrap_or_default();
+    let movements = sqlx::query_as::<_, Movement>(
+        "SELECT * FROM movements WHERE composition_id = $1 ORDER BY index",
+    )
+    .bind(id)
+    .fetch_all(&pool)
+    .await
+    .unwrap_or_default();
     let musicians = sqlx::query_as::<_, Musician>("SELECT * FROM musicians ORDER BY family_name")
         .fetch_all(&pool)
         .await
         .unwrap_or_default();
-    HtmlTemplate(AdminCompositionEditTemplate { composition, movements, musicians }).into_response()
+    HtmlTemplate(AdminCompositionEditTemplate {
+        composition,
+        movements,
+        musicians,
+    })
+    .into_response()
 }
 
 async fn admin_composition_update(
@@ -690,8 +751,16 @@ async fn admin_composition_delete(
     if !matches!(auth.0.role, UserRole::Root | UserRole::Admin) {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
-    sqlx::query("DELETE FROM movements WHERE composition_id = $1").bind(id).execute(&pool).await.unwrap();
-    sqlx::query("DELETE FROM compositions WHERE id = $1").bind(id).execute(&pool).await.unwrap();
+    sqlx::query("DELETE FROM movements WHERE composition_id = $1")
+        .bind(id)
+        .execute(&pool)
+        .await
+        .unwrap();
+    sqlx::query("DELETE FROM compositions WHERE id = $1")
+        .bind(id)
+        .execute(&pool)
+        .await
+        .unwrap();
     Redirect::to("/admin/compositions").into_response()
 }
 
@@ -705,15 +774,17 @@ async fn admin_movement_create(
     if !matches!(auth.0.role, UserRole::Root | UserRole::Admin) {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
-    let _ = sqlx::query("INSERT INTO movements (slug, title, index, composition_id) VALUES ($1, $2, $3, $4)")
-        .bind(form.slug.clone())
-        .bind(form.title.clone())
-        .bind(form.index)
-        .bind(composition_id)
-        .execute(&pool)
-        .await
-        .unwrap();
-    
+    let _ = sqlx::query(
+        "INSERT INTO movements (slug, title, index, composition_id) VALUES ($1, $2, $3, $4)",
+    )
+    .bind(form.slug.clone())
+    .bind(form.title.clone())
+    .bind(form.index)
+    .bind(composition_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+
     // Return updated list row - but simplest to just return an empty string and let client reload or return the new row.
     // The template expects `hx-target="#movements-list" hx-swap="beforeend"`.
     // So we should render a table row.
@@ -723,14 +794,17 @@ async fn admin_movement_create(
     // If I return the whole page, it might break.
     // I'll define a simple struct `MovementRowTemplate` inline or generic.
     // Or I can just format! a string.
-    let movement = sqlx::query_as::<_, Movement>("SELECT * FROM movements WHERE composition_id = $1 AND slug = $2")
-        .bind(composition_id)
-        .bind(form.slug)
-        .fetch_one(&pool)
-        .await
-        .unwrap();
-        
-    let html = format!(r#"
+    let movement = sqlx::query_as::<_, Movement>(
+        "SELECT * FROM movements WHERE composition_id = $1 AND slug = $2",
+    )
+    .bind(composition_id)
+    .bind(form.slug)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+
+    let html = format!(
+        r#"
     <tr>
         <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{}</td>
         <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{}</td>
@@ -739,7 +813,9 @@ async fn admin_movement_create(
             <button hx-delete="/admin/movements/{}" hx-confirm="Delete movement?" hx-target="closest tr" class="text-red-600 hover:text-red-900">Delete</button>
         </td>
     </tr>
-    "#, movement.index, movement.title, movement.slug, movement.id);
+    "#,
+        movement.index, movement.title, movement.slug, movement.id
+    );
 
     axum::response::Html(html).into_response()
 }
@@ -752,7 +828,11 @@ async fn admin_movement_delete(
     if !matches!(auth.0.role, UserRole::Root | UserRole::Admin) {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
-    sqlx::query("DELETE FROM movements WHERE id = $1").bind(id).execute(&pool).await.unwrap();
+    sqlx::query("DELETE FROM movements WHERE id = $1")
+        .bind(id)
+        .execute(&pool)
+        .await
+        .unwrap();
     axum::http::StatusCode::OK.into_response()
 }
 
@@ -768,14 +848,34 @@ async fn admin_recordings(auth: AuthUser, State(pool): State<Pool<Postgres>>) ->
     HtmlTemplate(AdminRecordingsTemplate { recordings }).into_response()
 }
 
-async fn admin_recording_new(auth: AuthUser, State(pool): State<Pool<Postgres>>) -> impl IntoResponse {
+async fn admin_recording_new(
+    auth: AuthUser,
+    State(pool): State<Pool<Postgres>>,
+) -> impl IntoResponse {
     if !matches!(auth.0.role, UserRole::Root | UserRole::Admin) {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
-    let musicians = sqlx::query_as::<_, Musician>("SELECT * FROM musicians ORDER BY family_name").fetch_all(&pool).await.unwrap_or_default();
-    let compositions = sqlx::query_as::<_, Composition>("SELECT * FROM compositions ORDER BY title").fetch_all(&pool).await.unwrap_or_default();
-    let movements = sqlx::query_as::<_, Movement>("SELECT * FROM movements ORDER BY composition_id, index").fetch_all(&pool).await.unwrap_or_default();
-    HtmlTemplate(AdminRecordingEditTemplate { recording: Recording::default(), musicians, compositions, movements }).into_response()
+    let musicians = sqlx::query_as::<_, Musician>("SELECT * FROM musicians ORDER BY family_name")
+        .fetch_all(&pool)
+        .await
+        .unwrap_or_default();
+    let compositions =
+        sqlx::query_as::<_, Composition>("SELECT * FROM compositions ORDER BY title")
+            .fetch_all(&pool)
+            .await
+            .unwrap_or_default();
+    let movements =
+        sqlx::query_as::<_, Movement>("SELECT * FROM movements ORDER BY composition_id, index")
+            .fetch_all(&pool)
+            .await
+            .unwrap_or_default();
+    HtmlTemplate(AdminRecordingEditTemplate {
+        recording: Recording::default(),
+        musicians,
+        compositions,
+        movements,
+    })
+    .into_response()
 }
 
 async fn admin_recording_create(
@@ -811,10 +911,27 @@ async fn admin_recording_edit(
         .fetch_one(&pool)
         .await
         .unwrap();
-    let musicians = sqlx::query_as::<_, Musician>("SELECT * FROM musicians ORDER BY family_name").fetch_all(&pool).await.unwrap_or_default();
-    let compositions = sqlx::query_as::<_, Composition>("SELECT * FROM compositions ORDER BY title").fetch_all(&pool).await.unwrap_or_default();
-    let movements = sqlx::query_as::<_, Movement>("SELECT * FROM movements ORDER BY composition_id, index").fetch_all(&pool).await.unwrap_or_default();
-    HtmlTemplate(AdminRecordingEditTemplate { recording, musicians, compositions, movements }).into_response()
+    let musicians = sqlx::query_as::<_, Musician>("SELECT * FROM musicians ORDER BY family_name")
+        .fetch_all(&pool)
+        .await
+        .unwrap_or_default();
+    let compositions =
+        sqlx::query_as::<_, Composition>("SELECT * FROM compositions ORDER BY title")
+            .fetch_all(&pool)
+            .await
+            .unwrap_or_default();
+    let movements =
+        sqlx::query_as::<_, Movement>("SELECT * FROM movements ORDER BY composition_id, index")
+            .fetch_all(&pool)
+            .await
+            .unwrap_or_default();
+    HtmlTemplate(AdminRecordingEditTemplate {
+        recording,
+        musicians,
+        compositions,
+        movements,
+    })
+    .into_response()
 }
 
 async fn admin_recording_update(
@@ -847,6 +964,10 @@ async fn admin_recording_delete(
     if !matches!(auth.0.role, UserRole::Root) {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
-    sqlx::query("DELETE FROM recordings WHERE id = $1").bind(id).execute(&pool).await.unwrap();
+    sqlx::query("DELETE FROM recordings WHERE id = $1")
+        .bind(id)
+        .execute(&pool)
+        .await
+        .unwrap();
     Redirect::to("/admin/recordings").into_response()
 }
