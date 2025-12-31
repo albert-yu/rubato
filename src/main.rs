@@ -34,9 +34,7 @@ struct CreateTodo {
 
 #[derive(Template)]
 #[template(path = "index.html")]
-struct IndexTemplate {
-    todos: Vec<Todo>,
-}
+struct IndexTemplate;
 
 #[derive(Template)]
 #[template(path = "todo_item.html")]
@@ -483,13 +481,8 @@ async fn logout(jar: SignedCookieJar) -> impl IntoResponse {
 }
 
 // --- Todo Handlers ---
-async fn index(State(pool): State<Pool<Postgres>>) -> impl IntoResponse {
-    let todos = sqlx::query_as::<_, Todo>("SELECT id, task, completed FROM todos ORDER BY id")
-        .fetch_all(&pool)
-        .await
-        .unwrap();
-
-    HtmlTemplate(IndexTemplate { todos })
+async fn index() -> impl IntoResponse {
+    HtmlTemplate(IndexTemplate)
 }
 
 async fn add_todo(
