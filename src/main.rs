@@ -277,6 +277,7 @@ async fn main() -> anyhow::Result<()> {
     let app = Router::new()
         .route("/", get(index))
         .route("/settings", get(settings).post(settings_post))
+        .route("/upload", get(upload))
         .route("/login", get(login_form).post(login_post))
         .route("/logout", post(logout))
         // Admin
@@ -443,6 +444,10 @@ async fn settings_post(
     .await
     .unwrap();
     Redirect::to("/settings")
+}
+
+async fn upload(auth: AuthUser) -> impl IntoResponse {
+    HtmlTemplate(UploadTemplate { current_user: Some(auth.0) })
 }
 
 // --- Auth Handlers ---

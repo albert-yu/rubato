@@ -18,6 +18,12 @@ pub struct SettingsTemplate {
 }
 
 #[derive(Template)]
+#[template(path = "upload.html")]
+pub struct UploadTemplate {
+    pub current_user: Option<User>,
+}
+
+#[derive(Template)]
 #[template(path = "admin/index.html")]
 pub struct AdminIndexTemplate {
     pub current_user: Option<User>,
