@@ -403,13 +403,13 @@ async fn index(auth: OptionalAuthUser, State(pool): State<Pool<Postgres>>) -> im
         JOIN compositions c ON r.composition_id = c.id
         LEFT JOIN movements mv ON r.movement_id = mv.id
         ORDER BY r.created_at DESC
-        "#
+        "#,
     )
     .fetch_all(&pool)
     .await
     .unwrap_or_default();
 
-    HtmlTemplate(IndexTemplate { 
+    HtmlTemplate(IndexTemplate {
         current_user: auth.0,
         recordings,
     })
@@ -447,7 +447,9 @@ async fn settings_post(
 }
 
 async fn upload(auth: AuthUser) -> impl IntoResponse {
-    HtmlTemplate(UploadTemplate { current_user: Some(auth.0) })
+    HtmlTemplate(UploadTemplate {
+        current_user: Some(auth.0),
+    })
 }
 
 // --- Auth Handlers ---
