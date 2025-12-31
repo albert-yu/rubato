@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}My App{% endblock %}</title>
+    <title>{% block title %}Rubato{% endblock %}</title>
     <link href="/assets/main.css" rel="stylesheet">
     <script src="https://unpkg.com/htmx.org@1.9.10" integrity="sha384-D1Kt99CQMDuVetoL1lrYwg5t+9QdHe7NLX/SoJYkXDFfX37iInKRy5xLSi8nO7UC" crossorigin="anonymous"></script>
 </head>
-<body class="bg-gray-100 text-gray-900 font-sans">
-    <div class="container mx-auto p-4">
-        {% block content %}{% endblock %}
+<body class="bg-gray-100 text-gray-900 font-sans min-h-screen">
+    <div class="flex min-h-screen">
+        {% block nav %}{% endblock %}
+        <main class="flex-1 container mx-auto p-4">
+            {% block content %}{% endblock %}
+        </main>
     </div>
 </body>
 </html>

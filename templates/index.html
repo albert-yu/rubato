@@ -2,6 +2,29 @@
 
 {% block title %}Home{% endblock %}
 
+{% block nav %}
+    {% if current_user.is_some() %}
+    <nav class="w-64 bg-white shadow-md flex flex-col p-4">
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-indigo-600">Rubato</h1>
+        </div>
+        <ul class="space-y-2 flex-1">
+            <li>
+                <a href="/" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Home</a>
+            </li>
+            <li>
+                <a href="#" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Settings</a>
+            </li>
+        </ul>
+        <div class="mt-auto">
+            <form action="/logout" method="post">
+                <button type="submit" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 rounded">Logout</button>
+            </form>
+        </div>
+    </nav>
+    {% endif %}
+{% endblock %}
+
 {% block content %}
 <div class="py-12 text-center">
     <h1 class="text-4xl font-bold text-gray-900">Home: TODO</h1>

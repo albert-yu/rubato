@@ -111,6 +111,43 @@ where
     }
 }
 
+struct OptionalAuthUser(Option<User>);
+
+impl<S> FromRequestParts<S> for OptionalAuthUser
+where
+    Pool<Postgres>: FromRef<S>,
+    DecodingKey: FromRef<S>,
+    S: Send + Sync,
+{
+    type Rejection = Response;
+
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        let pool = Pool::<Postgres>::from_ref(state);
+        let decoding_key = DecodingKey::from_ref(state);
+        let jar = CookieJar::from_request_parts(parts, state)
+            .await
+            .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "Cookie error").into_response())?;
+
+        if let Some(cookie) = jar.get("auth_token") {
+            let token = cookie.value();
+            let validation = Validation::default();
+            if let Ok(token_data) = decode::<Claims>(token, &decoding_key, &validation) {
+                if let Ok(id) = token_data.claims.sub.parse::<i32>() {
+                    if let Ok(user) = sqlx::query_as::<_, User>("SELECT * FROM users WHERE id = $1")
+                        .bind(id)
+                        .fetch_one(&pool)
+                        .await
+                    {
+                        return Ok(OptionalAuthUser(Some(user)));
+                    }
+                }
+            }
+        }
+        
+        Ok(OptionalAuthUser(None))
+    }
+}
+
 // --- Auth Templates ---
 
 #[derive(Deserialize)]
@@ -349,8 +386,8 @@ async fn logout(jar: CookieJar) -> impl IntoResponse {
 }
 
 // --- Todo Handlers ---
-async fn index() -> impl IntoResponse {
-    HtmlTemplate(IndexTemplate)
+async fn index(auth: OptionalAuthUser) -> impl IntoResponse {
+    HtmlTemplate(IndexTemplate { current_user: auth.0 })
 }
 
 // --- Auth Handlers ---
@@ -360,7 +397,7 @@ async fn admin_index(auth: AuthUser) -> impl IntoResponse {
     if !matches!(user.role, UserRole::Root | UserRole::Admin) {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
-    HtmlTemplate(AdminIndexTemplate).into_response()
+    HtmlTemplate(AdminIndexTemplate { current_user: Some(user) }).into_response()
 }
 
 // Musicians
@@ -372,7 +409,7 @@ async fn admin_musicians(auth: AuthUser, State(pool): State<Pool<Postgres>>) -> 
         .fetch_all(&pool)
         .await
         .unwrap_or_default();
-    HtmlTemplate(AdminMusiciansTemplate { musicians }).into_response()
+    HtmlTemplate(AdminMusiciansTemplate { musicians, current_user: Some(auth.0) }).into_response()
 }
 
 async fn admin_musician_new(auth: AuthUser) -> impl IntoResponse {
@@ -381,6 +418,7 @@ async fn admin_musician_new(auth: AuthUser) -> impl IntoResponse {
     }
     HtmlTemplate(AdminMusicianEditTemplate {
         musician: Musician::default(),
+        current_user: Some(auth.0),
     })
     .into_response()
 }
@@ -417,7 +455,7 @@ async fn admin_musician_edit(
         .fetch_one(&pool)
         .await
         .unwrap();
-    HtmlTemplate(AdminMusicianEditTemplate { musician }).into_response()
+    HtmlTemplate(AdminMusicianEditTemplate { musician, current_user: Some(auth.0) }).into_response()
 }
 
 async fn admin_musician_update(
@@ -470,7 +508,7 @@ async fn admin_compositions(
         .fetch_all(&pool)
         .await
         .unwrap_or_default();
-    HtmlTemplate(AdminCompositionsTemplate { compositions }).into_response()
+    HtmlTemplate(AdminCompositionsTemplate { compositions, current_user: Some(auth.0) }).into_response()
 }
 
 async fn admin_composition_new(
@@ -488,6 +526,7 @@ async fn admin_composition_new(
         composition: Composition::default(),
         movements: vec![],
         musicians,
+        current_user: Some(auth.0),
     })
     .into_response()
 }
@@ -541,6 +580,7 @@ async fn admin_composition_edit(
         composition,
         movements,
         musicians,
+        current_user: Some(auth.0),
     })
     .into_response()
 }
@@ -668,7 +708,7 @@ async fn admin_recordings(auth: AuthUser, State(pool): State<Pool<Postgres>>) ->
         .fetch_all(&pool)
         .await
         .unwrap_or_default();
-    HtmlTemplate(AdminRecordingsTemplate { recordings }).into_response()
+    HtmlTemplate(AdminRecordingsTemplate { recordings, current_user: Some(auth.0) }).into_response()
 }
 
 async fn admin_recording_new(
@@ -697,6 +737,7 @@ async fn admin_recording_new(
         musicians,
         compositions,
         movements,
+        current_user: Some(auth.0),
     })
     .into_response()
 }
@@ -753,6 +794,7 @@ async fn admin_recording_edit(
         musicians,
         compositions,
         movements,
+        current_user: Some(auth.0),
     })
     .into_response()
 }

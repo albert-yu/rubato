@@ -5,28 +5,35 @@ use axum::response::IntoResponse;
 
 #[derive(Template)]
 #[template(path = "index.html")]
-pub struct IndexTemplate;
+pub struct IndexTemplate {
+    pub current_user: Option<User>,
+}
 
 #[derive(Template)]
 #[template(path = "admin/index.html")]
-pub struct AdminIndexTemplate;
+pub struct AdminIndexTemplate {
+    pub current_user: Option<User>,
+}
 
 #[derive(Template)]
 #[template(path = "admin/musicians.html")]
 pub struct AdminMusiciansTemplate {
     pub musicians: Vec<Musician>,
+    pub current_user: Option<User>,
 }
 
 #[derive(Template)]
 #[template(path = "admin/musician_edit.html")]
 pub struct AdminMusicianEditTemplate {
     pub musician: Musician,
+    pub current_user: Option<User>,
 }
 
 #[derive(Template)]
 #[template(path = "admin/compositions.html")]
 pub struct AdminCompositionsTemplate {
     pub compositions: Vec<Composition>,
+    pub current_user: Option<User>,
 }
 
 #[derive(Template)]
@@ -35,12 +42,14 @@ pub struct AdminCompositionEditTemplate {
     pub composition: Composition,
     pub movements: Vec<Movement>,
     pub musicians: Vec<Musician>,
+    pub current_user: Option<User>,
 }
 
 #[derive(Template)]
 #[template(path = "admin/recordings.html")]
 pub struct AdminRecordingsTemplate {
     pub recordings: Vec<Recording>,
+    pub current_user: Option<User>,
 }
 
 #[derive(Template)]
@@ -50,6 +59,7 @@ pub struct AdminRecordingEditTemplate {
     pub musicians: Vec<Musician>,
     pub compositions: Vec<Composition>,
     pub movements: Vec<Movement>,
+    pub current_user: Option<User>,
 }
 
 #[derive(Template)]
