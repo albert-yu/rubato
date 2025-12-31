@@ -18,6 +18,12 @@ pub struct User {
     pub role: UserRole,
 }
 
+impl User {
+    pub fn is_privileged(&self) -> bool {
+        matches!(self.role, UserRole::Root | UserRole::Admin)
+    }
+}
+
 #[derive(sqlx::FromRow, serde::Serialize, Clone, Default)]
 pub struct Musician {
     pub id: i32,
