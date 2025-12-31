@@ -111,8 +111,7 @@ where
                 }
             }
         }
-        
-        tracing::debug!("Auth failed: No valid session found.");
+
         Err((StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response())
     }
 }
@@ -533,7 +532,6 @@ async fn delete_todo(State(pool): State<Pool<Postgres>>, Path(id): Path<i32>) ->
 
 async fn admin_index(auth: AuthUser) -> impl IntoResponse {
     let user = auth.0;
-    tracing::info!("Admin access by user: {:?}", user);
     if !matches!(user.role, UserRole::Root | UserRole::Admin) {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
