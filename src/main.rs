@@ -26,10 +26,6 @@ use db::*;
 use std::sync::Arc;
 use view::*;
 
-// --- Todo Structs ---
-
-// --- Music Structs ---
-
 struct AuthUser(User);
 
 #[derive(Debug, Serialize, Deserialize)]
