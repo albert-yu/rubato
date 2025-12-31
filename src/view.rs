@@ -7,6 +7,7 @@ use axum::response::IntoResponse;
 #[template(path = "index.html")]
 pub struct IndexTemplate {
     pub current_user: Option<User>,
+    pub recordings: Vec<RecordingFeedItem>,
 }
 
 #[derive(Template)]

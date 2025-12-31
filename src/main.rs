@@ -387,9 +387,30 @@ async fn logout(jar: CookieJar) -> impl IntoResponse {
 }
 
 // --- Todo Handlers ---
-async fn index(auth: OptionalAuthUser) -> impl IntoResponse {
-    HtmlTemplate(IndexTemplate {
+async fn index(auth: OptionalAuthUser, State(pool): State<Pool<Postgres>>) -> impl IntoResponse {
+    let recordings = sqlx::query_as::<_, RecordingFeedItem>(
+        r#"
+        SELECT 
+            m.handle as artist_handle,
+            c.title as composition_title,
+            mv.index as movement_index,
+            mv.title as movement_title,
+            r.created_at,
+            r.file_key
+        FROM recordings r
+        JOIN musicians m ON r.artist_id = m.id
+        JOIN compositions c ON r.composition_id = c.id
+        LEFT JOIN movements mv ON r.movement_id = mv.id
+        ORDER BY r.created_at DESC
+        "#
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap_or_default();
+
+    HtmlTemplate(IndexTemplate { 
         current_user: auth.0,
+        recordings,
     })
 }
 

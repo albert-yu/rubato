@@ -1,0 +1,2 @@
+-- Add migration script here
+ALTER TABLE recordings ADD COLUMN created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP;

@@ -92,6 +92,7 @@ pub struct Recording {
     pub movement_id: Option<i32>,
     pub content_hash: String,
     pub file_key: String,
+    pub created_at: chrono::DateTime<chrono::Utc>,
 }
 
 #[derive(serde::Deserialize)]
@@ -102,6 +103,16 @@ pub struct CreateRecording {
     #[serde(deserialize_with = "empty_string_as_none_i32")]
     pub movement_id: Option<i32>,
     pub content_hash: String,
+    pub file_key: String,
+}
+
+#[derive(sqlx::FromRow, serde::Serialize, Clone, Debug)]
+pub struct RecordingFeedItem {
+    pub artist_handle: String,
+    pub composition_title: String,
+    pub movement_index: Option<i32>,
+    pub movement_title: Option<String>,
+    pub created_at: chrono::DateTime<chrono::Utc>,
     pub file_key: String,
 }
 
