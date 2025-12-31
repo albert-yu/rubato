@@ -19,3 +19,4 @@ argon2 = "0.5.3"
 rand = "0.8.5"
 rpassword = "7.3.1"
 axum-extra = { version = "0.10.0", features = ["cookie-signed"] }
+jsonwebtoken = "9.2.0"

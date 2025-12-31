@@ -11,8 +11,9 @@ use axum::{
     routing::{delete, get, post},
 };
 use axum_extra::extract::cookie::{Cookie, Key, SameSite, SignedCookieJar};
+use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use rand::rngs::OsRng;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use sqlx::{Pool, Postgres, migrate::MigrateDatabase, postgres::PgPoolOptions};
 use std::io::Write;
 use std::net::SocketAddr;
@@ -47,10 +48,18 @@ struct User {
 
 struct AuthUser(User);
 
+#[derive(Debug, Serialize, Deserialize)]
+struct Claims {
+    sub: String,
+    exp: usize,
+}
+
 #[derive(Clone)]
 struct AppState {
     pool: Pool<Postgres>,
     key: Key,
+    jwt_encoding_key: EncodingKey,
+    jwt_decoding_key: DecodingKey,
 }
 
 impl FromRef<AppState> for Pool<Postgres> {
@@ -65,34 +74,53 @@ impl FromRef<AppState> for Key {
     }
 }
 
+impl FromRef<AppState> for EncodingKey {
+    fn from_ref(state: &AppState) -> Self {
+        state.jwt_encoding_key.clone()
+    }
+}
+
+impl FromRef<AppState> for DecodingKey {
+    fn from_ref(state: &AppState) -> Self {
+        state.jwt_decoding_key.clone()
+    }
+}
+
 use axum::extract::FromRef;
 
 impl<S> FromRequestParts<S> for AuthUser
 where
     Pool<Postgres>: FromRef<S>,
     Key: FromRef<S>,
+    DecodingKey: FromRef<S>,
     S: Send + Sync,
 {
     type Rejection = Response;
 
     async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
         let pool = Pool::<Postgres>::from_ref(state);
+        let decoding_key = DecodingKey::from_ref(state);
         let jar: SignedCookieJar<Key> = SignedCookieJar::from_request_parts(parts, state)
             .await
             .map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "Cookie error").into_response())?;
 
-        if let Some(user_id) = jar.get("user_id") {
-            if let Ok(id) = user_id.value().parse::<i32>() {
-                if let Ok(user) = sqlx::query_as::<_, User>("SELECT * FROM users WHERE id = $1")
-                    .bind(id)
-                    .fetch_one(&pool)
-                    .await
-                {
-                    return Ok(AuthUser(user));
+        if let Some(cookie) = jar.get("auth_token") {
+            let token = cookie.value();
+            let validation = Validation::default();
+            if let Ok(token_data) = decode::<Claims>(token, &decoding_key, &validation) {
+                if let Ok(id) = token_data.claims.sub.parse::<i32>() {
+                    if let Ok(user) = sqlx::query_as::<_, User>("SELECT * FROM users WHERE id = $1")
+                        .bind(id)
+                        .fetch_one(&pool)
+                        .await
+                    {
+                        return Ok(AuthUser(user));
+                    }
                 }
             }
         }
 
+        tracing::debug!("Auth failed: No valid session found.");
         Err((StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response())
     }
 }
@@ -359,8 +387,20 @@ async fn main() -> anyhow::Result<()> {
         tracing::info!("Root user already exists.");
     }
 
-    let key = Key::generate();
-    let app_state = AppState { pool, key };
+        let key = Key::generate();
+
+        let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
+
+        let jwt_encoding_key = EncodingKey::from_secret(jwt_secret.as_bytes());
+
+        let jwt_decoding_key = DecodingKey::from_secret(jwt_secret.as_bytes());
+
+    let app_state = AppState {
+        pool,
+        key,
+        jwt_encoding_key,
+        jwt_decoding_key,
+    };
 
     let app = Router::new()
         .route("/", get(index))
@@ -425,7 +465,8 @@ async fn login_form() -> impl IntoResponse {
 
 async fn login_post(
     State(pool): State<Pool<Postgres>>,
-    jar: SignedCookieJar,
+    State(encoding_key): State<EncodingKey>,
+    jar: SignedCookieJar<Key>,
     Form(payload): Form<LoginPayload>,
 ) -> impl IntoResponse {
     let user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE email = $1")
@@ -440,11 +481,18 @@ async fn login_post(
             .verify_password(payload.password.as_bytes(), &parsed_hash)
             .is_ok()
         {
-            let mut cookie = Cookie::new("user_id", user.id.to_string());
-            cookie.set_http_only(true);
-            cookie.set_same_site(SameSite::Lax);
-            cookie.set_path("/");
-            return (jar.add(cookie), Redirect::to("/admin")).into_response();
+            let claims = Claims {
+                sub: user.id.to_string(),
+                exp: (chrono::Utc::now() + chrono::Duration::hours(24)).timestamp() as usize,
+            };
+
+            if let Ok(token) = encode(&Header::default(), &claims, &encoding_key) {
+                let mut cookie = Cookie::new("auth_token", token);
+                cookie.set_http_only(true);
+                cookie.set_same_site(SameSite::Lax);
+                cookie.set_path("/");
+                return (jar.add(cookie), Redirect::to("/admin")).into_response();
+            }
         }
     }
 
@@ -457,8 +505,11 @@ async fn login_post(
         .into_response()
 }
 
-async fn logout(jar: SignedCookieJar) -> impl IntoResponse {
-    (jar.remove(Cookie::from("user_id")), Redirect::to("/login"))
+async fn logout(jar: SignedCookieJar<Key>) -> impl IntoResponse {
+    (
+        jar.remove(Cookie::from("auth_token")),
+        Redirect::to("/login"),
+    )
 }
 
 // --- Todo Handlers ---
