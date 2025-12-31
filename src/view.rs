@@ -13,6 +13,7 @@ pub struct IndexTemplate {
 #[template(path = "settings.html")]
 pub struct SettingsTemplate {
     pub current_user: Option<User>,
+    pub musician: Musician,
 }
 
 #[derive(Template)]

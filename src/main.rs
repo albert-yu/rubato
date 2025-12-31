@@ -276,7 +276,7 @@ async fn main() -> anyhow::Result<()> {
 
     let app = Router::new()
         .route("/", get(index))
-        .route("/settings", get(settings))
+        .route("/settings", get(settings).post(settings_post))
         .route("/login", get(login_form).post(login_post))
         .route("/logout", post(logout))
         // Admin
@@ -393,10 +393,35 @@ async fn index(auth: OptionalAuthUser) -> impl IntoResponse {
     })
 }
 
-async fn settings(auth: AuthUser) -> impl IntoResponse {
+async fn settings(auth: AuthUser, State(pool): State<Pool<Postgres>>) -> impl IntoResponse {
+    let musician = sqlx::query_as::<_, Musician>("SELECT * FROM musicians WHERE id = $1")
+        .bind(auth.0.musician_id)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+
     HtmlTemplate(SettingsTemplate {
         current_user: Some(auth.0),
+        musician,
     })
+}
+
+async fn settings_post(
+    auth: AuthUser,
+    State(pool): State<Pool<Postgres>>,
+    Form(form): Form<CreateMusician>,
+) -> impl IntoResponse {
+    let _ = sqlx::query(
+        "UPDATE musicians SET handle = $1, given_name = $2, family_name = $3 WHERE id = $4",
+    )
+    .bind(form.handle)
+    .bind(form.given_name)
+    .bind(form.family_name)
+    .bind(auth.0.musician_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+    Redirect::to("/settings")
 }
 
 // --- Auth Handlers ---
