@@ -8,7 +8,7 @@ use axum::{
     extract::{FromRequestParts, Path, State},
     http::{StatusCode, request::Parts},
     response::{IntoResponse, Redirect, Response},
-    routing::{delete, get, patch, post},
+    routing::{delete, get, post},
 };
 use axum_extra::extract::cookie::{Cookie, Key, SameSite, SignedCookieJar};
 use rand::rngs::OsRng;
@@ -20,27 +20,10 @@ use tower_http::services::ServeDir;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 // --- Todo Structs ---
-#[derive(sqlx::FromRow, serde::Serialize)]
-struct Todo {
-    id: i32,
-    task: String,
-    completed: bool,
-}
-
-#[derive(serde::Deserialize)]
-struct CreateTodo {
-    task: String,
-}
 
 #[derive(Template)]
 #[template(path = "index.html")]
 struct IndexTemplate;
-
-#[derive(Template)]
-#[template(path = "todo_item.html")]
-struct TodoItemTemplate {
-    todo: Todo,
-}
 
 // --- Music Structs ---
 
@@ -383,8 +366,6 @@ async fn main() -> anyhow::Result<()> {
         .route("/", get(index))
         .route("/login", get(login_form).post(login_post))
         .route("/logout", post(logout))
-        .route("/todos", post(add_todo))
-        .route("/todos/{id}", patch(toggle_todo).delete(delete_todo))
         // Admin
         .route("/admin", get(admin_index))
         .route(
@@ -485,43 +466,7 @@ async fn index() -> impl IntoResponse {
     HtmlTemplate(IndexTemplate)
 }
 
-async fn add_todo(
-    State(pool): State<Pool<Postgres>>,
-    Form(form): Form<CreateTodo>,
-) -> impl IntoResponse {
-    let todo = sqlx::query_as::<_, Todo>(
-        "INSERT INTO todos (task) VALUES ($1) RETURNING id, task, completed",
-    )
-    .bind(form.task)
-    .fetch_one(&pool)
-    .await
-    .unwrap();
-
-    HtmlTemplate(TodoItemTemplate { todo })
-}
-
-async fn toggle_todo(State(pool): State<Pool<Postgres>>, Path(id): Path<i32>) -> impl IntoResponse {
-    let todo = sqlx::query_as::<_, Todo>(
-        "UPDATE todos SET completed = NOT completed WHERE id = $1 RETURNING id, task, completed",
-    )
-    .bind(id)
-    .fetch_one(&pool)
-    .await
-    .unwrap();
-
-    HtmlTemplate(TodoItemTemplate { todo })
-}
-
-async fn delete_todo(State(pool): State<Pool<Postgres>>, Path(id): Path<i32>) -> impl IntoResponse {
-    sqlx::query("DELETE FROM todos WHERE id = $1")
-        .bind(id)
-        .execute(&pool)
-        .await
-        .unwrap();
-    axum::http::StatusCode::OK
-}
-
-// --- Admin Handlers ---
+// --- Auth Handlers ---
 
 async fn admin_index(auth: AuthUser) -> impl IntoResponse {
     let user = auth.0;
