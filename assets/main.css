@@ -578,24 +578,20 @@ video {
   }
 }
 
-.fixed {
-  position: fixed;
+.relative {
+  position: relative;
+}
+
+.sticky {
+  position: sticky;
 }
 
 .bottom-0 {
   bottom: 0px;
 }
 
-.left-0 {
-  left: 0px;
-}
-
-.right-0 {
-  right: 0px;
-}
-
-.z-50 {
-  z-index: 50;
+.z-40 {
+  z-index: 40;
 }
 
 .col-span-2 {
@@ -722,6 +718,10 @@ video {
 
 .w-full {
   width: 100%;
+}
+
+.min-w-0 {
+  min-width: 0px;
 }
 
 .min-w-full {
@@ -1000,8 +1000,8 @@ video {
   padding-bottom: 1rem;
 }
 
-.pb-20 {
-  padding-bottom: 5rem;
+.pb-24 {
+  padding-bottom: 6rem;
 }
 
 .pb-4 {
