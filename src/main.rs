@@ -4,7 +4,8 @@ use argon2::{
 };
 use axum::{
     Form, Router,
-    extract::{FromRequestParts, Path, State},
+    body::Bytes,
+    extract::{DefaultBodyLimit, FromRequestParts, Multipart, Path, State},
     http::{StatusCode, request::Parts},
     response::{IntoResponse, Redirect, Response},
     routing::{delete, get, post},
@@ -18,6 +19,7 @@ use std::io::Write;
 use std::net::SocketAddr;
 use tower_http::services::ServeDir;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use uuid::Uuid;
 
 mod db;
 mod storage;
@@ -277,7 +279,12 @@ async fn main() -> anyhow::Result<()> {
     let app = Router::new()
         .route("/", get(index))
         .route("/settings", get(settings).post(settings_post))
-        .route("/upload", get(upload))
+        .route(
+            "/upload",
+            get(upload)
+                .post(upload_post)
+                .layer(DefaultBodyLimit::max(1024 * 1024 * 50)),
+        )
         .route("/audio/{key}", get(serve_audio))
         .route("/login", get(login_form).post(login_post))
         .route("/logout", post(logout))
@@ -447,10 +454,120 @@ async fn settings_post(
     Redirect::to("/settings")
 }
 
-async fn upload(auth: AuthUser) -> impl IntoResponse {
+async fn upload(auth: AuthUser, State(pool): State<Pool<Postgres>>) -> impl IntoResponse {
+    let compositions =
+        sqlx::query_as::<_, Composition>("SELECT * FROM compositions ORDER BY title")
+            .fetch_all(&pool)
+            .await
+            .unwrap_or_default();
+
     HtmlTemplate(UploadTemplate {
         current_user: Some(auth.0),
+        error: None,
+        compositions,
     })
+}
+
+async fn upload_post(
+    auth: AuthUser,
+    State(pool): State<Pool<Postgres>>,
+    mut multipart: Multipart,
+) -> impl IntoResponse {
+    let mut file_data: Option<Bytes> = None;
+    let mut composition_id = None;
+
+    while let Ok(Some(field)) = multipart.next_field().await {
+        let name = field.name().unwrap_or_default().to_string();
+        tracing::info!("Received field: {}", name);
+        if name == "file" {
+            match field.bytes().await {
+                Ok(bytes) => {
+                    tracing::info!("Received file bytes: {} bytes", bytes.len());
+                    file_data = Some(bytes);
+                }
+                Err(e) => {
+                    tracing::error!("Failed to read file bytes: {}", e);
+                }
+            }
+        } else if name == "composition_id" {
+            if let Ok(txt) = field.text().await {
+                tracing::info!("Received composition_id: {}", txt);
+                composition_id = txt.parse::<i32>().ok();
+            }
+        }
+    }
+
+    let compositions =
+        sqlx::query_as::<_, Composition>("SELECT * FROM compositions ORDER BY title")
+            .fetch_all(&pool)
+            .await
+            .unwrap_or_default();
+
+    let data = match file_data {
+        Some(d) => d,
+        None => {
+            return HtmlTemplate(UploadTemplate {
+                current_user: Some(auth.0.clone()),
+                error: Some("No file uploaded.".to_string()),
+                compositions,
+            })
+            .into_response();
+        }
+    };
+
+    let comp_id = match composition_id {
+        Some(id) => id,
+        None => {
+            return HtmlTemplate(UploadTemplate {
+                current_user: Some(auth.0.clone()),
+                error: Some("No composition selected.".to_string()),
+                compositions,
+            })
+            .into_response();
+        }
+    };
+
+    let is_audio = if let Some(kind) = infer::get(&data) {
+        kind.mime_type().starts_with("audio/")
+    } else {
+        false
+    };
+
+    if !is_audio {
+        return HtmlTemplate(UploadTemplate {
+            current_user: Some(auth.0),
+            error: Some("Uploaded file is not a valid audio file.".to_string()),
+            compositions,
+        })
+        .into_response();
+    }
+
+    let file_key = Uuid::new_v4().to_string();
+    let path = format!("uploads/recordings/{}", file_key);
+    if let Some(parent) = std::path::Path::new(&path).parent() {
+        let _ = tokio::fs::create_dir_all(parent).await;
+    }
+    if tokio::fs::write(&path, &data).await.is_err() {
+        return HtmlTemplate(UploadTemplate {
+            current_user: Some(auth.0),
+            error: Some("Failed to save file.".to_string()),
+            compositions,
+        })
+        .into_response();
+    }
+
+    let _ = sqlx::query(
+        "INSERT INTO recordings (artist_id, composition_id, content_hash, file_key) VALUES ($1, $2, $3, $4)"
+    )
+    .bind(auth.0.musician_id)
+    .bind(comp_id)
+    .bind("hash_placeholder")
+    .bind(file_key)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    Redirect::to("/").into_response()
 }
 
 async fn serve_audio(Path(key): Path<String>) -> impl IntoResponse {

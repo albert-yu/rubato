@@ -21,6 +21,8 @@ pub struct SettingsTemplate {
 #[template(path = "upload.html")]
 pub struct UploadTemplate {
     pub current_user: Option<User>,
+    pub error: Option<String>,
+    pub compositions: Vec<Composition>,
 }
 
 #[derive(Template)]
