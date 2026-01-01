@@ -35,7 +35,10 @@
                 </div>
                 
                 <div class="mt-4 pt-4 border-t border-gray-100">
-                    <p class="text-sm text-gray-400 font-mono">File: {{ recording.file_key }}</p>
+                    <audio controls preload="none" class="w-full">
+                        <source src="/audio/{{ recording.file_key }}" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
                 </div>
             </div>
             {% endfor %}
