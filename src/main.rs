@@ -278,6 +278,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/", get(index))
         .route("/settings", get(settings).post(settings_post))
         .route("/upload", get(upload))
+        .route("/audio/{key}", get(serve_audio))
         .route("/login", get(login_form).post(login_post))
         .route("/logout", post(logout))
         // Admin
@@ -450,6 +451,26 @@ async fn upload(auth: AuthUser) -> impl IntoResponse {
     HtmlTemplate(UploadTemplate {
         current_user: Some(auth.0),
     })
+}
+
+async fn serve_audio(Path(key): Path<String>) -> impl IntoResponse {
+    // TODO: handle s3
+    let path = format!("uploads/recordings/{}", key);
+    match tokio::fs::read(&path).await {
+        Ok(bytes) => {
+            if let Some(kind) = infer::get(&bytes) {
+                if kind.mime_type().starts_with("audio/") {
+                    return (
+                        [(axum::http::header::CONTENT_TYPE, kind.mime_type())],
+                        bytes,
+                    )
+                        .into_response();
+                }
+            }
+            (StatusCode::BAD_REQUEST, "File is not an audio file").into_response()
+        }
+        Err(_) => (StatusCode::NOT_FOUND, "File not found").into_response(),
+    }
 }
 
 // --- Auth Handlers ---
