@@ -286,6 +286,7 @@ async fn main() -> anyhow::Result<()> {
                 .layer(DefaultBodyLimit::max(1024 * 1024 * 50)),
         )
         .route("/audio/{key}", get(serve_audio))
+        .route("/player/{id}", get(get_player))
         .route("/login", get(login_form).post(login_post))
         .route("/logout", post(logout))
         // Admin
@@ -400,6 +401,7 @@ async fn index(auth: OptionalAuthUser, State(pool): State<Pool<Postgres>>) -> im
     let recordings = sqlx::query_as::<_, RecordingFeedItem>(
         r#"
         SELECT 
+            r.id,
             m.handle as artist_handle,
             c.title as composition_title,
             mv.index as movement_index,
@@ -571,7 +573,6 @@ async fn upload_post(
 }
 
 async fn serve_audio(Path(key): Path<String>) -> impl IntoResponse {
-    // TODO: handle s3
     let path = format!("uploads/recordings/{}", key);
     match tokio::fs::read(&path).await {
         Ok(bytes) => {
@@ -588,6 +589,32 @@ async fn serve_audio(Path(key): Path<String>) -> impl IntoResponse {
         }
         Err(_) => (StatusCode::NOT_FOUND, "File not found").into_response(),
     }
+}
+
+async fn get_player(Path(id): Path<i32>, State(pool): State<Pool<Postgres>>) -> impl IntoResponse {
+    let recording = sqlx::query_as::<_, RecordingFeedItem>(
+        r#"
+        SELECT 
+            r.id,
+            m.handle as artist_handle,
+            c.title as composition_title,
+            mv.index as movement_index,
+            mv.title as movement_title,
+            r.created_at,
+            r.file_key
+        FROM recordings r
+        JOIN musicians m ON r.artist_id = m.id
+        JOIN compositions c ON r.composition_id = c.id
+        LEFT JOIN movements mv ON r.movement_id = mv.id
+        WHERE r.id = $1
+        "#,
+    )
+    .bind(id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+
+    HtmlTemplate(PlayerTemplate { recording })
 }
 
 // --- Auth Handlers ---

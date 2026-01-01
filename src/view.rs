@@ -26,6 +26,12 @@ pub struct UploadTemplate {
 }
 
 #[derive(Template)]
+#[template(path = "player.html")]
+pub struct PlayerTemplate {
+    pub recording: RecordingFeedItem,
+}
+
+#[derive(Template)]
 #[template(path = "admin/index.html")]
 pub struct AdminIndexTemplate {
     pub current_user: Option<User>,

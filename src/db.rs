@@ -108,6 +108,7 @@ pub struct CreateRecording {
 
 #[derive(sqlx::FromRow, serde::Serialize, Clone, Debug)]
 pub struct RecordingFeedItem {
+    pub id: i32,
     pub artist_handle: String,
     pub composition_title: String,
     pub movement_index: Option<i32>,
