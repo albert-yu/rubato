@@ -150,6 +150,22 @@ where
     }
 }
 
+struct HtmxRequest {
+    is_hx_boosted: bool,
+}
+
+impl<S> FromRequestParts<S> for HtmxRequest
+where
+    S: Send + Sync,
+{
+    type Rejection = std::convert::Infallible;
+
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        let is_hx_boosted = parts.headers.get("hx-boosted").is_some_and(|v| v == "true");
+        Ok(HtmxRequest { is_hx_boosted })
+    }
+}
+
 // --- Auth Templates ---
 
 #[derive(Deserialize)]
@@ -396,8 +412,11 @@ async fn logout(jar: CookieJar) -> impl IntoResponse {
     )
 }
 
-// --- Todo Handlers ---
-async fn index(auth: OptionalAuthUser, State(pool): State<Pool<Postgres>>) -> impl IntoResponse {
+async fn index(
+    auth: OptionalAuthUser,
+    htmx: HtmxRequest,
+    State(pool): State<Pool<Postgres>>,
+) -> Response {
     let recordings = sqlx::query_as::<_, RecordingFeedItem>(
         r#"
         SELECT 
@@ -419,23 +438,46 @@ async fn index(auth: OptionalAuthUser, State(pool): State<Pool<Postgres>>) -> im
     .await
     .unwrap_or_default();
 
-    HtmlTemplate(IndexTemplate {
-        current_user: auth.0,
-        recordings,
-    })
+    if htmx.is_hx_boosted {
+        HtmlTemplate(IndexContentTemplate {
+            current_user: auth.0,
+            recordings,
+        })
+        .into_response()
+    } else {
+        HtmlTemplate(IndexTemplate {
+            current_user: auth.0,
+            recordings,
+        })
+        .into_response()
+    }
 }
 
-async fn settings(auth: AuthUser, State(pool): State<Pool<Postgres>>) -> impl IntoResponse {
+async fn settings(
+    auth: AuthUser,
+    htmx: HtmxRequest,
+    State(pool): State<Pool<Postgres>>,
+) -> Response {
+    let current_user = auth.0;
     let musician = sqlx::query_as::<_, Musician>("SELECT * FROM musicians WHERE id = $1")
-        .bind(auth.0.musician_id)
+        .bind(current_user.musician_id)
         .fetch_one(&pool)
         .await
         .unwrap();
 
-    HtmlTemplate(SettingsTemplate {
-        current_user: Some(auth.0),
-        musician,
-    })
+    if htmx.is_hx_boosted {
+        HtmlTemplate(SettingsContentTemplate {
+            current_user: Some(current_user),
+            musician,
+        })
+        .into_response()
+    } else {
+        HtmlTemplate(SettingsTemplate {
+            current_user: Some(current_user),
+            musician,
+        })
+        .into_response()
+    }
 }
 
 async fn settings_post(
@@ -456,7 +498,11 @@ async fn settings_post(
     Redirect::to("/settings")
 }
 
-async fn upload(auth: AuthUser, State(pool): State<Pool<Postgres>>) -> impl IntoResponse {
+async fn upload(
+    auth: AuthUser,
+    _htmx: HtmxRequest,
+    State(pool): State<Pool<Postgres>>,
+) -> impl IntoResponse {
     let compositions =
         sqlx::query_as::<_, Composition>("SELECT * FROM compositions ORDER BY title")
             .fetch_all(&pool)
@@ -472,6 +518,7 @@ async fn upload(auth: AuthUser, State(pool): State<Pool<Postgres>>) -> impl Into
 
 async fn upload_post(
     auth: AuthUser,
+    _htmx: HtmxRequest,
     State(pool): State<Pool<Postgres>>,
     mut multipart: Multipart,
 ) -> impl IntoResponse {
