@@ -4,6 +4,7 @@ Upload your recordings of classical pieces!
 
 ## Requirements
 
+* [`cargo`](https://doc.rust-lang.org/cargo/getting-started/installation.html)
 * [`bun`](https://bun.sh/) to manage Node packages
 * [Docker](https://www.docker.com/products/docker-desktop/) to run a
 local PostgreSQL database
