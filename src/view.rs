@@ -89,6 +89,13 @@ pub struct AdminRecordingsTemplate {
 }
 
 #[derive(Template)]
+#[template(path = "admin/import.html")]
+pub struct AdminImportTemplate {
+    pub job: Option<ImportJob>,
+    pub current_user: Option<User>,
+}
+
+#[derive(Template)]
 #[template(path = "admin/recording_edit.html")]
 pub struct AdminRecordingEditTemplate {
     pub recording: Recording,

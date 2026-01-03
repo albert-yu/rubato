@@ -1,0 +1,92 @@
+
+{% extends "layout.html" %}
+
+{% block title %}IMSLP Import{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold">IMSLP Import</h1>
+        <div class="space-x-4">
+            {% if let Some(j) = job %}
+                {% if j.status == ImportJobStatus::Processing %}
+                <form action="/admin/import/cancel" method="post" class="inline">
+                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out">
+                        Cancel Import
+                    </button>
+                </form>
+                {% else %}
+                <form action="/admin/import" method="post" class="inline">
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out">
+                        Start New Import
+                    </button>
+                </form>
+                {% endif %}
+            {% else %}
+            <form action="/admin/import" method="post" class="inline">
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out">
+                    Start Import
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if let Some(j) = job %}
+    <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-8" 
+         {% if j.status == ImportJobStatus::Processing %} hx-get="/admin/import" hx-trigger="every 2s" hx-select="#job-status" hx-target="#job-status" hx-swap="outerHTML" {% endif %}
+         id="job-status">
+        <div class="px-4 py-5 sm:px-6">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Last Job Status: <span class="uppercase font-bold">{{ j.status }}</span></h3>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500">Started at: {{ j.created_at }}</p>
+        </div>
+        <div class="border-t border-gray-200 px-4 py-5 sm:p-0">
+            <dl class="sm:divide-y sm:divide-gray-200">
+                <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Success Count</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 text-green-600 font-bold">{{ j.success_count }}</dd>
+                </div>
+                <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Skip Count</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 text-yellow-600 font-bold">{{ j.skip_count }}</dd>
+                </div>
+                <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Failure Count</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2 text-red-600 font-bold">{{ j.failure_count }}</dd>
+                </div>
+                <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">Last Update</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ j.updated_at }}</dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+    {% else %}
+    <div class="bg-blue-50 border-l-4 border-blue-400 p-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-blue-700">
+                    No import jobs have been run yet. Click "Start Import" to begin.
+                </p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="mt-8 bg-gray-50 rounded-lg p-6 border border-gray-200">
+        <h2 class="text-lg font-semibold mb-4">Import Details</h2>
+        <ul class="list-disc list-inside text-sm text-gray-600 space-y-2">
+            <li>Reads JSON files from <code class="bg-gray-200 px-1 rounded">imslp/people</code> and <code class="bg-gray-200 px-1 rounded">imslp/works</code>.</li>
+            <li>Slugifies names: "Bach, Johann Sebastian" → <code class="bg-gray-100 px-1 rounded text-gray-800">johann-sebastian-bach</code>.</li>
+            <li>Links compositions to musicians by handle.</li>
+            <li>Skips records if the handle or slug already exists in the database.</li>
+            <li>Can be cancelled at any time; progress will be saved.</li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

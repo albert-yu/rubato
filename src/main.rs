@@ -26,6 +26,8 @@ mod storage;
 mod view;
 use db::*;
 use std::sync::Arc;
+use tokio::sync::Mutex;
+use tokio_util::sync::CancellationToken;
 use view::*;
 
 struct AuthUser(User);
@@ -43,6 +45,7 @@ struct AppState {
     jwt_encoding_key: EncodingKey,
     jwt_decoding_key: DecodingKey,
     storage: Arc<dyn storage::StorageService>,
+    import_cancel_token: Arc<Mutex<Option<CancellationToken>>>,
 }
 
 impl FromRef<AppState> for Pool<Postgres> {
@@ -72,6 +75,12 @@ impl FromRef<AppState> for EncodingKey {
 impl FromRef<AppState> for DecodingKey {
     fn from_ref(state: &AppState) -> Self {
         state.jwt_decoding_key.clone()
+    }
+}
+
+impl FromRef<AppState> for Arc<Mutex<Option<CancellationToken>>> {
+    fn from_ref(state: &AppState) -> Self {
+        state.import_cancel_token.clone()
     }
 }
 
@@ -290,6 +299,7 @@ async fn main() -> anyhow::Result<()> {
         jwt_encoding_key,
         jwt_decoding_key,
         storage,
+        import_cancel_token: Arc::new(Mutex::new(None)),
     };
 
     let app = Router::new()
@@ -345,6 +355,8 @@ async fn main() -> anyhow::Result<()> {
                 .post(admin_recording_update)
                 .delete(admin_recording_delete),
         )
+        .route("/admin/import", get(admin_import).post(admin_import_start))
+        .route("/admin/import/cancel", post(admin_import_cancel))
         .nest_service("/assets", ServeDir::new("assets"))
         .nest_service("/uploads", ServeDir::new("uploads"))
         .layer(tower_http::trace::TraceLayer::new_for_http())
@@ -1133,4 +1145,323 @@ async fn admin_recording_delete(
         .await
         .unwrap();
     Redirect::to("/admin/recordings").into_response()
+}
+
+// --- Import Logic ---
+
+#[derive(Deserialize)]
+struct ImslpPeopleResponse {
+    #[serde(flatten)]
+    items: std::collections::HashMap<String, ImslpPerson>,
+    // metadata: serde_json::Value,
+}
+
+#[derive(Deserialize)]
+struct ImslpPerson {
+    id: String, // "Bach, Johann Sebastian"
+                // type: String,
+                // intvals: serde_json::Value,
+}
+
+#[derive(Deserialize)]
+struct ImslpWorksResponse {
+    #[serde(flatten)]
+    items: std::collections::HashMap<String, ImslpWork>,
+}
+
+#[derive(Deserialize)]
+struct ImslpWork {
+    // id: String,
+    intvals: ImslpWorkIntvals,
+}
+
+#[derive(Deserialize)]
+struct ImslpWorkIntvals {
+    composer: String,
+    worktitle: String,
+}
+
+fn slugify(s: &str) -> String {
+    s.to_lowercase()
+        .chars()
+        .map(|c| if c.is_alphanumeric() { c } else { '-' })
+        .collect::<String>()
+        .split('-')
+        .filter(|part| !part.is_empty())
+        .collect::<Vec<_>>()
+        .join("-")
+}
+
+fn format_name(name: &str) -> (String, String) {
+    let parts: Vec<&str> = name.split(',').map(|s| s.trim()).collect();
+    if parts.len() >= 2 {
+        // "Bach, Johann Sebastian" -> given: "Johann Sebastian", family: "Bach"
+        (parts[1..].join(" "), parts[0].to_string())
+    } else {
+        ("".to_string(), name.to_string())
+    }
+}
+
+fn name_to_full_handle(name: &str) -> String {
+    let (given, family) = format_name(name);
+    if given.is_empty() {
+        slugify(&family)
+    } else {
+        slugify(&format!("{} {}", given, family))
+    }
+}
+
+async fn admin_import(auth: AuthUser, State(pool): State<Pool<Postgres>>) -> impl IntoResponse {
+    if !auth.0.is_privileged() {
+        return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
+    }
+
+    let job = sqlx::query_as::<_, ImportJob>(
+        "SELECT * FROM import_jobs ORDER BY created_at DESC LIMIT 1",
+    )
+    .fetch_optional(&pool)
+    .await
+    .unwrap_or(None);
+
+    HtmlTemplate(AdminImportTemplate {
+        job,
+        current_user: Some(auth.0),
+    })
+    .into_response()
+}
+
+async fn admin_import_start(
+    auth: AuthUser,
+    State(pool): State<Pool<Postgres>>,
+    State(cancel_token_mutex): State<Arc<Mutex<Option<CancellationToken>>>>,
+) -> impl IntoResponse {
+    if !auth.0.is_privileged() {
+        return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
+    }
+
+    let mut token_lock = cancel_token_mutex.lock().await;
+    if token_lock.is_some() {
+        // Job already running
+        return Redirect::to("/admin/import").into_response();
+    }
+
+    let job = sqlx::query_as::<_, ImportJob>(
+        "INSERT INTO import_jobs (status) VALUES ('processing') RETURNING *",
+    )
+    .bind(ImportJobStatus::Processing)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+
+    let cancel_token = CancellationToken::new();
+    *token_lock = Some(cancel_token.clone());
+
+    let pool_clone = pool.clone();
+    let job_id = job.id;
+    let cancel_token_mutex_clone = cancel_token_mutex.clone();
+
+    tokio::spawn(async move {
+        let result = run_import(pool_clone, cancel_token, job_id).await;
+
+        let mut lock = cancel_token_mutex_clone.lock().await;
+        *lock = None;
+
+        if let Err(e) = result {
+            tracing::error!("Import job {} failed: {:?}", job_id, e);
+        }
+    });
+
+    Redirect::to("/admin/import").into_response()
+}
+
+async fn admin_import_cancel(
+    auth: AuthUser,
+    State(cancel_token_mutex): State<Arc<Mutex<Option<CancellationToken>>>>,
+) -> impl IntoResponse {
+    if !auth.0.is_privileged() {
+        return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
+    }
+
+    let mut token_lock = cancel_token_mutex.lock().await;
+    if let Some(token) = token_lock.take() {
+        token.cancel();
+    }
+
+    Redirect::to("/admin/import").into_response()
+}
+
+async fn run_import(
+    pool: Pool<Postgres>,
+    cancel_token: CancellationToken,
+    job_id: i32,
+) -> anyhow::Result<()> {
+    let mut success_count = 0;
+    let mut skip_count = 0;
+    let mut failure_count = 0;
+
+    macro_rules! update_job {
+        ($status:expr) => {
+            let _ = sqlx::query("UPDATE import_jobs SET status = $1, success_count = $2, skip_count = $3, failure_count = $4, updated_at = NOW() WHERE id = $5")
+                .bind($status)
+                .bind(success_count)
+                .bind(skip_count)
+                .bind(failure_count)
+                .bind(job_id)
+                .execute(&pool)
+                .await;
+        };
+    }
+
+    // 1. Process People
+    let people_dir = "imslp/people";
+    if let Ok(mut entries) = tokio::fs::read_dir(people_dir).await {
+        while let Ok(Some(entry)) = entries.next_entry().await {
+            if cancel_token.is_cancelled() {
+                update_job!(ImportJobStatus::Cancelled);
+                return Ok(());
+            }
+
+            let path = entry.path();
+            if path.extension().is_some_and(|ext| ext == "json") {
+                let content = tokio::fs::read_to_string(&path).await?;
+                let data: std::collections::HashMap<String, serde_json::Value> =
+                    serde_json::from_str(&content)?;
+
+                for (key, value) in data {
+                    if key == "metadata" || !value.is_object() {
+                        continue;
+                    }
+                    if cancel_token.is_cancelled() {
+                        update_job!(ImportJobStatus::Cancelled);
+                        return Ok(());
+                    }
+
+                    if let Some(name) = value.get("id").and_then(|v| v.as_str()) {
+                        let handle = name_to_full_handle(name);
+                        let (given_name, family_name) = format_name(name);
+
+                        let exists = sqlx::query_scalar::<_, bool>(
+                            "SELECT EXISTS(SELECT 1 FROM musicians WHERE handle = $1)",
+                        )
+                        .bind(&handle)
+                        .fetch_one(&pool)
+                        .await?;
+
+                        if exists {
+                            skip_count += 1;
+                        } else {
+                            let res = sqlx::query("INSERT INTO musicians (handle, given_name, family_name) VALUES ($1, $2, $3)")
+                                .bind(handle)
+                                .bind(given_name)
+                                .bind(family_name)
+                                .execute(&pool)
+                                .await;
+
+                            match res {
+                                Ok(_) => success_count += 1,
+                                Err(_) => failure_count += 1,
+                            }
+                        }
+                    }
+                    // Update every 10 items to show progress
+                    if (success_count + skip_count + failure_count) % 10 == 0 {
+                        update_job!(ImportJobStatus::Processing);
+                    }
+                }
+            }
+        }
+    }
+
+    // 2. Process Works
+    let works_dir = "imslp/works";
+    if let Ok(mut entries) = tokio::fs::read_dir(works_dir).await {
+        while let Ok(Some(entry)) = entries.next_entry().await {
+            if cancel_token.is_cancelled() {
+                update_job!(ImportJobStatus::Cancelled);
+                return Ok(());
+            }
+
+            let path = entry.path();
+            if path.extension().is_some_and(|ext| ext == "json") {
+                let content = tokio::fs::read_to_string(&path).await?;
+                let data: std::collections::HashMap<String, serde_json::Value> =
+                    serde_json::from_str(&content)?;
+
+                for (key, value) in data {
+                    if key == "metadata" || !value.is_object() {
+                        continue;
+                    }
+                    if cancel_token.is_cancelled() {
+                        update_job!(ImportJobStatus::Cancelled);
+                        return Ok(());
+                    }
+
+                    let intvals = value.get("intvals");
+                    let composer_name = intvals
+                        .and_then(|i| i.get("composer"))
+                        .and_then(|v| v.as_str());
+                    let work_title = intvals
+                        .and_then(|i| i.get("worktitle"))
+                        .and_then(|v| v.as_str());
+
+                    if let (Some(c_name), Some(w_title)) = (composer_name, work_title) {
+                        let composer_handle = name_to_full_handle(c_name);
+                        let (given_c, family_c) = format_name(c_name);
+                        let full_title_for_slug = format!("{} {} {}", given_c, family_c, w_title);
+                        let slug = slugify(&full_title_for_slug);
+
+                        let exists = sqlx::query_scalar::<_, bool>(
+                            "SELECT EXISTS(SELECT 1 FROM compositions WHERE slug = $1)",
+                        )
+                        .bind(&slug)
+                        .fetch_one(&pool)
+                        .await?;
+
+                        if exists {
+                            skip_count += 1;
+                        } else {
+                            // Find or create musician (might not have been in people list but is in works list)
+                            let composer_id = sqlx::query_scalar::<_, i32>(
+                                "SELECT id FROM musicians WHERE handle = $1",
+                            )
+                            .bind(&composer_handle)
+                            .fetch_optional(&pool)
+                            .await?;
+
+                            let composer_id = match composer_id {
+                                Some(id) => id,
+                                None => {
+                                    sqlx::query_scalar::<_, i32>("INSERT INTO musicians (handle, given_name, family_name) VALUES ($1, $2, $3) RETURNING id")
+                                        .bind(composer_handle)
+                                        .bind(given_c)
+                                        .bind(family_c)
+                                        .fetch_one(&pool)
+                                        .await?
+                                }
+                            };
+
+                            let res = sqlx::query("INSERT INTO compositions (slug, title, composer_id) VALUES ($1, $2, $3)")
+                                .bind(slug)
+                                .bind(w_title)
+                                .bind(composer_id)
+                                .execute(&pool)
+                                .await;
+
+                            match res {
+                                Ok(_) => success_count += 1,
+                                Err(_) => failure_count += 1,
+                            }
+                        }
+                    }
+
+                    if (success_count + skip_count + failure_count) % 10 == 0 {
+                        update_job!(ImportJobStatus::Processing);
+                    }
+                }
+            }
+        }
+    }
+
+    update_job!(ImportJobStatus::Completed);
+    Ok(())
 }

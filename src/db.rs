@@ -8,6 +8,39 @@ pub enum UserRole {
     User,
 }
 
+#[derive(sqlx::Type, serde::Serialize, Clone, Debug, PartialEq)]
+#[sqlx(type_name = "import_job_status", rename_all = "lowercase")]
+pub enum ImportJobStatus {
+    Pending,
+    Processing,
+    Completed,
+    Failed,
+    Cancelled,
+}
+
+impl std::fmt::Display for ImportJobStatus {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ImportJobStatus::Pending => write!(f, "Pending"),
+            ImportJobStatus::Processing => write!(f, "Processing"),
+            ImportJobStatus::Completed => write!(f, "Completed"),
+            ImportJobStatus::Failed => write!(f, "Failed"),
+            ImportJobStatus::Cancelled => write!(f, "Cancelled"),
+        }
+    }
+}
+
+#[derive(sqlx::FromRow, serde::Serialize, Clone, Debug)]
+pub struct ImportJob {
+    pub id: i32,
+    pub status: ImportJobStatus,
+    pub success_count: i32,
+    pub skip_count: i32,
+    pub failure_count: i32,
+    pub created_at: chrono::NaiveDateTime,
+    pub updated_at: chrono::NaiveDateTime,
+}
+
 impl std::fmt::Display for UserRole {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {

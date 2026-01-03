@@ -25,3 +25,5 @@ aws-sdk-s3 = "1.65.0"
 async-trait = "0.1.77"
 infer = "0.15.0"
 uuid = { version = "1.11.0", features = ["v4", "fast-rng", "macro-diagnostics"] }
+tokio-util = "0.7.17"
+serde_json = "1.0.148"
