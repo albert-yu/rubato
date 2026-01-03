@@ -101,6 +101,7 @@ pub struct AdminRecordingEditTemplate {
 #[derive(Template)]
 #[template(path = "login.html")]
 pub struct LoginTemplate {
+    pub current_user: Option<User>,
     pub error: Option<String>,
 }
 

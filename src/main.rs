@@ -359,11 +359,15 @@ async fn main() -> anyhow::Result<()> {
 }
 
 // --- Auth Handlers ---
-async fn login_form() -> impl IntoResponse {
-    HtmlTemplate(LoginTemplate { error: None })
+async fn login_form(auth: OptionalAuthUser) -> impl IntoResponse {
+    HtmlTemplate(LoginTemplate {
+        current_user: auth.0,
+        error: None,
+    })
 }
 
 async fn login_post(
+    auth: OptionalAuthUser,
     State(pool): State<Pool<Postgres>>,
     State(encoding_key): State<EncodingKey>,
     jar: CookieJar,
@@ -399,6 +403,7 @@ async fn login_post(
     (
         jar,
         HtmlTemplate(LoginTemplate {
+            current_user: auth.0,
             error: Some("Invalid email or password".to_string()),
         }),
     )
