@@ -6,8 +6,8 @@
       "name": "rubato",
       "devDependencies": {
         "@types/bun": "1.3.5",
-        "baseline-browser-mapping": "2.9.11",
-        "caniuse-lite": "1.0.30001762",
+        "baseline-browser-mapping": "^2.9.11",
+        "caniuse-lite": "^1.0.30001762",
         "tailwindcss": "3.4.1",
       },
     },
