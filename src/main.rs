@@ -1302,10 +1302,17 @@ async fn admin_import(auth: AuthUser, State(pool): State<Pool<Postgres>>) -> imp
     .into_response()
 }
 
+#[derive(Deserialize)]
+struct StartImportParams {
+    #[serde(default)]
+    replace_existing: bool,
+}
+
 async fn admin_import_start(
     auth: AuthUser,
     State(pool): State<Pool<Postgres>>,
     State(cancel_token_mutex): State<Arc<Mutex<Option<CancellationToken>>>>,
+    Form(params): Form<StartImportParams>,
 ) -> impl IntoResponse {
     if !auth.0.is_privileged() {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
@@ -1331,9 +1338,10 @@ async fn admin_import_start(
     let pool_clone = pool.clone();
     let job_id = job.id;
     let cancel_token_mutex_clone = cancel_token_mutex.clone();
+    let replace_existing = params.replace_existing;
 
     tokio::spawn(async move {
-        let result = run_import(pool_clone, cancel_token, job_id).await;
+        let result = run_import(pool_clone, cancel_token, job_id, replace_existing).await;
 
         let mut lock = cancel_token_mutex_clone.lock().await;
         *lock = None;
@@ -1366,6 +1374,7 @@ async fn run_import(
     pool: Pool<Postgres>,
     cancel_token: CancellationToken,
     job_id: i32,
+    replace_existing: bool,
 ) -> anyhow::Result<()> {
     let mut success_count = 0;
     let mut skip_count = 0;
@@ -1419,10 +1428,21 @@ async fn run_import(
                         .fetch_one(&pool)
                         .await?;
 
-                        if exists {
+                        if exists && !replace_existing {
                             skip_count += 1;
                         } else {
-                            let res = sqlx::query("INSERT INTO musicians (handle, given_name, family_name) VALUES ($1, $2, $3)")
+                            // If exists && replace_existing, we update (UPSERT or separate UPDATE)
+                            // Or just DELETE and INSERT? ID preservation might be important for foreign keys.
+                            // Better to use ON CONFLICT DO UPDATE.
+                            let res = sqlx::query(
+                                r#"
+                                INSERT INTO musicians (handle, given_name, family_name) 
+                                VALUES ($1, $2, $3)
+                                ON CONFLICT (handle) DO UPDATE SET
+                                    given_name = EXCLUDED.given_name,
+                                    family_name = EXCLUDED.family_name
+                                "#
+                            )
                                 .bind(handle)
                                 .bind(given_name)
                                 .bind(family_name)
@@ -1489,7 +1509,7 @@ async fn run_import(
                         .fetch_one(&pool)
                         .await?;
 
-                        if exists {
+                        if exists && !replace_existing {
                             skip_count += 1;
                         } else {
                             // Find or create musician (might not have been in people list but is in works list)
@@ -1512,7 +1532,15 @@ async fn run_import(
                                 }
                             };
 
-                            let res = sqlx::query("INSERT INTO compositions (slug, title, composer_id) VALUES ($1, $2, $3)")
+                            let res = sqlx::query(
+                                r#"
+                                INSERT INTO compositions (slug, title, composer_id) 
+                                VALUES ($1, $2, $3)
+                                ON CONFLICT (slug) DO UPDATE SET
+                                    title = EXCLUDED.title,
+                                    composer_id = EXCLUDED.composer_id
+                                "#
+                            )
                                 .bind(slug)
                                 .bind(w_title)
                                 .bind(composer_id)
