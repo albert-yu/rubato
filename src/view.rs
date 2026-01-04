@@ -56,6 +56,8 @@ pub struct AdminIndexTemplate {
 pub struct AdminMusiciansTemplate {
     pub musicians: Vec<Musician>,
     pub current_user: Option<User>,
+    pub page: i64,
+    pub total_pages: i64,
 }
 
 #[derive(Template)]
@@ -70,6 +72,8 @@ pub struct AdminMusicianEditTemplate {
 pub struct AdminCompositionsTemplate {
     pub compositions: Vec<Composition>,
     pub current_user: Option<User>,
+    pub page: i64,
+    pub total_pages: i64,
 }
 
 #[derive(Template)]
@@ -86,6 +90,8 @@ pub struct AdminCompositionEditTemplate {
 pub struct AdminRecordingsTemplate {
     pub recordings: Vec<Recording>,
     pub current_user: Option<User>,
+    pub page: i64,
+    pub total_pages: i64,
 }
 
 #[derive(Template)]

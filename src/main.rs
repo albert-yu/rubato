@@ -177,10 +177,17 @@ where
 
 // --- Auth Templates ---
 
+use axum::extract::Query;
+
 #[derive(Deserialize)]
 struct LoginPayload {
     email: String,
     password: String,
+}
+
+#[derive(Deserialize)]
+struct PaginationParams {
+    page: Option<i64>,
 }
 
 // --- Common ---
@@ -695,17 +702,39 @@ async fn admin_index(auth: AuthUser) -> impl IntoResponse {
 }
 
 // Musicians
-async fn admin_musicians(auth: AuthUser, State(pool): State<Pool<Postgres>>) -> impl IntoResponse {
+async fn admin_musicians(
+    auth: AuthUser,
+    State(pool): State<Pool<Postgres>>,
+    Query(params): Query<PaginationParams>,
+) -> impl IntoResponse {
     if !matches!(auth.0.role, UserRole::Root | UserRole::Admin) {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
-    let musicians = sqlx::query_as::<_, Musician>("SELECT * FROM musicians ORDER BY id")
-        .fetch_all(&pool)
+
+    let page = params.page.unwrap_or(1).max(1);
+    let limit = 25;
+    let offset = (page - 1) * limit;
+
+    let total_count = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM musicians")
+        .fetch_one(&pool)
         .await
-        .unwrap_or_default();
+        .unwrap_or(0);
+
+    let total_pages = (total_count as f64 / limit as f64).ceil() as i64;
+
+    let musicians =
+        sqlx::query_as::<_, Musician>("SELECT * FROM musicians ORDER BY id LIMIT $1 OFFSET $2")
+            .bind(limit)
+            .bind(offset)
+            .fetch_all(&pool)
+            .await
+            .unwrap_or_default();
+
     HtmlTemplate(AdminMusiciansTemplate {
         musicians,
         current_user: Some(auth.0),
+        page,
+        total_pages,
     })
     .into_response()
 }
@@ -802,17 +831,37 @@ async fn admin_musician_delete(
 async fn admin_compositions(
     auth: AuthUser,
     State(pool): State<Pool<Postgres>>,
+    Query(params): Query<PaginationParams>,
 ) -> impl IntoResponse {
     if !matches!(auth.0.role, UserRole::Root | UserRole::Admin) {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
-    let compositions = sqlx::query_as::<_, Composition>("SELECT * FROM compositions ORDER BY id")
-        .fetch_all(&pool)
+
+    let page = params.page.unwrap_or(1).max(1);
+    let limit = 25;
+    let offset = (page - 1) * limit;
+
+    let total_count = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM compositions")
+        .fetch_one(&pool)
         .await
-        .unwrap_or_default();
+        .unwrap_or(0);
+
+    let total_pages = (total_count as f64 / limit as f64).ceil() as i64;
+
+    let compositions = sqlx::query_as::<_, Composition>(
+        "SELECT * FROM compositions ORDER BY id LIMIT $1 OFFSET $2",
+    )
+    .bind(limit)
+    .bind(offset)
+    .fetch_all(&pool)
+    .await
+    .unwrap_or_default();
+
     HtmlTemplate(AdminCompositionsTemplate {
         compositions,
         current_user: Some(auth.0),
+        page,
+        total_pages,
     })
     .into_response()
 }
@@ -1006,17 +1055,39 @@ async fn admin_movement_delete(
 }
 
 // Recordings
-async fn admin_recordings(auth: AuthUser, State(pool): State<Pool<Postgres>>) -> impl IntoResponse {
+async fn admin_recordings(
+    auth: AuthUser,
+    State(pool): State<Pool<Postgres>>,
+    Query(params): Query<PaginationParams>,
+) -> impl IntoResponse {
     if !matches!(auth.0.role, UserRole::Root | UserRole::Admin) {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
-    let recordings = sqlx::query_as::<_, Recording>("SELECT * FROM recordings ORDER BY id")
-        .fetch_all(&pool)
+
+    let page = params.page.unwrap_or(1).max(1);
+    let limit = 25;
+    let offset = (page - 1) * limit;
+
+    let total_count = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM recordings")
+        .fetch_one(&pool)
         .await
-        .unwrap_or_default();
+        .unwrap_or(0);
+
+    let total_pages = (total_count as f64 / limit as f64).ceil() as i64;
+
+    let recordings =
+        sqlx::query_as::<_, Recording>("SELECT * FROM recordings ORDER BY id LIMIT $1 OFFSET $2")
+            .bind(limit)
+            .bind(offset)
+            .fetch_all(&pool)
+            .await
+            .unwrap_or_default();
+
     HtmlTemplate(AdminRecordingsTemplate {
         recordings,
         current_user: Some(auth.0),
+        page,
+        total_pages,
     })
     .into_response()
 }
