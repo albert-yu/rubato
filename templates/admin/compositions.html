@@ -38,31 +38,6 @@
             {% endfor %}
         </tbody>
     </table>
-    {% if total_pages > 1 %}
-    <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
-        <div class="flex-1 flex items-center justify-between">
-            <div>
-                <p class="text-sm text-gray-700">
-                    Page <span class="font-medium">{{ page }}</span> of <span class="font-medium">{{ total_pages }}</span>
-                </p>
-            </div>
-            <div>
-                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                    {% if page > 1 %}
-                    <a href="?page={{ page - 1 }}" class="relative inline-flex items-center px-4 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                        Previous
-                    </a>
-                    {% endif %}
-                    
-                    {% if page < total_pages %}
-                    <a href="?page={{ page + 1 }}" class="relative inline-flex items-center px-4 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
-                        Next
-                    </a>
-                    {% endif %}
-                </nav>
-            </div>
-        </div>
-    </div>
-    {% endif %}
+    {% include "pagination.html" %}
 </div>
 {% endblock %}
