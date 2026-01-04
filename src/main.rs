@@ -1264,6 +1264,7 @@ fn slugify(s: &str) -> String {
 }
 
 fn format_name(name: &str) -> (String, String) {
+    let name = name.strip_prefix("Category:").unwrap_or(name);
     let parts: Vec<&str> = name.split(',').map(|s| s.trim()).collect();
     if parts.len() >= 2 {
         // "Bach, Johann Sebastian" -> given: "Johann Sebastian", family: "Bach"
