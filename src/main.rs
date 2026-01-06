@@ -322,6 +322,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/player/{id}", get(get_player))
         .route("/login", get(login_form).post(login_post))
         .route("/logout", post(logout))
+        .route("/search/compositions", get(search_compositions))
         // Admin
         .route("/admin", get(admin_index))
         .route(
@@ -686,6 +687,39 @@ async fn get_player(Path(id): Path<i32>, State(pool): State<Pool<Postgres>>) -> 
     .unwrap();
 
     HtmlTemplate(PlayerTemplate { recording })
+}
+
+#[derive(Deserialize)]
+struct SearchParams {
+    q: String,
+}
+
+async fn search_compositions(
+    State(pool): State<Pool<Postgres>>,
+    Query(params): Query<SearchParams>,
+) -> impl IntoResponse {
+    if params.q.trim().is_empty() {
+        return axum::response::Html("".to_string()).into_response();
+    }
+
+    let search_pattern = format!("%{}%", params.q);
+    let compositions = sqlx::query_as::<_, Composition>(
+        "SELECT * FROM compositions WHERE title ILIKE $1 ORDER BY title LIMIT 20",
+    )
+    .bind(search_pattern)
+    .fetch_all(&pool)
+    .await
+    .unwrap_or_default();
+
+    let mut html = String::new();
+    for comp in compositions {
+        html.push_str(&format!(
+            r#"<option value="{}">{}</option>"#,
+            comp.id, comp.title
+        ));
+    }
+
+    axum::response::Html(html).into_response()
 }
 
 // --- Auth Handlers ---
@@ -1441,13 +1475,13 @@ async fn run_import(
                                 ON CONFLICT (handle) DO UPDATE SET
                                     given_name = EXCLUDED.given_name,
                                     family_name = EXCLUDED.family_name
-                                "#
+                                "#,
                             )
-                                .bind(handle)
-                                .bind(given_name)
-                                .bind(family_name)
-                                .execute(&pool)
-                                .await;
+                            .bind(handle)
+                            .bind(given_name)
+                            .bind(family_name)
+                            .execute(&pool)
+                            .await;
 
                             match res {
                                 Ok(_) => success_count += 1,
@@ -1539,13 +1573,13 @@ async fn run_import(
                                 ON CONFLICT (slug) DO UPDATE SET
                                     title = EXCLUDED.title,
                                     composer_id = EXCLUDED.composer_id
-                                "#
+                                "#,
                             )
-                                .bind(slug)
-                                .bind(w_title)
-                                .bind(composer_id)
-                                .execute(&pool)
-                                .await;
+                            .bind(slug)
+                            .bind(w_title)
+                            .bind(composer_id)
+                            .execute(&pool)
+                            .await;
 
                             match res {
                                 Ok(_) => success_count += 1,

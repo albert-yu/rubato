@@ -18,12 +18,19 @@
 
         <form action="/upload" method="post" enctype="multipart/form-data" class="space-y-6">
             <div>
-                <label for="composition_id" class="block text-sm font-medium text-gray-700">Composition</label>
-                <select name="composition_id" id="composition_id" required class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md border">
-                    <option value="" disabled selected>Select a composition</option>
-                    {% for comp in compositions %}
-                        <option value="{{ comp.id }}">{{ comp.title }}</option>
-                    {% endfor %}
+                <label for="composition_search" class="block text-sm font-medium text-gray-700">Search Composition</label>
+                <input type="text" 
+                       id="composition_search" 
+                       name="q"
+                       class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" 
+                       placeholder="Type to search..."
+                       hx-get="/search/compositions" 
+                       hx-trigger="keyup changed delay:500ms" 
+                       hx-target="#composition_id">
+                
+                <label for="composition_id" class="block text-sm font-medium text-gray-700 mt-4">Select Result</label>
+                <select name="composition_id" id="composition_id" size="5" required class="mt-1 block w-full border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <option value="" disabled>Search to find a composition...</option>
                 </select>
             </div>
 
