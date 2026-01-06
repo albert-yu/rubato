@@ -690,12 +690,28 @@ async fn get_player(Path(id): Path<i32>, State(pool): State<Pool<Postgres>>) -> 
 }
 
 #[derive(Deserialize)]
+
 struct SearchParams {
     q: String,
 }
 
+#[derive(sqlx::FromRow)]
+
+struct SearchResult {
+    composition_id: i32,
+
+    composition_title: String,
+
+    movement_id: Option<i32>,
+
+    movement_title: Option<String>,
+
+    composer_name: String,
+}
+
 async fn search_compositions(
     State(pool): State<Pool<Postgres>>,
+
     Query(params): Query<SearchParams>,
 ) -> impl IntoResponse {
     if params.q.trim().is_empty() {
@@ -703,8 +719,31 @@ async fn search_compositions(
     }
 
     let search_pattern = format!("%{}%", params.q);
-    let compositions = sqlx::query_as::<_, Composition>(
-        "SELECT * FROM compositions WHERE title ILIKE $1 ORDER BY title LIMIT 20",
+
+    let results = sqlx::query_as::<_, SearchResult>(
+        r#"
+        SELECT 
+            c.id as composition_id,
+            c.title as composition_title,
+            m.id as movement_id,
+            m.title as movement_title,
+            mus.given_name || ' ' || mus.family_name as composer_name
+        FROM compositions c
+        JOIN musicians mus ON c.composer_id = mus.id
+        LEFT JOIN movements m ON c.id = m.composition_id
+        WHERE 
+          c.title ILIKE $1 
+         OR
+          m.title ILIKE $1
+         OR
+          mus.handle ILIKE  $1
+         OR
+          mus.given_name ILIKE  $1
+         OR
+          mus.family_name ILIKE $1
+        ORDER BY c.title, m.index
+        LIMIT 50
+        "#,
     )
     .bind(search_pattern)
     .fetch_all(&pool)
@@ -712,10 +751,34 @@ async fn search_compositions(
     .unwrap_or_default();
 
     let mut html = String::new();
-    for comp in compositions {
+
+    // We might get duplicates for composition if multiple movements match or if just the composition matches.
+
+    // Since we can't select a movement ID in the current upload form (it only takes composition_id),
+
+    // we should probably group by composition to avoid duplicates in the dropdown,
+
+    // OR we just list them and let the user pick.
+
+    // BUT, if the user picks a "Movement match", they are still just selecting the Composition ID.
+
+    // This might be confusing if they think they are selecting the movement.
+
+    // However, following the prompt "display the composer name and movement if there is a match", I will assume visual feedback is the priority.
+
+    for res in results {
+        let display_text = if let Some(mov) = res.movement_title {
+            format!(
+                "{} - {} ({})",
+                res.composer_name, res.composition_title, mov
+            )
+        } else {
+            format!("{} - {}", res.composer_name, res.composition_title)
+        };
+
         html.push_str(&format!(
             r#"<option value="{}">{}</option>"#,
-            comp.id, comp.title
+            res.composition_id, display_text
         ));
     }
 
