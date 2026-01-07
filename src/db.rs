@@ -73,6 +73,8 @@ pub struct Musician {
     pub handle: String,
     pub given_name: String,
     pub family_name: String,
+    pub birth_date: Option<chrono::NaiveDate>,
+    pub death_date: Option<chrono::NaiveDate>,
 }
 
 #[derive(serde::Deserialize)]
@@ -80,6 +82,12 @@ pub struct CreateMusician {
     pub handle: String,
     pub given_name: String,
     pub family_name: String,
+    #[serde(default)]
+    #[serde(deserialize_with = "empty_string_as_none")]
+    pub birth_date: Option<chrono::NaiveDate>,
+    #[serde(default)]
+    #[serde(deserialize_with = "empty_string_as_none")]
+    pub death_date: Option<chrono::NaiveDate>,
 }
 
 #[derive(sqlx::FromRow, serde::Serialize, Clone, Default)]

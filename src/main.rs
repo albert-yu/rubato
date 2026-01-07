@@ -513,11 +513,13 @@ async fn settings_post(
     Form(form): Form<CreateMusician>,
 ) -> impl IntoResponse {
     let _ = sqlx::query(
-        "UPDATE musicians SET handle = $1, given_name = $2, family_name = $3 WHERE id = $4",
+        "UPDATE musicians SET handle = $1, given_name = $2, family_name = $3, birth_date = $4, death_date = $5 WHERE id = $6",
     )
     .bind(form.handle)
     .bind(form.given_name)
     .bind(form.family_name)
+    .bind(form.birth_date)
+    .bind(form.death_date)
     .bind(auth.0.musician_id)
     .execute(&pool)
     .await
@@ -899,10 +901,12 @@ async fn admin_musician_create(
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
     let _ =
-        sqlx::query("INSERT INTO musicians (handle, given_name, family_name) VALUES ($1, $2, $3)")
+        sqlx::query("INSERT INTO musicians (handle, given_name, family_name, birth_date, death_date) VALUES ($1, $2, $3, $4, $5)")
             .bind(form.handle)
             .bind(form.given_name)
             .bind(form.family_name)
+            .bind(form.birth_date)
+            .bind(form.death_date)
             .execute(&pool)
             .await
             .unwrap();
@@ -939,11 +943,13 @@ async fn admin_musician_update(
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
     let _ = sqlx::query(
-        "UPDATE musicians SET handle = $1, given_name = $2, family_name = $3 WHERE id = $4",
+        "UPDATE musicians SET handle = $1, given_name = $2, family_name = $3, birth_date = $4, death_date = $5 WHERE id = $6",
     )
     .bind(form.handle)
     .bind(form.given_name)
     .bind(form.family_name)
+    .bind(form.birth_date)
+    .bind(form.death_date)
     .bind(id)
     .execute(&pool)
     .await
