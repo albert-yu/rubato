@@ -616,7 +616,6 @@ pub struct OpenOpusComposer {
 #[derive(Deserialize)]
 pub struct OpenOpusWork {
     pub title: String,
-    pub subtitle: String,
     pub movements: Option<Vec<String>>,
 }
 

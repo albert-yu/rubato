@@ -13,7 +13,6 @@ pub struct IndexTemplate {
 #[derive(Template)]
 #[template(path = "index_content.html")]
 pub struct IndexContentTemplate {
-    pub current_user: Option<User>,
     pub recordings: Vec<RecordingFeedItem>,
 }
 
