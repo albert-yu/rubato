@@ -29,7 +29,8 @@ pub async fn index(
             mv.index as movement_index,
             mv.title as movement_title,
             r.created_at,
-            r.file_key
+            r.file_key,
+            r.mime_type
         FROM recordings r
         JOIN musicians m ON r.artist_id = m.id
         JOIN compositions c ON r.composition_id = c.id
@@ -251,7 +252,8 @@ pub async fn get_player(
             mv.index as movement_index,
             mv.title as movement_title,
             r.created_at,
-            r.file_key
+            r.file_key,
+            r.mime_type
         FROM recordings r
         JOIN musicians m ON r.artist_id = m.id
         JOIN compositions c ON r.composition_id = c.id

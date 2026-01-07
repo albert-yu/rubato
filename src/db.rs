@@ -158,6 +158,7 @@ pub struct RecordingFeedItem {
     pub movement_title: Option<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub file_key: String,
+    pub mime_type: String,
 }
 
 // Helpers for deserialization
