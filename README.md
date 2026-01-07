@@ -34,3 +34,6 @@ Download the full JSON dump from
 [OpenOpus](https://github.com/openopus-org/openopus_api/blob/master/ALLDATA.md).
 
 Then, go to /admin/import to import the data via the UI.
+
+NOTE: I have added movements to some pieces ad-hoc. This file is available
+elsewhere.
