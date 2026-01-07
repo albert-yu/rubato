@@ -613,6 +613,7 @@ pub struct OpenOpusComposer {
 pub struct OpenOpusWork {
     pub title: String,
     pub subtitle: String,
+    pub movements: Option<Vec<String>>,
 }
 
 fn slugify(s: &str) -> String {
@@ -892,23 +893,48 @@ async fn run_import(
             if exists && !replace_existing {
                 skip_count += 1;
             } else {
-                let res = sqlx::query(
+                let res = sqlx::query_scalar::<_, i32>(
                     r#"
                     INSERT INTO compositions (slug, title, composer_id) 
                     VALUES ($1, $2, $3)
                     ON CONFLICT (slug) DO UPDATE SET
                         title = EXCLUDED.title,
                         composer_id = EXCLUDED.composer_id
+                    RETURNING id
                     "#,
                 )
                 .bind(&slug)
                 .bind(&title)
                 .bind(musician_id)
-                .execute(&pool)
+                .fetch_one(&pool)
                 .await;
 
                 match res {
-                    Ok(_) => success_count += 1,
+                    Ok(composition_id) => {
+                        success_count += 1;
+                        if let Some(movements) = work.movements {
+                            let _ = sqlx::query("DELETE FROM movements WHERE composition_id = $1")
+                                .bind(composition_id)
+                                .execute(&pool)
+                                .await;
+
+                            for (i, mv_title) in movements.iter().enumerate() {
+                                let mv_slug = slugify(&format!(
+                                    "{} {} {} {}",
+                                    composer.complete_name, title, i, mv_title
+                                ));
+                                let _ = sqlx::query(
+                                    "INSERT INTO movements (slug, title, index, composition_id) VALUES ($1, $2, $3, $4)",
+                                )
+                                .bind(mv_slug)
+                                .bind(mv_title)
+                                .bind(i as i32)
+                                .bind(composition_id)
+                                .execute(&pool)
+                                .await;
+                            }
+                        }
+                    }
                     Err(_) => failure_count += 1,
                 }
             }
