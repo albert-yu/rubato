@@ -1473,11 +1473,6 @@ video {
   background-color: rgb(185 28 28 / var(--tw-bg-opacity));
 }
 
-.hover\:text-gray-500:hover {
-  --tw-text-opacity: 1;
-  color: rgb(107 114 128 / var(--tw-text-opacity));
-}
-
 .hover\:text-gray-600:hover {
   --tw-text-opacity: 1;
   color: rgb(75 85 99 / var(--tw-text-opacity));
@@ -1541,6 +1536,14 @@ video {
 
 .focus\:ring-offset-2:focus {
   --tw-ring-offset-width: 2px;
+}
+
+.peer:-moz-placeholder-shown ~ .peer-placeholder-shown\:hidden {
+  display: none;
+}
+
+.peer:placeholder-shown ~ .peer-placeholder-shown\:hidden {
+  display: none;
 }
 
 @media (min-width: 640px) {
