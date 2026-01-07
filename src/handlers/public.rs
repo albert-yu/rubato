@@ -1,0 +1,407 @@
+use axum::{
+    Form,
+    extract::{Multipart, Path, Query, State},
+    http::StatusCode,
+    response::{IntoResponse, Redirect, Response},
+};
+use serde::Deserialize;
+use sqlx::{Pool, Postgres};
+use uuid::Uuid;
+
+use crate::db::{CreateMusician, Musician, RecordingFeedItem};
+use crate::extractors::{AuthUser, HtmxRequest, OptionalAuthUser};
+use crate::view::{
+    CompositionPickerTemplate, HtmlTemplate, IndexContentTemplate, IndexTemplate, PlayerTemplate,
+    SettingsContentTemplate, SettingsTemplate, UploadTemplate,
+};
+
+pub async fn index(
+    auth: OptionalAuthUser,
+    htmx: HtmxRequest,
+    State(pool): State<Pool<Postgres>>,
+) -> Response {
+    let recordings = sqlx::query_as::<_, RecordingFeedItem>(
+        r#"
+        SELECT 
+            r.id,
+            m.handle as artist_handle,
+            c.title as composition_title,
+            mv.index as movement_index,
+            mv.title as movement_title,
+            r.created_at,
+            r.file_key
+        FROM recordings r
+        JOIN musicians m ON r.artist_id = m.id
+        JOIN compositions c ON r.composition_id = c.id
+        LEFT JOIN movements mv ON r.movement_id = mv.id
+        ORDER BY r.created_at DESC
+        "#,
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap_or_default();
+
+    if htmx.is_hx_boosted {
+        HtmlTemplate(IndexContentTemplate {
+            current_user: auth.0,
+            recordings,
+        })
+        .into_response()
+    } else {
+        HtmlTemplate(IndexTemplate {
+            current_user: auth.0,
+            recordings,
+        })
+        .into_response()
+    }
+}
+
+pub async fn settings(
+    auth: AuthUser,
+    htmx: HtmxRequest,
+    State(pool): State<Pool<Postgres>>,
+) -> Response {
+    let current_user = auth.0;
+    let musician = sqlx::query_as::<_, Musician>("SELECT * FROM musicians WHERE id = $1")
+        .bind(current_user.musician_id)
+        .fetch_one(&pool)
+        .await
+        .unwrap();
+
+    if htmx.is_hx_boosted {
+        HtmlTemplate(SettingsContentTemplate {
+            current_user: Some(current_user),
+            musician,
+        })
+        .into_response()
+    } else {
+        HtmlTemplate(SettingsTemplate {
+            current_user: Some(current_user),
+            musician,
+        })
+        .into_response()
+    }
+}
+
+pub async fn settings_post(
+    auth: AuthUser,
+    State(pool): State<Pool<Postgres>>,
+    Form(form): Form<CreateMusician>,
+) -> impl IntoResponse {
+    let _ = sqlx::query(
+        "UPDATE musicians SET handle = $1, given_name = $2, family_name = $3, birth_date = $4, death_date = $5 WHERE id = $6",
+    )
+    .bind(form.handle)
+    .bind(form.given_name)
+    .bind(form.family_name)
+    .bind(form.birth_date)
+    .bind(form.death_date)
+    .bind(auth.0.musician_id)
+    .execute(&pool)
+    .await
+    .unwrap();
+    Redirect::to("/settings")
+}
+
+pub async fn upload(auth: AuthUser, _htmx: HtmxRequest) -> impl IntoResponse {
+    HtmlTemplate(UploadTemplate {
+        current_user: Some(auth.0),
+        error: None,
+    })
+}
+
+pub async fn upload_post(
+    auth: AuthUser,
+    _htmx: HtmxRequest,
+    State(pool): State<Pool<Postgres>>,
+    mut multipart: Multipart,
+) -> impl IntoResponse {
+    use axum::body::Bytes;
+
+    let mut file_data: Option<Bytes> = None;
+    let mut composition_id = None;
+
+    while let Ok(Some(field)) = multipart.next_field().await {
+        let name = field.name().unwrap_or_default().to_string();
+        tracing::info!("Received field: {}", name);
+        if name == "file" {
+            match field.bytes().await {
+                Ok(bytes) => {
+                    tracing::info!("Received file bytes: {} bytes", bytes.len());
+                    file_data = Some(bytes);
+                }
+                Err(e) => {
+                    tracing::error!("Failed to read file bytes: {}", e);
+                }
+            }
+        } else if name == "composition_id" {
+            if let Ok(txt) = field.text().await {
+                tracing::info!("Received composition_id: {}", txt);
+                composition_id = txt.parse::<i32>().ok();
+            }
+        }
+    }
+
+    let data = match file_data {
+        Some(d) => d,
+        None => {
+            return HtmlTemplate(UploadTemplate {
+                current_user: Some(auth.0.clone()),
+                error: Some("No file uploaded.".to_string()),
+            })
+            .into_response();
+        }
+    };
+
+    let comp_id = match composition_id {
+        Some(id) => id,
+        None => {
+            return HtmlTemplate(UploadTemplate {
+                current_user: Some(auth.0.clone()),
+                error: Some("No composition selected.".to_string()),
+            })
+            .into_response();
+        }
+    };
+
+    let is_audio = if let Some(kind) = infer::get(&data) {
+        kind.mime_type().starts_with("audio/")
+    } else {
+        false
+    };
+
+    if !is_audio {
+        return HtmlTemplate(UploadTemplate {
+            current_user: Some(auth.0),
+            error: Some("Uploaded file is not a valid audio file.".to_string()),
+        })
+        .into_response();
+    }
+
+    let file_key = Uuid::new_v4().to_string();
+    let path = format!("uploads/recordings/{}", file_key);
+    if let Some(parent) = std::path::Path::new(&path).parent() {
+        let _ = tokio::fs::create_dir_all(parent).await;
+    }
+    if tokio::fs::write(&path, &data).await.is_err() {
+        return HtmlTemplate(UploadTemplate {
+            current_user: Some(auth.0),
+            error: Some("Failed to save file.".to_string()),
+        })
+        .into_response();
+    }
+
+    let _ = sqlx::query(
+        "INSERT INTO recordings (artist_id, composition_id, content_hash, file_key) VALUES ($1, $2, $3, $4)"
+    )
+    .bind(auth.0.musician_id)
+    .bind(comp_id)
+    .bind("hash_placeholder")
+    .bind(file_key)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    Redirect::to("/").into_response()
+}
+
+pub async fn serve_audio(Path(key): Path<String>) -> impl IntoResponse {
+    let path = format!("uploads/recordings/{}", key);
+    match tokio::fs::read(&path).await {
+        Ok(bytes) => {
+            if let Some(kind) = infer::get(&bytes) {
+                if kind.mime_type().starts_with("audio/") {
+                    return (
+                        [(axum::http::header::CONTENT_TYPE, kind.mime_type())],
+                        bytes,
+                    )
+                        .into_response();
+                }
+            }
+            (StatusCode::BAD_REQUEST, "File is not an audio file").into_response()
+        }
+        Err(_) => (StatusCode::NOT_FOUND, "File not found").into_response(),
+    }
+}
+
+pub async fn get_player(
+    Path(id): Path<i32>,
+    State(pool): State<Pool<Postgres>>,
+) -> impl IntoResponse {
+    let recording = sqlx::query_as::<_, RecordingFeedItem>(
+        r#"
+        SELECT 
+            r.id,
+            m.handle as artist_handle,
+            c.title as composition_title,
+            mv.index as movement_index,
+            mv.title as movement_title,
+            r.created_at,
+            r.file_key
+        FROM recordings r
+        JOIN musicians m ON r.artist_id = m.id
+        JOIN compositions c ON r.composition_id = c.id
+        LEFT JOIN movements mv ON r.movement_id = mv.id
+        WHERE r.id = $1
+        "#,
+    )
+    .bind(id)
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+
+    HtmlTemplate(PlayerTemplate { recording })
+}
+
+#[derive(Deserialize)]
+pub struct SearchParams {
+    q: String,
+}
+
+#[derive(sqlx::FromRow)]
+pub struct SearchResult {
+    composition_id: i32,
+    composition_title: String,
+    movement_id: Option<i32>,
+    movement_index: Option<i32>,
+    movement_title: Option<String>,
+    composer_name: String,
+}
+
+pub async fn search_compositions(
+    State(pool): State<Pool<Postgres>>,
+    Query(params): Query<SearchParams>,
+) -> impl IntoResponse {
+    if params.q.trim().is_empty() {
+        return axum::response::Html("".to_string()).into_response();
+    }
+
+    let search_pattern = format!("%{}%", params.q);
+
+    let results = sqlx::query_as::<_, SearchResult>(
+        r#"
+        SELECT 
+            c.id as composition_id,
+            c.title as composition_title,
+            m.id as movement_id,
+            m.index as movement_index,
+            m.title as movement_title,
+            mus.given_name || ' ' || mus.family_name as composer_name
+        FROM compositions c
+        JOIN musicians mus ON c.composer_id = mus.id
+        LEFT JOIN movements m ON c.id = m.composition_id
+        WHERE 
+          c.title ILIKE $1 
+         OR
+          m.title ILIKE $1
+         OR
+          mus.handle ILIKE  $1
+         OR
+          mus.given_name ILIKE  $1
+         OR
+          mus.family_name ILIKE $1
+        ORDER BY c.title, m.index
+        LIMIT 50
+        "#,
+    )
+    .bind(search_pattern)
+    .fetch_all(&pool)
+    .await
+    .unwrap_or_default();
+
+    if results.is_empty() {
+        return axum::response::Html(
+            r#"<div class="p-4 text-sm text-gray-500 text-center">No compositions found.</div>"#
+                .to_string(),
+        )
+        .into_response();
+    }
+
+    let mut html = String::new();
+
+    for res in results {
+        let display_text = if let Some(mov) = res.movement_title
+            && let Some(mov_i) = res.movement_index
+        {
+            format!(
+                "{}: {} {}. {}",
+                res.composer_name,
+                res.composition_title,
+                mov_i + 1,
+                mov
+            )
+        } else {
+            format!("{}: {}", res.composer_name, res.composition_title)
+        };
+
+        html.push_str(&format!(
+            r##"<div class="cursor-pointer hover:bg-indigo-50 p-2 text-sm text-gray-700 border-b last:border-b-0" 
+                    hx-get="/upload/select-composition/{}"
+                    hx-target="#composition-picker"
+                    hx-swap="outerHTML">
+                {}
+            </div>"##,
+            res.composition_id, display_text
+        ));
+    }
+
+    axum::response::Html(html).into_response()
+}
+
+pub async fn select_composition(
+    Path(id): Path<i32>,
+    State(pool): State<Pool<Postgres>>,
+) -> impl IntoResponse {
+    let result = sqlx::query_as::<_, SearchResult>(
+        r#"
+        SELECT 
+            c.id as composition_id,
+            c.title as composition_title,
+            m.id as movement_id,
+            m.index as movement_index,
+            m.title as movement_title,
+            mus.given_name || ' ' || mus.family_name as composer_name
+        FROM compositions c
+        JOIN musicians mus ON c.composer_id = mus.id
+        LEFT JOIN movements m ON c.id = m.composition_id
+        WHERE c.id = $1
+        LIMIT 1
+        "#,
+    )
+    .bind(id)
+    .fetch_optional(&pool)
+    .await
+    .unwrap_or(None);
+
+    if let Some(res) = result {
+        let display_text = format!("{}: {}", res.composer_name, res.composition_title);
+
+        let html = format!(
+            r##"<div id="composition-picker" class="relative">
+                <label class="block text-sm font-medium text-gray-700">Composition</label>
+                <input type="hidden" name="composition_id" value="{}" required>
+                <div class="mt-1 flex items-center justify-between p-2 border border-gray-300 rounded-md bg-gray-50">
+                    <span class="text-sm text-gray-900 font-medium">{}</span>
+                    <button type="button" 
+                            hx-get="/upload/reset-composition" 
+                            hx-target="#composition-picker" 
+                            hx-swap="outerHTML" 
+                            class="text-gray-400 hover:text-gray-500">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>"##,
+            res.composition_id, display_text
+        );
+        axum::response::Html(html).into_response()
+    } else {
+        // Fallback if not found (shouldn't happen often)
+        reset_composition().await.into_response()
+    }
+}
+
+pub async fn reset_composition() -> impl IntoResponse {
+    HtmlTemplate(CompositionPickerTemplate)
+}
