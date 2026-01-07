@@ -1393,7 +1393,8 @@ struct ImslpWorkIntvals {
 }
 
 fn slugify(s: &str) -> String {
-    s.to_lowercase()
+    deunicode::deunicode(s)
+        .to_lowercase()
         .chars()
         .map(|c| if c.is_alphanumeric() { c } else { '-' })
         .collect::<String>()
@@ -1516,6 +1517,15 @@ async fn run_import(
     job_id: i32,
     replace_existing: bool,
 ) -> anyhow::Result<()> {
+    let whitelist_content = tokio::fs::read_to_string("composers.txt")
+        .await
+        .unwrap_or_default();
+    let whitelist: std::collections::HashSet<String> = whitelist_content
+        .lines()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .collect();
+
     let mut success_count = 0;
     let mut skip_count = 0;
     let mut failure_count = 0;
@@ -1559,6 +1569,12 @@ async fn run_import(
 
                     if let Some(name) = value.get("id").and_then(|v| v.as_str()) {
                         let handle = name_to_full_handle(name);
+
+                        if !whitelist.contains(&handle) {
+                            skip_count += 1;
+                            continue;
+                        }
+
                         let (given_name, family_name) = format_name(name);
 
                         let exists = sqlx::query_scalar::<_, bool>(
@@ -1638,6 +1654,12 @@ async fn run_import(
 
                     if let (Some(c_name), Some(w_title)) = (composer_name, work_title) {
                         let composer_handle = name_to_full_handle(c_name);
+
+                        if !whitelist.contains(&composer_handle) {
+                            skip_count += 1;
+                            continue;
+                        }
+
                         let (given_c, family_c) = format_name(c_name);
                         let full_title_for_slug = format!("{} {} {}", given_c, family_c, w_title);
                         let slug = slugify(&full_title_for_slug);
