@@ -120,6 +120,7 @@ pub async fn upload_post(
 
     let mut file_data: Option<Bytes> = None;
     let mut composition_id = None;
+    let mut movement_id = None;
 
     while let Ok(Some(field)) = multipart.next_field().await {
         let name = field.name().unwrap_or_default().to_string();
@@ -138,6 +139,11 @@ pub async fn upload_post(
             if let Ok(txt) = field.text().await {
                 tracing::info!("Received composition_id: {}", txt);
                 composition_id = txt.parse::<i32>().ok();
+            }
+        } else if name == "movement_id" {
+            if let Ok(txt) = field.text().await {
+                tracing::info!("Received movement_id: {}", txt);
+                movement_id = txt.parse::<i32>().ok();
             }
         }
     }
@@ -192,10 +198,11 @@ pub async fn upload_post(
     }
 
     let _ = sqlx::query(
-        "INSERT INTO recordings (artist_id, composition_id, content_hash, file_key) VALUES ($1, $2, $3, $4)"
+        "INSERT INTO recordings (artist_id, composition_id, movement_id, content_hash, file_key) VALUES ($1, $2, $3, $4, $5)"
     )
     .bind(auth.0.musician_id)
     .bind(comp_id)
+    .bind(movement_id)
     .bind("hash_placeholder")
     .bind(file_key)
     .execute(&pool)
@@ -334,52 +341,108 @@ pub async fn search_compositions(
             format!("{}: {}", res.composer_name, res.composition_title)
         };
 
+        let mut url = format!("/upload/select-composition/{}", res.composition_id);
+        if let Some(m_id) = res.movement_id {
+            url.push_str(&format!("?movement_id={}", m_id));
+        }
+
         html.push_str(&format!(
             r##"<div class="cursor-pointer hover:bg-indigo-50 p-2 text-sm text-gray-700 border-b last:border-b-0" 
-                    hx-get="/upload/select-composition/{}"
+                    hx-get="{}"
                     hx-target="#composition-picker"
                     hx-swap="outerHTML">
                 {}
             </div>"##,
-            res.composition_id, display_text
+            url, display_text
         ));
     }
 
     axum::response::Html(html).into_response()
 }
 
+#[derive(Deserialize)]
+pub struct SelectCompositionParams {
+    movement_id: Option<i32>,
+}
+
 pub async fn select_composition(
     Path(id): Path<i32>,
+    Query(params): Query<SelectCompositionParams>,
     State(pool): State<Pool<Postgres>>,
 ) -> impl IntoResponse {
-    let result = sqlx::query_as::<_, SearchResult>(
-        r#"
-        SELECT 
-            c.id as composition_id,
-            c.title as composition_title,
-            m.id as movement_id,
-            m.index as movement_index,
-            m.title as movement_title,
-            mus.given_name || ' ' || mus.family_name as composer_name
-        FROM compositions c
-        JOIN musicians mus ON c.composer_id = mus.id
-        LEFT JOIN movements m ON c.id = m.composition_id
-        WHERE c.id = $1
-        LIMIT 1
-        "#,
-    )
-    .bind(id)
-    .fetch_optional(&pool)
-    .await
-    .unwrap_or(None);
+    let result = if let Some(m_id) = params.movement_id {
+        sqlx::query_as::<_, SearchResult>(
+            r#"
+            SELECT 
+                c.id as composition_id,
+                c.title as composition_title,
+                m.id as movement_id,
+                m.index as movement_index,
+                m.title as movement_title,
+                mus.given_name || ' ' || mus.family_name as composer_name
+            FROM compositions c
+            JOIN musicians mus ON c.composer_id = mus.id
+            JOIN movements m ON c.id = m.composition_id
+            WHERE c.id = $1 AND m.id = $2
+            LIMIT 1
+            "#,
+        )
+        .bind(id)
+        .bind(m_id)
+        .fetch_optional(&pool)
+        .await
+        .unwrap_or(None)
+    } else {
+        sqlx::query_as::<_, SearchResult>(
+            r#"
+            SELECT 
+                c.id as composition_id,
+                c.title as composition_title,
+                NULL::integer as movement_id,
+                NULL::integer as movement_index,
+                NULL::text as movement_title,
+                mus.given_name || ' ' || mus.family_name as composer_name
+            FROM compositions c
+            JOIN musicians mus ON c.composer_id = mus.id
+            WHERE c.id = $1
+            LIMIT 1
+            "#,
+        )
+        .bind(id)
+        .fetch_optional(&pool)
+        .await
+        .unwrap_or(None)
+    };
 
     if let Some(res) = result {
-        let display_text = format!("{}: {}", res.composer_name, res.composition_title);
+        let display_text = if let Some(mov) = res.movement_title
+            && let Some(mov_i) = res.movement_index
+        {
+            format!(
+                "{}: {} {}. {}",
+                res.composer_name,
+                res.composition_title,
+                mov_i + 1,
+                mov
+            )
+        } else {
+            format!("{}: {}", res.composer_name, res.composition_title)
+        };
+
+        let movement_input = if let Some(m_id) = res.movement_id {
+            format!(
+                r#"<input type="hidden" name="movement_id" value="{}">"#,
+                m_id
+            )
+        } else {
+            "".to_string()
+        };
 
         let html = format!(
             r##"<div id="composition-picker" class="relative">
                 <label class="block text-sm font-medium text-gray-700">Composition</label>
                 <input type="hidden" name="composition_id" value="{}" required>
+                {}
                 <div class="mt-1 flex items-center justify-between p-2 border border-gray-300 rounded-md bg-gray-50">
                     <span class="text-sm text-gray-900 font-medium">{}</span>
                     <button type="button" 
@@ -393,7 +456,7 @@ pub async fn select_composition(
                     </button>
                 </div>
             </div>"##,
-            res.composition_id, display_text
+            res.composition_id, movement_input, display_text
         );
         axum::response::Html(html).into_response()
     } else {
