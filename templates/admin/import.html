@@ -1,12 +1,12 @@
 
 {% extends "layout.html" %}
 
-{% block title %}IMSLP Import{% endblock %}
+{% block title %}OpenOpus Import{% endblock %}
 
 {% block content %}
 <div class="max-w-4xl mx-auto">
     <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold">IMSLP Import</h1>
+        <h1 class="text-3xl font-bold">OpenOpus Import</h1>
         <div class="space-x-4">
             {% if let Some(j) = job %}
                 {% if j.status == ImportJobStatus::Processing %}
@@ -89,11 +89,12 @@
     <div class="mt-8 bg-gray-50 rounded-lg p-6 border border-gray-200">
         <h2 class="text-lg font-semibold mb-4">Import Details</h2>
         <ul class="list-disc list-inside text-sm text-gray-600 space-y-2">
-            <li>Reads JSON files from <code class="bg-gray-200 px-1 rounded">imslp/people</code> and <code class="bg-gray-200 px-1 rounded">imslp/works</code>.</li>
-            <li>Slugifies names: "Bach, Johann Sebastian" → <code class="bg-gray-100 px-1 rounded text-gray-800">johann-sebastian-bach</code>.</li>
-            <li>Links compositions to musicians by handle.</li>
-            <li>Skips records if the handle or slug already exists in the database.</li>
-            <li>Can be cancelled at any time; progress will be saved.</li>
+            <li>Reads data from <code class="bg-gray-200 px-1 rounded">openopus/dump.json</code>.</li>
+            <li>Slugifies composer and work names for URL-friendly identifiers.</li>
+            <li>Links compositions to musicians (composers).</li>
+            <li>Imports birth and death dates for musicians where available.</li>
+            <li>Skips records if the handle or slug already exists in the database (unless "Replace existing" is checked).</li>
+            <li>Can be cancelled at any time; progress is updated periodically.</li>
         </ul>
     </div>
 </div>

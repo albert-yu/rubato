@@ -1367,35 +1367,23 @@ async fn admin_recording_delete(
 // --- Import Logic ---
 
 #[derive(Deserialize)]
-struct ImslpPeopleResponse {
-    #[serde(flatten)]
-    items: std::collections::HashMap<String, ImslpPerson>,
-    // metadata: serde_json::Value,
+struct OpenOpusDump {
+    composers: Vec<OpenOpusComposer>,
 }
 
 #[derive(Deserialize)]
-struct ImslpPerson {
-    id: String, // "Bach, Johann Sebastian"
-                // type: String,
-                // intvals: serde_json::Value,
+struct OpenOpusComposer {
+    complete_name: String, // "John Adams"
+    name: String,          // "Adams"
+    birth: Option<String>, // "1947-01-01"
+    death: Option<String>, // null or "YYYY-MM-DD"
+    works: Vec<OpenOpusWork>,
 }
 
 #[derive(Deserialize)]
-struct ImslpWorksResponse {
-    #[serde(flatten)]
-    items: std::collections::HashMap<String, ImslpWork>,
-}
-
-#[derive(Deserialize)]
-struct ImslpWork {
-    // id: String,
-    intvals: ImslpWorkIntvals,
-}
-
-#[derive(Deserialize)]
-struct ImslpWorkIntvals {
-    composer: String,
-    worktitle: String,
+struct OpenOpusWork {
+    title: String,
+    subtitle: String,
 }
 
 fn slugify(s: &str) -> String {
@@ -1410,24 +1398,8 @@ fn slugify(s: &str) -> String {
         .join("-")
 }
 
-fn format_name(name: &str) -> (String, String) {
-    let name = name.strip_prefix("Category:").unwrap_or(name);
-    let parts: Vec<&str> = name.split(',').map(|s| s.trim()).collect();
-    if parts.len() >= 2 {
-        // "Bach, Johann Sebastian" -> given: "Johann Sebastian", family: "Bach"
-        (parts[1..].join(" "), parts[0].to_string())
-    } else {
-        ("".to_string(), name.to_string())
-    }
-}
-
-fn name_to_full_handle(name: &str) -> String {
-    let (given, family) = format_name(name);
-    if given.is_empty() {
-        slugify(&family)
-    } else {
-        slugify(&format!("{} {}", given, family))
-    }
+fn parse_date(s: Option<&String>) -> Option<chrono::NaiveDate> {
+    s.and_then(|d| chrono::NaiveDate::parse_from_str(d, "%Y-%m-%d").ok())
 }
 
 async fn admin_import(auth: AuthUser, State(pool): State<Pool<Postgres>>) -> impl IntoResponse {
@@ -1523,14 +1495,18 @@ async fn run_import(
     job_id: i32,
     replace_existing: bool,
 ) -> anyhow::Result<()> {
-    let whitelist_content = tokio::fs::read_to_string("composers.txt")
-        .await
-        .unwrap_or_default();
-    let whitelist: std::collections::HashSet<String> = whitelist_content
-        .lines()
-        .map(|s| s.trim().to_string())
-        .filter(|s| !s.is_empty())
-        .collect();
+    let file_path = "openopus/dump.json";
+    if !std::path::Path::new(file_path).exists() {
+        // Fail if file doesn't exist
+        let _ = sqlx::query("UPDATE import_jobs SET status = 'failed', failure_count = 1, updated_at = NOW() WHERE id = $1")
+            .bind(job_id)
+            .execute(&pool)
+            .await;
+        return Err(anyhow::anyhow!("openopus/dump.json not found"));
+    }
+
+    let content = tokio::fs::read_to_string(file_path).await?;
+    let dump: OpenOpusDump = serde_json::from_str(&content)?;
 
     let mut success_count = 0;
     let mut skip_count = 0;
@@ -1549,183 +1525,149 @@ async fn run_import(
         };
     }
 
-    // 1. Process People
-    let people_dir = "imslp/people";
-    if let Ok(mut entries) = tokio::fs::read_dir(people_dir).await {
-        while let Ok(Some(entry)) = entries.next_entry().await {
-            if cancel_token.is_cancelled() {
-                update_job!(ImportJobStatus::Cancelled);
-                return Ok(());
-            }
-
-            let path = entry.path();
-            if path.extension().is_some_and(|ext| ext == "json") {
-                let content = tokio::fs::read_to_string(&path).await?;
-                let data: std::collections::HashMap<String, serde_json::Value> =
-                    serde_json::from_str(&content)?;
-
-                for (key, value) in data {
-                    if key == "metadata" || !value.is_object() {
-                        continue;
-                    }
-                    if cancel_token.is_cancelled() {
-                        update_job!(ImportJobStatus::Cancelled);
-                        return Ok(());
-                    }
-
-                    if let Some(name) = value.get("id").and_then(|v| v.as_str()) {
-                        let handle = name_to_full_handle(name);
-
-                        if !whitelist.contains(&handle) {
-                            skip_count += 1;
-                            continue;
-                        }
-
-                        let (given_name, family_name) = format_name(name);
-
-                        let exists = sqlx::query_scalar::<_, bool>(
-                            "SELECT EXISTS(SELECT 1 FROM musicians WHERE handle = $1)",
-                        )
-                        .bind(&handle)
-                        .fetch_one(&pool)
-                        .await?;
-
-                        if exists && !replace_existing {
-                            skip_count += 1;
-                        } else {
-                            // If exists && replace_existing, we update (UPSERT or separate UPDATE)
-                            // Or just DELETE and INSERT? ID preservation might be important for foreign keys.
-                            // Better to use ON CONFLICT DO UPDATE.
-                            let res = sqlx::query(
-                                r#"
-                                INSERT INTO musicians (handle, given_name, family_name) 
-                                VALUES ($1, $2, $3)
-                                ON CONFLICT (handle) DO UPDATE SET
-                                    given_name = EXCLUDED.given_name,
-                                    family_name = EXCLUDED.family_name
-                                "#,
-                            )
-                            .bind(handle)
-                            .bind(given_name)
-                            .bind(family_name)
-                            .execute(&pool)
-                            .await;
-
-                            match res {
-                                Ok(_) => success_count += 1,
-                                Err(_) => failure_count += 1,
-                            }
-                        }
-                    }
-                    // Update every 10 items to show progress
-                    if (success_count + skip_count + failure_count) % 10 == 0 {
-                        update_job!(ImportJobStatus::Processing);
-                    }
-                }
-            }
+    for composer in dump.composers {
+        if cancel_token.is_cancelled() {
+            update_job!(ImportJobStatus::Cancelled);
+            return Ok(());
         }
-    }
 
-    // 2. Process Works
-    let works_dir = "imslp/works";
-    if let Ok(mut entries) = tokio::fs::read_dir(works_dir).await {
-        while let Ok(Some(entry)) = entries.next_entry().await {
+        // Process Musician
+        let handle = slugify(&composer.complete_name);
+
+        // Split complete_name into given and family
+        // Heuristic: Last word is family name, rest is given name.
+        // Or better: Use `name` field from JSON as family name (it seems to be just the surname usually).
+        // Then remove `name` from `complete_name` to get `given_name`.
+
+        let family_name = composer.name.trim().to_string();
+        let given_name = if let Some(stripped) = composer.complete_name.strip_suffix(&family_name) {
+            stripped.trim().to_string()
+        } else {
+            // Fallback if complete_name doesn't end with name (e.g. name="Bach", complete="Johann Sebastian Bach" -> "Johann Sebastian")
+            // But what if name="Bach" and complete="Bach, Johann Sebastian"?
+            // OpenOpus complete_name seems to be "Given Family".
+            let parts: Vec<&str> = composer.complete_name.split_whitespace().collect();
+            if parts.len() > 1 {
+                parts[..parts.len() - 1].join(" ")
+            } else {
+                "".to_string()
+            }
+        };
+
+        // If given_name ended up empty but complete_name wasn't same as family_name, try to fix.
+        // Actually, let's just use the logic: given = complete replace family with "" if matches.
+        let given_name = if given_name.is_empty() && composer.complete_name != family_name {
+            composer
+                .complete_name
+                .replace(&family_name, "")
+                .trim()
+                .to_string()
+        } else {
+            given_name
+        };
+
+        let birth_date = parse_date(composer.birth.as_ref());
+        let death_date = parse_date(composer.death.as_ref());
+
+        let musician_id = {
+            let exists = sqlx::query_scalar::<_, bool>(
+                "SELECT EXISTS(SELECT 1 FROM musicians WHERE handle = $1)",
+            )
+            .bind(&handle)
+            .fetch_one(&pool)
+            .await?;
+
+            if exists && !replace_existing {
+                // Fetch existing ID
+                sqlx::query_scalar::<_, i32>("SELECT id FROM musicians WHERE handle = $1")
+                    .bind(&handle)
+                    .fetch_one(&pool)
+                    .await?
+            } else {
+                // Upsert
+                let res = sqlx::query_scalar::<_, i32>(
+                    r#"
+                    INSERT INTO musicians (handle, given_name, family_name, birth_date, death_date) 
+                    VALUES ($1, $2, $3, $4, $5)
+                    ON CONFLICT (handle) DO UPDATE SET
+                        given_name = EXCLUDED.given_name,
+                        family_name = EXCLUDED.family_name,
+                        birth_date = EXCLUDED.birth_date,
+                        death_date = EXCLUDED.death_date
+                    RETURNING id
+                    "#,
+                )
+                .bind(&handle)
+                .bind(&given_name)
+                .bind(&family_name)
+                .bind(birth_date)
+                .bind(death_date)
+                .fetch_one(&pool)
+                .await;
+
+                match res {
+                    Ok(id) => {
+                        // We count musician success here, or maybe per work?
+                        // Let's count per work item as success to be granular,
+                        // or just count composer as 1 success.
+                        // The previous logic counted items.
+                        // Let's count 1 for composer.
+                        success_count += 1;
+                        id
+                    }
+                    Err(_) => {
+                        failure_count += 1;
+                        continue; // Skip works if musician failed
+                    }
+                }
+            }
+        };
+
+        // Process Works
+        for work in composer.works {
             if cancel_token.is_cancelled() {
                 update_job!(ImportJobStatus::Cancelled);
                 return Ok(());
             }
 
-            let path = entry.path();
-            if path.extension().is_some_and(|ext| ext == "json") {
-                let content = tokio::fs::read_to_string(&path).await?;
-                let data: std::collections::HashMap<String, serde_json::Value> =
-                    serde_json::from_str(&content)?;
+            let title = work.title;
+            // let subtitle = work.subtitle; // Unused for now
+            let slug_base = format!("{} {}", composer.complete_name, title);
+            let slug = slugify(&slug_base);
 
-                for (key, value) in data {
-                    if key == "metadata" || !value.is_object() {
-                        continue;
-                    }
-                    if cancel_token.is_cancelled() {
-                        update_job!(ImportJobStatus::Cancelled);
-                        return Ok(());
-                    }
+            let exists = sqlx::query_scalar::<_, bool>(
+                "SELECT EXISTS(SELECT 1 FROM compositions WHERE slug = $1)",
+            )
+            .bind(&slug)
+            .fetch_one(&pool)
+            .await?;
 
-                    let intvals = value.get("intvals");
-                    let composer_name = intvals
-                        .and_then(|i| i.get("composer"))
-                        .and_then(|v| v.as_str());
-                    let work_title = intvals
-                        .and_then(|i| i.get("worktitle"))
-                        .and_then(|v| v.as_str());
+            if exists && !replace_existing {
+                skip_count += 1;
+            } else {
+                let res = sqlx::query(
+                    r#"
+                    INSERT INTO compositions (slug, title, composer_id) 
+                    VALUES ($1, $2, $3)
+                    ON CONFLICT (slug) DO UPDATE SET
+                        title = EXCLUDED.title,
+                        composer_id = EXCLUDED.composer_id
+                    "#,
+                )
+                .bind(&slug)
+                .bind(&title)
+                .bind(musician_id)
+                .execute(&pool)
+                .await;
 
-                    if let (Some(c_name), Some(w_title)) = (composer_name, work_title) {
-                        let composer_handle = name_to_full_handle(c_name);
-
-                        if !whitelist.contains(&composer_handle) {
-                            skip_count += 1;
-                            continue;
-                        }
-
-                        let (given_c, family_c) = format_name(c_name);
-                        let full_title_for_slug = format!("{} {} {}", given_c, family_c, w_title);
-                        let slug = slugify(&full_title_for_slug);
-
-                        let exists = sqlx::query_scalar::<_, bool>(
-                            "SELECT EXISTS(SELECT 1 FROM compositions WHERE slug = $1)",
-                        )
-                        .bind(&slug)
-                        .fetch_one(&pool)
-                        .await?;
-
-                        if exists && !replace_existing {
-                            skip_count += 1;
-                        } else {
-                            // Find or create musician (might not have been in people list but is in works list)
-                            let composer_id = sqlx::query_scalar::<_, i32>(
-                                "SELECT id FROM musicians WHERE handle = $1",
-                            )
-                            .bind(&composer_handle)
-                            .fetch_optional(&pool)
-                            .await?;
-
-                            let composer_id = match composer_id {
-                                Some(id) => id,
-                                None => {
-                                    sqlx::query_scalar::<_, i32>("INSERT INTO musicians (handle, given_name, family_name) VALUES ($1, $2, $3) RETURNING id")
-                                        .bind(composer_handle)
-                                        .bind(given_c)
-                                        .bind(family_c)
-                                        .fetch_one(&pool)
-                                        .await?
-                                }
-                            };
-
-                            let res = sqlx::query(
-                                r#"
-                                INSERT INTO compositions (slug, title, composer_id) 
-                                VALUES ($1, $2, $3)
-                                ON CONFLICT (slug) DO UPDATE SET
-                                    title = EXCLUDED.title,
-                                    composer_id = EXCLUDED.composer_id
-                                "#,
-                            )
-                            .bind(slug)
-                            .bind(w_title)
-                            .bind(composer_id)
-                            .execute(&pool)
-                            .await;
-
-                            match res {
-                                Ok(_) => success_count += 1,
-                                Err(_) => failure_count += 1,
-                            }
-                        }
-                    }
-
-                    if (success_count + skip_count + failure_count) % 10 == 0 {
-                        update_job!(ImportJobStatus::Processing);
-                    }
+                match res {
+                    Ok(_) => success_count += 1,
+                    Err(_) => failure_count += 1,
                 }
+            }
+
+            if (success_count + skip_count + failure_count) % 50 == 0 {
+                update_job!(ImportJobStatus::Processing);
             }
         }
     }
