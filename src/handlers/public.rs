@@ -171,13 +171,13 @@ pub async fn upload_post(
         }
     };
 
-    let is_audio = if let Some(kind) = infer::get(&data) {
-        kind.mime_type().starts_with("audio/")
+    let mime_type = if let Some(kind) = infer::get(&data) {
+        kind.mime_type().to_string()
     } else {
-        false
+        "application/octet-stream".to_string()
     };
 
-    if !is_audio {
+    if !mime_type.starts_with("audio/") {
         return HtmlTemplate(UploadTemplate {
             current_user: Some(auth.0),
             error: Some("Uploaded file is not a valid audio file.".to_string()),
@@ -197,12 +197,6 @@ pub async fn upload_post(
         })
         .into_response();
     }
-
-    let mime_type = if let Some(kind) = infer::get(&data) {
-        kind.mime_type().to_string()
-    } else {
-        "application/octet-stream".to_string()
-    };
 
     let _ = sqlx::query(
         "INSERT INTO recordings (artist_id, composition_id, movement_id, content_hash, file_key, mime_type) VALUES ($1, $2, $3, $4, $5, $6)"
