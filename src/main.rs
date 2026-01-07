@@ -188,6 +188,7 @@ struct LoginPayload {
 #[derive(Deserialize)]
 struct PaginationParams {
     page: Option<i64>,
+    q: Option<String>,
 }
 
 // --- Common ---
@@ -877,6 +878,7 @@ async fn admin_musicians(
         current_user: Some(auth.0),
         page,
         total_pages,
+        q: params.q,
     })
     .into_response()
 }
@@ -986,28 +988,52 @@ async fn admin_compositions(
     let page = params.page.unwrap_or(1).max(1);
     let limit = 25;
     let offset = (page - 1) * limit;
+    let q = params.q.filter(|s| !s.trim().is_empty());
 
-    let total_count = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM compositions")
-        .fetch_one(&pool)
+    let (total_count, compositions) = if let Some(ref query) = q {
+        let search_pattern = format!("%{}%", query);
+        let count =
+            sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM compositions WHERE title ILIKE $1")
+                .bind(&search_pattern)
+                .fetch_one(&pool)
+                .await
+                .unwrap_or(0);
+
+        let comps = sqlx::query_as::<_, Composition>(
+            "SELECT * FROM compositions WHERE title ILIKE $1 ORDER BY id LIMIT $2 OFFSET $3",
+        )
+        .bind(&search_pattern)
+        .bind(limit)
+        .bind(offset)
+        .fetch_all(&pool)
         .await
-        .unwrap_or(0);
+        .unwrap_or_default();
+        (count, comps)
+    } else {
+        let count = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM compositions")
+            .fetch_one(&pool)
+            .await
+            .unwrap_or(0);
+
+        let comps = sqlx::query_as::<_, Composition>(
+            "SELECT * FROM compositions ORDER BY id LIMIT $1 OFFSET $2",
+        )
+        .bind(limit)
+        .bind(offset)
+        .fetch_all(&pool)
+        .await
+        .unwrap_or_default();
+        (count, comps)
+    };
 
     let total_pages = (total_count as f64 / limit as f64).ceil() as i64;
-
-    let compositions = sqlx::query_as::<_, Composition>(
-        "SELECT * FROM compositions ORDER BY id LIMIT $1 OFFSET $2",
-    )
-    .bind(limit)
-    .bind(offset)
-    .fetch_all(&pool)
-    .await
-    .unwrap_or_default();
 
     HtmlTemplate(AdminCompositionsTemplate {
         compositions,
         current_user: Some(auth.0),
         page,
         total_pages,
+        q,
     })
     .into_response()
 }
@@ -1234,6 +1260,7 @@ async fn admin_recordings(
         current_user: Some(auth.0),
         page,
         total_pages,
+        q: params.q,
     })
     .into_response()
 }

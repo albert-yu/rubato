@@ -61,6 +61,7 @@ pub struct AdminMusiciansTemplate {
     pub current_user: Option<User>,
     pub page: i64,
     pub total_pages: i64,
+    pub q: Option<String>,
 }
 
 #[derive(Template)]
@@ -77,6 +78,7 @@ pub struct AdminCompositionsTemplate {
     pub current_user: Option<User>,
     pub page: i64,
     pub total_pages: i64,
+    pub q: Option<String>,
 }
 
 #[derive(Template)]
@@ -95,6 +97,7 @@ pub struct AdminRecordingsTemplate {
     pub current_user: Option<User>,
     pub page: i64,
     pub total_pages: i64,
+    pub q: Option<String>,
 }
 
 #[derive(Template)]

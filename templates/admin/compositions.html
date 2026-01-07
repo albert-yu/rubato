@@ -3,13 +3,43 @@
 {% block title %}Compositions - Admin{% endblock %}
 
 {% block content %}
-<div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold">Compositions</h1>
-    <a href="/admin/composition/new" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Add New Composition</a>
-</div>
+<div id="compositions-container">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold">Compositions</h1>
+        <div class="flex items-center space-x-4">
+            <div class="relative">
+                <input type="text" 
+                       name="q" 
+                       placeholder="Search compositions..." 
+                       value="{% match q %}{% when Some with (query) %}{{ query }}{% when None %}{% endmatch %}"
+                       class="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                       hx-get="/admin/compositions"
+                       hx-trigger="keyup[key=='Enter'], search"
+                       hx-target="#compositions-container"
+                       hx-select="#compositions-container"
+                       hx-swap="outerHTML"
+                       hx-push-url="true">
+                {% match q %}
+                    {% when Some with (query) %}
+                    <button hx-get="/admin/compositions" 
+                            hx-target="#compositions-container" 
+                            hx-select="#compositions-container" 
+                            hx-swap="outerHTML"
+                            hx-push-url="true"
+                            class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                    {% when None %}
+                {% endmatch %}
+            </div>
+            <a href="/admin/composition/new" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Add New Composition</a>
+        </div>
+    </div>
 
-<div class="bg-white shadow rounded-lg overflow-hidden">
-    <table class="min-w-full divide-y divide-gray-200">
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
             <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
@@ -39,5 +69,6 @@
         </tbody>
     </table>
     {% include "pagination.html" %}
+    </div>
 </div>
 {% endblock %}

@@ -9,13 +9,13 @@
         <div>
             <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
                 {% if page > 1 %}
-                <a href="?page={{ page - 1 }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-l-md">
+                <a href="?page={{ page - 1 }}{% match q %}{% when Some with (query) %}&q={{ query }}{% when None %}{% endmatch %}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-l-md">
                     Previous
                 </a>
                 {% endif %}
                 
                 {% if page < total_pages %}
-                <a href="?page={{ page + 1 }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-r-md">
+                <a href="?page={{ page + 1 }}{% match q %}{% when Some with (query) %}&q={{ query }}{% when None %}{% endmatch %}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-r-md">
                     Next
                 </a>
                 {% endif %}
