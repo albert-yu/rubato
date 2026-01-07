@@ -699,13 +699,10 @@ struct SearchParams {
 
 struct SearchResult {
     composition_id: i32,
-
     composition_title: String,
-
     movement_id: Option<i32>,
-
+    movement_index: Option<i32>,
     movement_title: Option<String>,
-
     composer_name: String,
 }
 
@@ -726,6 +723,7 @@ async fn search_compositions(
             c.id as composition_id,
             c.title as composition_title,
             m.id as movement_id,
+            m.index as movement_index,
             m.title as movement_title,
             mus.given_name || ' ' || mus.family_name as composer_name
         FROM compositions c
@@ -752,28 +750,19 @@ async fn search_compositions(
 
     let mut html = String::new();
 
-    // We might get duplicates for composition if multiple movements match or if just the composition matches.
-
-    // Since we can't select a movement ID in the current upload form (it only takes composition_id),
-
-    // we should probably group by composition to avoid duplicates in the dropdown,
-
-    // OR we just list them and let the user pick.
-
-    // BUT, if the user picks a "Movement match", they are still just selecting the Composition ID.
-
-    // This might be confusing if they think they are selecting the movement.
-
-    // However, following the prompt "display the composer name and movement if there is a match", I will assume visual feedback is the priority.
-
     for res in results {
-        let display_text = if let Some(mov) = res.movement_title {
+        let display_text = if let Some(mov) = res.movement_title
+            && let Some(mov_i) = res.movement_index
+        {
             format!(
-                "{} - {} ({})",
-                res.composer_name, res.composition_title, mov
+                "{}: {} {}. {}",
+                res.composer_name,
+                res.composition_title,
+                mov_i + 1,
+                mov
             )
         } else {
-            format!("{} - {}", res.composer_name, res.composition_title)
+            format!("{}: {}", res.composer_name, res.composition_title)
         };
 
         html.push_str(&format!(
