@@ -27,3 +27,11 @@ cargo run
 ```
 
 The app will be running at `http://localhost:3000`.
+
+## Importing composition metadata
+
+Download the full dump from
+[OpenOpus](https://github.com/openopus-org/openopus_api/blob/master/ALLDATA.md)
+into `openopus/dump.json`.
+
+Then, go to /admin/import to run the import via the UI.
