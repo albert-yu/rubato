@@ -366,7 +366,12 @@ async fn main() -> anyhow::Result<()> {
                 .post(admin_recording_update)
                 .delete(admin_recording_delete),
         )
-        .route("/admin/import", get(admin_import).post(admin_import_start))
+        .route(
+            "/admin/import",
+            get(admin_import)
+                .post(admin_import_start)
+                .layer(DefaultBodyLimit::max(1024 * 1024 * 50)),
+        )
         .route("/admin/import/cancel", post(admin_import_cancel))
         .nest_service("/assets", ServeDir::new("assets"))
         .nest_service("/uploads", ServeDir::new("uploads"))
@@ -885,14 +890,13 @@ async fn admin_musicians(
             .await
             .unwrap_or(0);
 
-        let mus = sqlx::query_as::<_, Musician>(
-            "SELECT * FROM musicians ORDER BY id LIMIT $1 OFFSET $2",
-        )
-        .bind(limit)
-        .bind(offset)
-        .fetch_all(&pool)
-        .await
-        .unwrap_or_default();
+        let mus =
+            sqlx::query_as::<_, Musician>("SELECT * FROM musicians ORDER BY id LIMIT $1 OFFSET $2")
+                .bind(limit)
+                .bind(offset)
+                .fetch_all(&pool)
+                .await
+                .unwrap_or_default();
         (count, mus)
     };
 
@@ -1473,17 +1477,11 @@ async fn admin_import(auth: AuthUser, State(pool): State<Pool<Postgres>>) -> imp
     .into_response()
 }
 
-#[derive(Deserialize)]
-struct StartImportParams {
-    #[serde(default)]
-    replace_existing: bool,
-}
-
 async fn admin_import_start(
     auth: AuthUser,
     State(pool): State<Pool<Postgres>>,
     State(cancel_token_mutex): State<Arc<Mutex<Option<CancellationToken>>>>,
-    Form(params): Form<StartImportParams>,
+    mut multipart: Multipart,
 ) -> impl IntoResponse {
     if !auth.0.is_privileged() {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
@@ -1494,6 +1492,41 @@ async fn admin_import_start(
         // Job already running
         return Redirect::to("/admin/import").into_response();
     }
+
+    let mut file_content = None;
+    let mut replace_existing = false;
+
+    while let Ok(Some(field)) = multipart.next_field().await {
+        let name = field.name().unwrap_or_default().to_string();
+        tracing::info!("Import: Received field: {}", name);
+        if name == "file" {
+            match field.bytes().await {
+                Ok(bytes) => {
+                    tracing::info!("Import: Received file bytes: {} bytes", bytes.len());
+                    match String::from_utf8(bytes.to_vec()) {
+                        Ok(text) => file_content = Some(text),
+                        Err(e) => {
+                            tracing::error!("Import: Failed to convert file bytes to string: {}", e)
+                        }
+                    }
+                }
+                Err(e) => tracing::error!("Import: Failed to read file bytes: {}", e),
+            }
+        } else if name == "replace_existing" {
+            if let Ok(text) = field.text().await {
+                tracing::info!("Import: replace_existing = {}", text);
+                replace_existing = text == "true";
+            }
+        }
+    }
+
+    let content = match file_content {
+        Some(c) => c,
+        None => {
+            tracing::error!("Import: No valid file content found.");
+            return Redirect::to("/admin/import").into_response();
+        }
+    };
 
     let job = sqlx::query_as::<_, ImportJob>(
         "INSERT INTO import_jobs (status) VALUES ('processing') RETURNING *",
@@ -1509,10 +1542,9 @@ async fn admin_import_start(
     let pool_clone = pool.clone();
     let job_id = job.id;
     let cancel_token_mutex_clone = cancel_token_mutex.clone();
-    let replace_existing = params.replace_existing;
 
     tokio::spawn(async move {
-        let result = run_import(pool_clone, cancel_token, job_id, replace_existing).await;
+        let result = run_import(pool_clone, cancel_token, job_id, replace_existing, content).await;
 
         let mut lock = cancel_token_mutex_clone.lock().await;
         *lock = None;
@@ -1546,18 +1578,8 @@ async fn run_import(
     cancel_token: CancellationToken,
     job_id: i32,
     replace_existing: bool,
+    content: String,
 ) -> anyhow::Result<()> {
-    let file_path = "openopus/dump.json";
-    if !std::path::Path::new(file_path).exists() {
-        // Fail if file doesn't exist
-        let _ = sqlx::query("UPDATE import_jobs SET status = 'failed', failure_count = 1, updated_at = NOW() WHERE id = $1")
-            .bind(job_id)
-            .execute(&pool)
-            .await;
-        return Err(anyhow::anyhow!("openopus/dump.json not found"));
-    }
-
-    let content = tokio::fs::read_to_string(file_path).await?;
     let dump: OpenOpusDump = serde_json::from_str(&content)?;
 
     let mut success_count = 0;
