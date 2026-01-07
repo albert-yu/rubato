@@ -525,21 +525,10 @@ async fn settings_post(
     Redirect::to("/settings")
 }
 
-async fn upload(
-    auth: AuthUser,
-    _htmx: HtmxRequest,
-    State(pool): State<Pool<Postgres>>,
-) -> impl IntoResponse {
-    let compositions =
-        sqlx::query_as::<_, Composition>("SELECT * FROM compositions ORDER BY title")
-            .fetch_all(&pool)
-            .await
-            .unwrap_or_default();
-
+async fn upload(auth: AuthUser, _htmx: HtmxRequest) -> impl IntoResponse {
     HtmlTemplate(UploadTemplate {
         current_user: Some(auth.0),
         error: None,
-        compositions,
     })
 }
 
@@ -573,19 +562,12 @@ async fn upload_post(
         }
     }
 
-    let compositions =
-        sqlx::query_as::<_, Composition>("SELECT * FROM compositions ORDER BY title")
-            .fetch_all(&pool)
-            .await
-            .unwrap_or_default();
-
     let data = match file_data {
         Some(d) => d,
         None => {
             return HtmlTemplate(UploadTemplate {
                 current_user: Some(auth.0.clone()),
                 error: Some("No file uploaded.".to_string()),
-                compositions,
             })
             .into_response();
         }
@@ -597,7 +579,6 @@ async fn upload_post(
             return HtmlTemplate(UploadTemplate {
                 current_user: Some(auth.0.clone()),
                 error: Some("No composition selected.".to_string()),
-                compositions,
             })
             .into_response();
         }
@@ -613,7 +594,6 @@ async fn upload_post(
         return HtmlTemplate(UploadTemplate {
             current_user: Some(auth.0),
             error: Some("Uploaded file is not a valid audio file.".to_string()),
-            compositions,
         })
         .into_response();
     }
@@ -627,7 +607,6 @@ async fn upload_post(
         return HtmlTemplate(UploadTemplate {
             current_user: Some(auth.0),
             error: Some("Failed to save file.".to_string()),
-            compositions,
         })
         .into_response();
     }
