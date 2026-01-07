@@ -318,6 +318,8 @@ async fn main() -> anyhow::Result<()> {
                 .post(upload_post)
                 .layer(DefaultBodyLimit::max(1024 * 1024 * 50)),
         )
+        .route("/upload/select-composition/{id}", get(select_composition))
+        .route("/upload/reset-composition", get(reset_composition))
         .route("/audio/{key}", get(serve_audio))
         .route("/player/{id}", get(get_player))
         .route("/login", get(login_form).post(login_post))
@@ -765,13 +767,78 @@ async fn search_compositions(
             format!("{}: {}", res.composer_name, res.composition_title)
         };
 
+        // let safe_title = display_text.replace("\"", "&quot;");
+
         html.push_str(&format!(
-            r#"<option value="{}">{}</option>"#,
+            r##"<div class="cursor-pointer hover:bg-indigo-50 p-2 text-sm text-gray-700 border-b last:border-b-0" 
+                    hx-get="/upload/select-composition/{}"
+                    hx-target="#composition-picker"
+                    hx-swap="outerHTML">
+                {}
+            </div>"##,
             res.composition_id, display_text
         ));
     }
 
     axum::response::Html(html).into_response()
+}
+
+async fn select_composition(
+    Path(id): Path<i32>,
+    State(pool): State<Pool<Postgres>>,
+) -> impl IntoResponse {
+    let result = sqlx::query_as::<_, SearchResult>(
+        r#"
+        SELECT 
+            c.id as composition_id,
+            c.title as composition_title,
+            m.id as movement_id,
+            m.index as movement_index,
+            m.title as movement_title,
+            mus.given_name || ' ' || mus.family_name as composer_name
+        FROM compositions c
+        JOIN musicians mus ON c.composer_id = mus.id
+        LEFT JOIN movements m ON c.id = m.composition_id
+        WHERE c.id = $1
+        LIMIT 1
+        "#,
+    )
+    .bind(id)
+    .fetch_optional(&pool)
+    .await
+    .unwrap_or(None);
+
+    if let Some(res) = result {
+        let display_text = format!("{}: {}", res.composer_name, res.composition_title);
+
+        let html = format!(
+            r##"<div id="composition-picker" class="relative">
+                <label class="block text-sm font-medium text-gray-700">Composition</label>
+                <input type="hidden" name="composition_id" value="{}" required>
+                <div class="mt-1 flex items-center justify-between p-2 border border-gray-300 rounded-md bg-gray-50">
+                    <span class="text-sm text-gray-900 font-medium">{}</span>
+                    <button type="button" 
+                            hx-get="/upload/reset-composition" 
+                            hx-target="#composition-picker" 
+                            hx-swap="outerHTML" 
+                            class="text-gray-400 hover:text-gray-500">
+                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>"##,
+            res.composition_id, display_text
+        );
+        axum::response::Html(html).into_response()
+    } else {
+        // Fallback if not found (shouldn't happen often)
+        reset_composition().await.into_response()
+    }
+}
+
+async fn reset_composition() -> impl IntoResponse {
+    HtmlTemplate(CompositionPickerTemplate)
 }
 
 // --- Auth Handlers ---

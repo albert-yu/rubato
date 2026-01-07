@@ -40,6 +40,10 @@ pub struct UploadTemplate {
 }
 
 #[derive(Template)]
+#[template(path = "composition_picker.html")]
+pub struct CompositionPickerTemplate;
+
+#[derive(Template)]
 #[template(path = "player.html")]
 pub struct PlayerTemplate {
     pub recording: RecordingFeedItem,
