@@ -729,6 +729,14 @@ async fn search_compositions(
     .await
     .unwrap_or_default();
 
+    if results.is_empty() {
+        return axum::response::Html(
+            r#"<div class="p-4 text-sm text-gray-500 text-center">No compositions found.</div>"#
+                .to_string(),
+        )
+        .into_response();
+    }
+
     let mut html = String::new();
 
     for res in results {
