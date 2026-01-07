@@ -197,14 +197,21 @@ pub async fn upload_post(
         .into_response();
     }
 
+    let mime_type = if let Some(kind) = infer::get(&data) {
+        kind.mime_type().to_string()
+    } else {
+        "application/octet-stream".to_string()
+    };
+
     let _ = sqlx::query(
-        "INSERT INTO recordings (artist_id, composition_id, movement_id, content_hash, file_key) VALUES ($1, $2, $3, $4, $5)"
+        "INSERT INTO recordings (artist_id, composition_id, movement_id, content_hash, file_key, mime_type) VALUES ($1, $2, $3, $4, $5, $6)"
     )
     .bind(auth.0.musician_id)
     .bind(comp_id)
     .bind(movement_id)
     .bind("hash_placeholder")
     .bind(file_key)
+    .bind(mime_type)
     .execute(&pool)
     .await
     .unwrap();

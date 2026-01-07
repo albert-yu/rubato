@@ -133,6 +133,7 @@ pub struct Recording {
     pub movement_id: Option<i32>,
     pub content_hash: String,
     pub file_key: String,
+    pub mime_type: String,
     pub created_at: chrono::DateTime<chrono::Utc>,
 }
 
@@ -145,6 +146,7 @@ pub struct CreateRecording {
     pub movement_id: Option<i32>,
     pub content_hash: String,
     pub file_key: String,
+    pub mime_type: String,
 }
 
 #[derive(sqlx::FromRow, serde::Serialize, Clone, Debug)]

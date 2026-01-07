@@ -506,12 +506,13 @@ pub async fn admin_recording_create(
     if !matches!(auth.0.role, UserRole::Root) {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
-    let _ = sqlx::query("INSERT INTO recordings (artist_id, composition_id, movement_id, content_hash, file_key) VALUES ($1, $2, $3, $4, $5)")
+    let _ = sqlx::query("INSERT INTO recordings (artist_id, composition_id, movement_id, content_hash, file_key, mime_type) VALUES ($1, $2, $3, $4, $5, $6)")
         .bind(form.artist_id)
         .bind(form.composition_id)
         .bind(form.movement_id)
         .bind(form.content_hash)
         .bind(form.file_key)
+        .bind(form.mime_type)
         .execute(&pool)
         .await
         .unwrap();
@@ -561,19 +562,22 @@ pub async fn admin_recording_update(
     Path(id): Path<i32>,
     Form(form): Form<CreateRecording>,
 ) -> impl IntoResponse {
-    if !matches!(auth.0.role, UserRole::Root) {
+    if !matches!(auth.0.role, UserRole::Root | UserRole::Admin) {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
-    let _ = sqlx::query("UPDATE recordings SET artist_id = $1, composition_id = $2, movement_id = $3, content_hash = $4, file_key = $5 WHERE id = $6")
-        .bind(form.artist_id)
-        .bind(form.composition_id)
-        .bind(form.movement_id)
-        .bind(form.content_hash)
-        .bind(form.file_key)
-        .bind(id)
-        .execute(&pool)
-        .await
-        .unwrap();
+    let _ = sqlx::query(
+        "UPDATE recordings SET artist_id = $1, composition_id = $2, movement_id = $3, content_hash = $4, file_key = $5, mime_type = $6 WHERE id = $7",
+    )
+    .bind(form.artist_id)
+    .bind(form.composition_id)
+    .bind(form.movement_id)
+    .bind(form.content_hash)
+    .bind(form.file_key)
+    .bind(form.mime_type)
+    .bind(id)
+    .execute(&pool)
+    .await
+    .unwrap();
     Redirect::to("/admin/recordings").into_response()
 }
 
