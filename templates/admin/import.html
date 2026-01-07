@@ -18,7 +18,7 @@
                 {% else %}
                 <form action="/admin/import" method="post" class="inline flex items-center gap-4">
                     <label class="inline-flex items-center">
-                        <input type="checkbox" name="replace_existing" class="form-checkbox h-5 w-5 text-indigo-600">
+                        <input type="checkbox" name="replace_existing" value="true" class="form-checkbox h-5 w-5 text-indigo-600">
                         <span class="ml-2 text-gray-700">Replace existing</span>
                     </label>
                     <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out">
@@ -29,7 +29,7 @@
             {% else %}
             <form action="/admin/import" method="post" class="inline flex items-center gap-4">
                 <label class="inline-flex items-center">
-                    <input type="checkbox" name="replace_existing" class="form-checkbox h-5 w-5 text-indigo-600">
+                    <input type="checkbox" name="replace_existing" value="true" class="form-checkbox h-5 w-5 text-indigo-600">
                     <span class="ml-2 text-gray-700">Replace existing</span>
                 </label>
                 <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded transition duration-150 ease-in-out">
