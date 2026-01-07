@@ -857,28 +857,53 @@ async fn admin_musicians(
     let page = params.page.unwrap_or(1).max(1);
     let limit = 25;
     let offset = (page - 1) * limit;
+    let q = params.q.filter(|s| !s.trim().is_empty());
 
-    let total_count = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM musicians")
+    let (total_count, musicians) = if let Some(ref query) = q {
+        let search_pattern = format!("%{}%", query);
+        let count = sqlx::query_scalar::<_, i64>(
+            "SELECT COUNT(*) FROM musicians WHERE given_name ILIKE $1 OR family_name ILIKE $1",
+        )
+        .bind(&search_pattern)
         .fetch_one(&pool)
         .await
         .unwrap_or(0);
 
-    let total_pages = (total_count as f64 / limit as f64).ceil() as i64;
-
-    let musicians =
-        sqlx::query_as::<_, Musician>("SELECT * FROM musicians ORDER BY id LIMIT $1 OFFSET $2")
-            .bind(limit)
-            .bind(offset)
-            .fetch_all(&pool)
+        let mus = sqlx::query_as::<_, Musician>(
+            "SELECT * FROM musicians WHERE given_name ILIKE $1 OR family_name ILIKE $1 ORDER BY id LIMIT $2 OFFSET $3",
+        )
+        .bind(&search_pattern)
+        .bind(limit)
+        .bind(offset)
+        .fetch_all(&pool)
+        .await
+        .unwrap_or_default();
+        (count, mus)
+    } else {
+        let count = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM musicians")
+            .fetch_one(&pool)
             .await
-            .unwrap_or_default();
+            .unwrap_or(0);
+
+        let mus = sqlx::query_as::<_, Musician>(
+            "SELECT * FROM musicians ORDER BY id LIMIT $1 OFFSET $2",
+        )
+        .bind(limit)
+        .bind(offset)
+        .fetch_all(&pool)
+        .await
+        .unwrap_or_default();
+        (count, mus)
+    };
+
+    let total_pages = (total_count as f64 / limit as f64).ceil() as i64;
 
     HtmlTemplate(AdminMusiciansTemplate {
         musicians,
         current_user: Some(auth.0),
         page,
         total_pages,
-        q: params.q,
+        q,
     })
     .into_response()
 }
