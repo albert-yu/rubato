@@ -57,6 +57,7 @@ pub struct PlayerTemplate {
 #[template(path = "admin/index.html")]
 pub struct AdminIndexTemplate {
     pub current_user: Option<User>,
+    pub active_nav: &'static str,
 }
 
 #[derive(Template)]
@@ -67,6 +68,7 @@ pub struct AdminMusiciansTemplate {
     pub page: i64,
     pub total_pages: i64,
     pub q: Option<String>,
+    pub active_nav: &'static str,
 }
 
 #[derive(Template)]
@@ -74,6 +76,7 @@ pub struct AdminMusiciansTemplate {
 pub struct AdminMusicianEditTemplate {
     pub musician: Musician,
     pub current_user: Option<User>,
+    pub active_nav: &'static str,
 }
 
 #[derive(Template)]
@@ -84,6 +87,7 @@ pub struct AdminCompositionsTemplate {
     pub page: i64,
     pub total_pages: i64,
     pub q: Option<String>,
+    pub active_nav: &'static str,
 }
 
 #[derive(Template)]
@@ -93,6 +97,7 @@ pub struct AdminCompositionEditTemplate {
     pub movements: Vec<Movement>,
     pub musicians: Vec<Musician>,
     pub current_user: Option<User>,
+    pub active_nav: &'static str,
 }
 
 #[derive(Template)]
@@ -103,6 +108,7 @@ pub struct AdminRecordingsTemplate {
     pub page: i64,
     pub total_pages: i64,
     pub q: Option<String>,
+    pub active_nav: &'static str,
 }
 
 #[derive(Template)]
@@ -110,6 +116,7 @@ pub struct AdminRecordingsTemplate {
 pub struct AdminImportTemplate {
     pub job: Option<ImportJob>,
     pub current_user: Option<User>,
+    pub active_nav: &'static str,
 }
 
 #[derive(Template)]
@@ -120,6 +127,7 @@ pub struct AdminRecordingEditTemplate {
     pub compositions: Vec<Composition>,
     pub movements: Vec<Movement>,
     pub current_user: Option<User>,
+    pub active_nav: &'static str,
 }
 
 #[derive(Template)]

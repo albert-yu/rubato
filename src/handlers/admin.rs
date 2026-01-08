@@ -27,6 +27,7 @@ pub async fn admin_index(auth: AuthUser) -> impl IntoResponse {
     }
     HtmlTemplate(AdminIndexTemplate {
         current_user: Some(user),
+        active_nav: "dashboard",
     })
     .into_response()
 }
@@ -90,6 +91,7 @@ pub async fn admin_musicians(
         page,
         total_pages,
         q,
+        active_nav: "musicians",
     })
     .into_response()
 }
@@ -101,6 +103,7 @@ pub async fn admin_musician_new(auth: AuthUser) -> impl IntoResponse {
     HtmlTemplate(AdminMusicianEditTemplate {
         musician: Musician::default(),
         current_user: Some(auth.0),
+        active_nav: "musicians",
     })
     .into_response()
 }
@@ -142,6 +145,7 @@ pub async fn admin_musician_edit(
     HtmlTemplate(AdminMusicianEditTemplate {
         musician,
         current_user: Some(auth.0),
+        active_nav: "musicians",
     })
     .into_response()
 }
@@ -245,6 +249,7 @@ pub async fn admin_compositions(
         page,
         total_pages,
         q,
+        active_nav: "compositions",
     })
     .into_response()
 }
@@ -265,6 +270,7 @@ pub async fn admin_composition_new(
         movements: vec![],
         musicians,
         current_user: Some(auth.0),
+        active_nav: "compositions",
     })
     .into_response()
 }
@@ -319,6 +325,7 @@ pub async fn admin_composition_edit(
         movements,
         musicians,
         current_user: Some(auth.0),
+        active_nav: "compositions",
     })
     .into_response()
 }
@@ -463,6 +470,7 @@ pub async fn admin_recordings(
         page,
         total_pages,
         q: params.q,
+        active_nav: "recordings",
     })
     .into_response()
 }
@@ -494,6 +502,7 @@ pub async fn admin_recording_new(
         compositions,
         movements,
         current_user: Some(auth.0),
+        active_nav: "recordings",
     })
     .into_response()
 }
@@ -552,6 +561,7 @@ pub async fn admin_recording_edit(
         compositions,
         movements,
         current_user: Some(auth.0),
+        active_nav: "recordings",
     })
     .into_response()
 }
@@ -650,6 +660,7 @@ pub async fn admin_import(auth: AuthUser, State(pool): State<Pool<Postgres>>) ->
     HtmlTemplate(AdminImportTemplate {
         job,
         current_user: Some(auth.0),
+        active_nav: "import",
     })
     .into_response()
 }

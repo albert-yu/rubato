@@ -16,16 +16,16 @@
                 <span class="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Management</span>
             </li>
             <li>
-                <a href="/admin/musicians" class="block px-4 py-2 hover:bg-gray-700 rounded">Musicians</a>
+                <a href="/admin/musicians" class="block px-4 py-2 rounded {% if active_nav == "musicians" %}bg-gray-900 text-white{% else %}text-gray-300 hover:bg-gray-700 hover:text-white{% endif %}">Musicians</a>
             </li>
             <li>
-                <a href="/admin/compositions" class="block px-4 py-2 hover:bg-gray-700 rounded">Compositions</a>
+                <a href="/admin/compositions" class="block px-4 py-2 rounded {% if active_nav == "compositions" %}bg-gray-900 text-white{% else %}text-gray-300 hover:bg-gray-700 hover:text-white{% endif %}">Compositions</a>
             </li>
             <li>
-                <a href="/admin/recordings" class="block px-4 py-2 hover:bg-gray-700 rounded">Recordings</a>
+                <a href="/admin/recordings" class="block px-4 py-2 rounded {% if active_nav == "recordings" %}bg-gray-900 text-white{% else %}text-gray-300 hover:bg-gray-700 hover:text-white{% endif %}">Recordings</a>
             </li>
             <li>
-                <a href="/admin/import" class="block px-4 py-2 hover:bg-gray-700 rounded">Import</a>
+                <a href="/admin/import" class="block px-4 py-2 rounded {% if active_nav == "import" %}bg-gray-900 text-white{% else %}text-gray-300 hover:bg-gray-700 hover:text-white{% endif %}">Import</a>
             </li>
         </ul>
         <div class="mt-auto">
