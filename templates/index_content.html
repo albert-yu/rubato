@@ -21,6 +21,9 @@
                     </h3>
                     {% endif %}
                     <p class="text-lg text-indigo-600 mt-1">@{{ recording.artist_handle }}</p>
+                    {% if let Some(notes) = recording.notes %}
+                    <p class="mt-2 text-sm text-gray-600 italic whitespace-pre-wrap">{{ notes }}</p>
+                    {% endif %}
                 </div>
                 <span class="text-sm text-gray-500">{{ recording.created_at.format("%Y-%m-%d") }}</span>
             </div>

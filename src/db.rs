@@ -134,6 +134,7 @@ pub struct Recording {
     pub content_hash: String,
     pub file_key: String,
     pub mime_type: String,
+    pub notes: Option<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
 }
 
@@ -159,6 +160,7 @@ pub struct RecordingFeedItem {
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub file_key: String,
     pub mime_type: String,
+    pub notes: Option<String>,
 }
 
 // Helpers for deserialization

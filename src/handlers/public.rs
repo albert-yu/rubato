@@ -33,7 +33,8 @@ pub async fn index(
             mv.title as movement_title,
             r.created_at,
             r.file_key,
-            r.mime_type
+            r.mime_type,
+            r.notes
         FROM recordings r
         JOIN musicians m ON r.artist_id = m.id
         JOIN compositions c ON r.composition_id = c.id
@@ -146,6 +147,7 @@ pub async fn upload_post(
     let mut file_data: Option<Bytes> = None;
     let mut composition_id = None;
     let mut movement_id = None;
+    let mut notes = None;
 
     while let Ok(Some(field)) = multipart.next_field().await {
         let name = field.name().unwrap_or_default().to_string();
@@ -169,6 +171,13 @@ pub async fn upload_post(
             if let Ok(txt) = field.text().await {
                 tracing::info!("Received movement_id: {}", txt);
                 movement_id = txt.parse::<i32>().ok();
+            }
+        } else if name == "notes" {
+            if let Ok(txt) = field.text().await {
+                let txt = txt.trim();
+                if !txt.is_empty() {
+                    notes = Some(txt.to_string());
+                }
             }
         }
     }
@@ -207,7 +216,7 @@ pub async fn upload_post(
     }
 
     let _ = sqlx::query(
-        "INSERT INTO recordings (artist_id, composition_id, movement_id, content_hash, file_key, mime_type) VALUES ($1, $2, $3, $4, $5, $6)"
+        "INSERT INTO recordings (artist_id, composition_id, movement_id, content_hash, file_key, mime_type, notes) VALUES ($1, $2, $3, $4, $5, $6, $7)"
     )
     .bind(auth.0.musician_id)
     .bind(comp_id)
@@ -215,6 +224,7 @@ pub async fn upload_post(
     .bind("hash_placeholder")
     .bind(file_key)
     .bind(mime_type)
+    .bind(notes)
     .execute(&pool)
     .await
     .unwrap();
@@ -269,7 +279,8 @@ pub async fn get_player(
             mv.title as movement_title,
             r.created_at,
             r.file_key,
-            r.mime_type
+            r.mime_type,
+            r.notes
         FROM recordings r
         JOIN musicians m ON r.artist_id = m.id
         JOIN compositions c ON r.composition_id = c.id
