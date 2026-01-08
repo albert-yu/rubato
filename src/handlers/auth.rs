@@ -47,6 +47,24 @@ pub async fn signup_post(
     jar: CookieJar,
     Form(payload): Form<SignupPayload>,
 ) -> impl IntoResponse {
+    // Validate handle format
+    let handle = &payload.handle;
+    let is_valid_format = handle.chars().all(|c| c.is_alphanumeric() || c == '-')
+        && !handle.starts_with('-')
+        && !handle.ends_with('-')
+        && !handle.is_empty();
+
+    if !is_valid_format {
+        return (
+            jar,
+            HtmlTemplate(SignupTemplate {
+                current_user: auth.0,
+                error: Some("Username must contain only alphanumeric characters or hyphens, and cannot start or end with a hyphen.".to_string()),
+            }),
+        )
+            .into_response();
+    }
+
     // Check if email already exists
     let email_exists = sqlx::query!("SELECT id FROM users WHERE email = $1", payload.email)
         .fetch_optional(&pool)
