@@ -9,6 +9,9 @@ pub trait StorageService: Send + Sync {
 
     /// Deletes a file from the storage provider.
     async fn delete(&self, key: &str) -> Result<()>;
+
+    /// Returns the public URL for a given key.
+    fn get_url(&self, key: &str) -> String;
 }
 
 // --- Local Filesystem Implementation ---
@@ -48,6 +51,10 @@ impl StorageService for LocalStorage {
             tokio::fs::remove_file(file_path).await?;
         }
         Ok(())
+    }
+
+    fn get_url(&self, key: &str) -> String {
+        format!("{}/{}", self.base_url, key)
     }
 }
 
@@ -96,5 +103,9 @@ impl StorageService for S3Storage {
             .await
             .map_err(|e| anyhow::anyhow!("S3 Delete failed: {}", e))?;
         Ok(())
+    }
+
+    fn get_url(&self, key: &str) -> String {
+        format!("{}/{}", self.public_url, key)
     }
 }

@@ -6,6 +6,7 @@ use axum::{
 };
 use serde::Deserialize;
 use sqlx::{Pool, Postgres};
+use std::sync::Arc;
 use tokio::io::AsyncReadExt;
 use tower::ServiceExt;
 use tower_http::services::ServeFile;
@@ -13,6 +14,7 @@ use uuid::Uuid;
 
 use crate::db::{CreateMusician, Musician, RecordingFeedItem};
 use crate::extractors::{AuthUser, HtmxRequest, OptionalAuthUser};
+use crate::storage::StorageService;
 use crate::view::{
     CompositionPickerTemplate, HtmlTemplate, IndexContentTemplate, IndexTemplate, PlayerTemplate,
     SettingsContentTemplate, SettingsTemplate, UploadContentTemplate, UploadTemplate,
@@ -120,6 +122,7 @@ pub async fn upload_post(
     auth: AuthUser,
     htmx: HtmxRequest,
     State(pool): State<Pool<Postgres>>,
+    State(storage): State<Arc<dyn StorageService>>,
     mut multipart: Multipart,
 ) -> Response {
     use axum::body::Bytes;
@@ -199,11 +202,8 @@ pub async fn upload_post(
     }
 
     let file_key = Uuid::new_v4().to_string();
-    let path = format!("uploads/recordings/{}", file_key);
-    if let Some(parent) = std::path::Path::new(&path).parent() {
-        let _ = tokio::fs::create_dir_all(parent).await;
-    }
-    if tokio::fs::write(&path, &data).await.is_err() {
+    if let Err(e) = storage.upload(&file_key, data.to_vec(), &mime_type).await {
+        tracing::error!("Failed to upload file: {}", e);
         return render_error("Failed to save file.".to_string());
     }
 
@@ -224,7 +224,15 @@ pub async fn upload_post(
     Redirect::to("/").into_response()
 }
 
-pub async fn serve_audio(Path(key): Path<String>, req: Request) -> Response {
+pub async fn serve_audio(
+    Path(key): Path<String>,
+    State(storage): State<Arc<dyn StorageService>>,
+    req: Request,
+) -> Response {
+    if std::env::var("APP_ENV").unwrap_or_default() == "production" {
+        return Redirect::temporary(&storage.get_url(&key)).into_response();
+    }
+
     let path = format!("uploads/recordings/{}", key);
 
     let mut file = match tokio::fs::File::open(&path).await {

@@ -179,7 +179,10 @@ async fn main() -> anyhow::Result<()> {
             Arc::new(storage::S3Storage::new(client, bucket, public_url))
         } else {
             tracing::info!("Initializing Local Storage");
-            Arc::new(storage::LocalStorage::new("uploads", "/uploads"))
+            Arc::new(storage::LocalStorage::new(
+                "uploads/recordings",
+                "/uploads/recordings",
+            ))
         };
 
     let app_state = AppState {
