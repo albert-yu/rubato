@@ -476,7 +476,7 @@ pub async fn select_composition(
 
         let html = format!(
             r##"<div id="composition-picker" class="relative">
-                <label class="block text-sm font-medium text-gray-700">Composition</label>
+                <label class="block text-sm font-medium text-gray-700">Composition <span class="text-red-500">*</span></label>
                 <input type="hidden" name="composition_id" value="{}" required>
                 {}
                 <div class="mt-1 flex items-center justify-between p-2 border border-gray-300 rounded-md bg-gray-50">
