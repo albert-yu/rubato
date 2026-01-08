@@ -214,6 +214,7 @@ async fn main() -> anyhow::Result<()> {
         .route("/audio/{key}", get(public::serve_audio))
         .route("/player/{id}", get(public::get_player))
         .route("/login", get(auth::login_form).post(auth::login_post))
+        .route("/signup", get(auth::signup_form).post(auth::signup_post))
         .route("/logout", post(auth::logout))
         .route("/search/compositions", get(public::search_compositions))
         // Admin

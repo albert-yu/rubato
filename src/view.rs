@@ -130,6 +130,13 @@ pub struct LoginTemplate {
 }
 
 #[derive(Template)]
+#[template(path = "signup.html")]
+pub struct SignupTemplate {
+    pub current_user: Option<User>,
+    pub error: Option<String>,
+}
+
+#[derive(Template)]
 #[template(path = "404.html")]
 pub struct NotFoundTemplate;
 
