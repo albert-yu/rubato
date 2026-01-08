@@ -1,11 +1,14 @@
 use axum::{
     Form,
-    extract::{Multipart, Path, Query, State},
+    extract::{Multipart, Path, Query, Request, State},
     http::StatusCode,
     response::{IntoResponse, Redirect, Response},
 };
 use serde::Deserialize;
 use sqlx::{Pool, Postgres};
+use tokio::io::AsyncReadExt;
+use tower::ServiceExt;
+use tower_http::services::ServeFile;
 use uuid::Uuid;
 
 use crate::db::{CreateMusician, Musician, RecordingFeedItem};
@@ -210,22 +213,36 @@ pub async fn upload_post(
     Redirect::to("/").into_response()
 }
 
-pub async fn serve_audio(Path(key): Path<String>) -> impl IntoResponse {
+pub async fn serve_audio(Path(key): Path<String>, req: Request) -> Response {
     let path = format!("uploads/recordings/{}", key);
-    match tokio::fs::read(&path).await {
-        Ok(bytes) => {
-            if let Some(kind) = infer::get(&bytes) {
-                if kind.mime_type().starts_with("audio/") {
-                    return (
-                        [(axum::http::header::CONTENT_TYPE, kind.mime_type())],
-                        bytes,
-                    )
-                        .into_response();
-                }
+
+    let mut file = match tokio::fs::File::open(&path).await {
+        Ok(file) => file,
+        Err(_) => return (StatusCode::NOT_FOUND, "File not found").into_response(),
+    };
+
+    let mut buffer = [0; 1024];
+    let n = match file.read(&mut buffer).await {
+        Ok(n) => n,
+        Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, "Error reading file").into_response(),
+    };
+
+    let mime_type = match infer::get(&buffer[..n]) {
+        Some(kind) if kind.mime_type().starts_with("audio/") => kind.mime_type().to_string(),
+        _ => return (StatusCode::BAD_REQUEST, "File is not an audio file").into_response(),
+    };
+
+    match ServeFile::new(&path).oneshot(req).await {
+        Ok(response) => {
+            let mut response = response.into_response();
+            if let Ok(value) = axum::http::HeaderValue::from_str(&mime_type) {
+                response
+                    .headers_mut()
+                    .insert(axum::http::header::CONTENT_TYPE, value);
             }
-            (StatusCode::BAD_REQUEST, "File is not an audio file").into_response()
+            response
         }
-        Err(_) => (StatusCode::NOT_FOUND, "File not found").into_response(),
+        Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Error serving file").into_response(),
     }
 }
 
