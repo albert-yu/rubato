@@ -15,7 +15,7 @@ use crate::db::{CreateMusician, Musician, RecordingFeedItem};
 use crate::extractors::{AuthUser, HtmxRequest, OptionalAuthUser};
 use crate::view::{
     CompositionPickerTemplate, HtmlTemplate, IndexContentTemplate, IndexTemplate, PlayerTemplate,
-    SettingsContentTemplate, SettingsTemplate, UploadTemplate,
+    SettingsContentTemplate, SettingsTemplate, UploadContentTemplate, UploadTemplate,
 };
 
 pub async fn index(
@@ -103,20 +103,45 @@ pub async fn settings_post(
     Redirect::to("/settings")
 }
 
-pub async fn upload(auth: AuthUser, _htmx: HtmxRequest) -> impl IntoResponse {
-    HtmlTemplate(UploadTemplate {
-        current_user: Some(auth.0),
-        error: None,
-    })
+pub async fn upload(auth: AuthUser, htmx: HtmxRequest) -> Response {
+    if htmx.is_hx_boosted {
+        HtmlTemplate(UploadContentTemplate {
+            current_user: Some(auth.0),
+            error: None,
+        })
+        .into_response()
+    } else {
+        HtmlTemplate(UploadTemplate {
+            current_user: Some(auth.0),
+            error: None,
+        })
+        .into_response()
+    }
 }
 
 pub async fn upload_post(
     auth: AuthUser,
-    _htmx: HtmxRequest,
+    htmx: HtmxRequest,
     State(pool): State<Pool<Postgres>>,
     mut multipart: Multipart,
-) -> impl IntoResponse {
+) -> Response {
     use axum::body::Bytes;
+
+    let render_error = |err: String| {
+        if htmx.is_hx_boosted {
+            HtmlTemplate(UploadContentTemplate {
+                current_user: Some(auth.0.clone()),
+                error: Some(err),
+            })
+            .into_response()
+        } else {
+            HtmlTemplate(UploadTemplate {
+                current_user: Some(auth.0.clone()),
+                error: Some(err),
+            })
+            .into_response()
+        }
+    };
 
     let mut file_data: Option<Bytes> = None;
     let mut composition_id = None;
@@ -151,22 +176,14 @@ pub async fn upload_post(
     let data = match file_data {
         Some(d) => d,
         None => {
-            return HtmlTemplate(UploadTemplate {
-                current_user: Some(auth.0.clone()),
-                error: Some("No file uploaded.".to_string()),
-            })
-            .into_response();
+            return render_error("No file uploaded.".to_string());
         }
     };
 
     let comp_id = match composition_id {
         Some(id) => id,
         None => {
-            return HtmlTemplate(UploadTemplate {
-                current_user: Some(auth.0.clone()),
-                error: Some("No composition selected.".to_string()),
-            })
-            .into_response();
+            return render_error("No composition selected.".to_string());
         }
     };
 
@@ -177,11 +194,7 @@ pub async fn upload_post(
     };
 
     if !mime_type.starts_with("audio/") {
-        return HtmlTemplate(UploadTemplate {
-            current_user: Some(auth.0),
-            error: Some("Uploaded file is not a valid audio file.".to_string()),
-        })
-        .into_response();
+        return render_error("Uploaded file is not a valid audio file.".to_string());
     }
 
     let file_key = Uuid::new_v4().to_string();
@@ -190,11 +203,7 @@ pub async fn upload_post(
         let _ = tokio::fs::create_dir_all(parent).await;
     }
     if tokio::fs::write(&path, &data).await.is_err() {
-        return HtmlTemplate(UploadTemplate {
-            current_user: Some(auth.0),
-            error: Some("Failed to save file.".to_string()),
-        })
-        .into_response();
+        return render_error("Failed to save file.".to_string());
     }
 
     let _ = sqlx::query(
