@@ -106,11 +106,7 @@ pub async fn settings_post(
 
 pub async fn upload(auth: AuthUser, htmx: HtmxRequest) -> Response {
     if htmx.is_hx_boosted {
-        HtmlTemplate(UploadContentTemplate {
-            current_user: Some(auth.0),
-            error: None,
-        })
-        .into_response()
+        HtmlTemplate(UploadContentTemplate { error: None }).into_response()
     } else {
         HtmlTemplate(UploadTemplate {
             current_user: Some(auth.0),
@@ -130,11 +126,7 @@ pub async fn upload_post(
 
     let render_error = |err: String| {
         if htmx.is_hx_boosted {
-            HtmlTemplate(UploadContentTemplate {
-                current_user: Some(auth.0.clone()),
-                error: Some(err),
-            })
-            .into_response()
+            HtmlTemplate(UploadContentTemplate { error: Some(err) }).into_response()
         } else {
             HtmlTemplate(UploadTemplate {
                 current_user: Some(auth.0.clone()),

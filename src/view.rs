@@ -40,7 +40,6 @@ pub struct UploadTemplate {
 #[derive(Template)]
 #[template(path = "upload_content.html")]
 pub struct UploadContentTemplate {
-    pub current_user: Option<User>,
     pub error: Option<String>,
 }
 
