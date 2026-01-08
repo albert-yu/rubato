@@ -15,7 +15,7 @@ use crate::view::{HtmlTemplate, LoginTemplate, SignupTemplate};
 
 #[derive(Deserialize)]
 pub struct LoginPayload {
-    email: String,
+    identity: String,
     password: String,
 }
 
@@ -197,8 +197,10 @@ pub async fn login_post(
     jar: CookieJar,
     Form(payload): Form<LoginPayload>,
 ) -> impl IntoResponse {
-    let user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE email = $1")
-        .bind(&payload.email)
+    let user = sqlx::query_as::<_, User>(
+        "SELECT u.* FROM users u JOIN musicians m ON u.musician_id = m.id WHERE u.email = $1 OR m.handle = $1"
+    )
+        .bind(&payload.identity)
         .fetch_optional(&pool)
         .await
         .unwrap_or(None);
@@ -228,12 +230,11 @@ pub async fn login_post(
         jar,
         HtmlTemplate(LoginTemplate {
             current_user: auth.0,
-            error: Some("Invalid email or password".to_string()),
+            error: Some("Invalid identity or password".to_string()),
         }),
     )
         .into_response()
 }
-
 pub async fn logout(jar: CookieJar) -> impl IntoResponse {
     (
         jar.remove(Cookie::from("auth_token")),
