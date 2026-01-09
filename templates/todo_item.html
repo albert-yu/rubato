@@ -1,14 +1,14 @@
-<li class="py-4 flex items-center justify-between" id="todo-{{ todo.id }}">
+<li class="py-4 flex items-center justify-between border-b border-gray-100 last:border-0" id="todo-{{ todo.id }}">
     <div class="flex items-center">
         <input type="checkbox"
-               class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded mr-3"
+               class="h-4 w-4 text-black focus:ring-black border-gray-300 rounded-none mr-3"
                {% if todo.completed %}checked{% endif %}
                hx-patch="/todos/{{ todo.id }}"
                hx-target="#todo-{{ todo.id }}"
                hx-swap="outerHTML">
-        <span class="text-lg {% if todo.completed %}line-through text-gray-500{% endif %}">{{ todo.task }}</span>
+        <span class="text-lg font-light {% if todo.completed %}line-through text-gray-400{% endif %}">{{ todo.task }}</span>
     </div>
-    <button class="text-red-500 hover:text-red-700"
+    <button class="text-gray-400 hover:text-black font-mono text-xs uppercase tracking-wider"
             hx-delete="/todos/{{ todo.id }}"
             hx-target="#todo-{{ todo.id }}"
             hx-swap="outerHTML">

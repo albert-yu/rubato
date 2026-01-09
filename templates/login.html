@@ -6,30 +6,30 @@
 
 {% block content %}
 <div class="max-w-md mx-auto mt-10">
-    <h1 class="text-2xl font-bold mb-4">Login</h1>
+    <h1 class="text-3xl font-serif font-bold mb-8 text-center text-black">Login</h1>
     {% if let Some(error) = error %}
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div class="bg-gray-100 border border-gray-400 text-gray-800 px-4 py-3 rounded-none mb-4 font-mono text-sm">
             {{ error }}
         </div>
     {% endif %}
-    <form action="/login" method="post" class="space-y-4">
+    <form action="/login" method="post" class="space-y-6">
         <div>
-            <label for="identity" class="block text-sm font-medium text-gray-700">Email or Username *</label>
-            <input type="text" name="identity" id="identity" required autocomplete="username" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <label for="identity" class="block text-sm font-medium text-gray-700 font-mono uppercase tracking-wider">Email or Username *</label>
+            <input type="text" name="identity" id="identity" required autocomplete="username" class="mt-2 block w-full rounded-none border-gray-300 shadow-sm focus:border-black focus:ring-black">
         </div>
         <div>
-            <label for="password" class="block text-sm font-medium text-gray-700">Password *</label>
-            <input type="password" name="password" id="password" required autocomplete="current-password" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <label for="password" class="block text-sm font-medium text-gray-700 font-mono uppercase tracking-wider">Password *</label>
+            <input type="password" name="password" id="password" required autocomplete="current-password" class="mt-2 block w-full rounded-none border-gray-300 shadow-sm focus:border-black focus:ring-black">
         </div>
         <div>
-            <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-none shadow-sm text-sm font-bold text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors uppercase tracking-widest">
                 Sign In
             </button>
         </div>
     </form>
-    <div class="mt-4 text-center">
-        <p class="text-sm text-gray-600">
-            Don't have an account? <a href="/signup" class="font-medium text-indigo-600 hover:text-indigo-500">Sign up</a>
+    <div class="mt-6 text-center">
+        <p class="text-sm text-gray-600 font-light">
+            Don't have an account? <a href="/signup" class="font-medium text-black underline decoration-1 underline-offset-2 hover:text-gray-600">Sign up</a>
         </p>
     </div>
 </div>

@@ -1,9 +1,9 @@
 <div class="py-12">
-    <h1 class="text-4xl font-bold text-gray-900 mb-8 text-center">Recent Uploads</h1>
+    <h1 class="text-4xl font-serif font-bold text-black mb-12 text-center tracking-tight">Recent Uploads</h1>
 
     {% if let Some(user) = current_user %}
-    <div class="max-w-4xl mx-auto mb-6 flex justify-end">
-        <a href="/upload" hx-boost="true" hx-target="#main-content" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150 shadow-sm">
+    <div class="max-w-4xl mx-auto mb-8 flex justify-end">
+        <a href="/upload" hx-boost="true" hx-target="#main-content" class="inline-flex items-center px-6 py-2 bg-black border border-transparent rounded-none font-medium text-xs text-white uppercase tracking-widest hover:bg-gray-800 transition ease-in-out duration-150">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
@@ -13,36 +13,36 @@
     {% endif %}
 
     {% if recordings.is_empty() %}
-    <div class="text-center text-gray-500 text-xl">
+    <div class="text-center text-gray-400 text-xl font-light">
         No recordings yet.
     </div>
     {% else %}
-    <div class="space-y-6 max-w-4xl mx-auto">
+    <div class="space-y-4 max-w-4xl mx-auto">
         {% for recording in recordings %}
-        <div class="bg-white shadow rounded-lg p-6 flex flex-col">
+        <div class="bg-white border border-gray-200 p-8 flex flex-col hover:border-black transition-colors duration-300">
             <div class="flex justify-between items-start">
                 <div>
-                    <h2 class="text-2xl font-bold text-gray-900">{{ recording.composition_title }}</h2>
+                    <h2 class="text-2xl font-serif font-bold text-black">{{ recording.composition_title }}</h2>
                     {% if let Some(title) = recording.movement_title %}
-                    <h3 class="text-xl text-gray-700">
+                    <h3 class="text-xl text-gray-600 font-serif italic mt-1">
                         {% if let Some(idx) = recording.movement_index %}
                         {{ idx + 1 }}.
                         {% endif %}
                         {{ title }}
                     </h3>
                     {% endif %}
-                    <p class="text-lg text-indigo-600 mt-1">@{{ recording.artist_handle }}</p>
+                    <p class="text-sm font-mono text-gray-500 mt-2">@{{ recording.artist_handle }}</p>
                     {% if let Some(notes) = recording.notes %}
-                    <p class="mt-2 text-sm text-gray-600 italic whitespace-pre-wrap">{{ notes }}</p>
+                    <p class="mt-4 text-sm text-gray-800 leading-relaxed font-light whitespace-pre-wrap border-l-2 border-gray-100 pl-4">{{ notes }}</p>
                     {% endif %}
                 </div>
-                <span class="text-sm text-gray-500">{{ recording.created_at.format("%Y-%m-%d") }}</span>
+                <span class="text-xs font-mono text-gray-400">{{ recording.created_at.format("%Y-%m-%d") }}</span>
             </div>
 
-            <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+            <div class="mt-6 pt-6 border-t border-gray-100 flex items-center justify-between">
                 <button hx-get="/player/{{ recording.id }}" hx-target="#player-container" hx-swap="innerHTML"
-                    class="flex items-center px-4 py-2 bg-indigo-50 text-indigo-700 rounded-full hover:bg-indigo-100 transition-colors">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    class="flex items-center px-6 py-2 bg-gray-100 text-black rounded-full hover:bg-black hover:text-white transition-all duration-300 border border-transparent hover:border-black group">
+                    <svg class="w-4 h-4 mr-2 text-black group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
                         </path>
