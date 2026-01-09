@@ -338,7 +338,8 @@ pub async fn search_compositions(
         JOIN musicians mus ON c.composer_id = mus.id
         LEFT JOIN movements m ON c.id = m.composition_id
         WHERE 
-          concat_ws(' ', c.title, m.title, mus.handle, mus.given_name, mus.family_name) ILIKE ALL($1)
+          unaccent(concat_ws(' ', c.title, m.title, mus.handle, mus.given_name, mus.family_name)) 
+          ILIKE ALL(SELECT unaccent(x) FROM unnest($1::text[]) x)
         ORDER BY c.title, m.index
         LIMIT 50
         "#,
