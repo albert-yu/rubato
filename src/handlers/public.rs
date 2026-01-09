@@ -49,7 +49,11 @@ pub async fn index(
     .unwrap_or_default();
 
     if htmx.is_hx_boosted {
-        HtmlTemplate(IndexContentTemplate { recordings }).into_response()
+        HtmlTemplate(IndexContentTemplate {
+            current_user: auth.0,
+            recordings,
+        })
+        .into_response()
     } else {
         HtmlTemplate(IndexTemplate {
             current_user: auth.0,
