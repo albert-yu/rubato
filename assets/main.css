@@ -578,28 +578,6 @@ video {
   }
 }
 
-.sonata-hero-h1 {
-  margin-bottom: 1.25rem;
-  font-size: 3.75rem;
-  line-height: 1;
-  font-weight: 300;
-  letter-spacing: -0.05em;
-}
-
-@media (min-width: 768px) {
-  .sonata-hero-h1 {
-    font-size: 6rem;
-    line-height: 1;
-  }
-}
-
-.sonata-hero-h1 {
-  background: linear-gradient(135deg, #ffffff 0%, #a0a0a0 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
 .sonata-card {
   position: relative;
   cursor: pointer;
@@ -680,14 +658,6 @@ video {
   position: relative;
 }
 
-.sticky {
-  position: sticky;
-}
-
-.bottom-0 {
-  bottom: 0px;
-}
-
 .right-2 {
   right: 0.5rem;
 }
@@ -728,10 +698,6 @@ video {
 
 .mb-2 {
   margin-bottom: 0.5rem;
-}
-
-.mb-24 {
-  margin-bottom: 6rem;
 }
 
 .mb-4 {
@@ -861,6 +827,14 @@ video {
   height: 1px;
 }
 
+.h-full {
+  height: 100%;
+}
+
+.h-screen {
+  height: 100vh;
+}
+
 .max-h-60 {
   max-height: 15rem;
 }
@@ -891,10 +865,6 @@ video {
 
 .w-12 {
   width: 3rem;
-}
-
-.w-16 {
-  width: 4rem;
 }
 
 .w-2\/3 {
@@ -1112,6 +1082,10 @@ video {
   overflow-x: auto;
 }
 
+.overflow-y-auto {
+  overflow-y: auto;
+}
+
 .truncate {
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1316,16 +1290,8 @@ video {
   padding-bottom: 3rem;
 }
 
-.pb-24 {
-  padding-bottom: 6rem;
-}
-
 .pb-6 {
   padding-bottom: 1.5rem;
-}
-
-.pt-12 {
-  padding-top: 3rem;
 }
 
 .pt-4 {

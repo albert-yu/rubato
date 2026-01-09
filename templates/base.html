@@ -7,15 +7,15 @@
     <link href="/assets/main.css" rel="stylesheet">
     <script src="/assets/vendor/htmx.js"></script>
 </head>
-<body class="bg-sonata-black text-sonata-pearl font-sans min-h-screen {% block body_class %}{% endblock %}">
-    <div class="flex min-h-screen">
+<body class="bg-sonata-black text-sonata-pearl font-sans h-screen overflow-hidden {% block body_class %}{% endblock %}">
+    <div class="flex h-full">
         {% block nav %}{% endblock %}
-        <main class="flex-1 flex flex-col min-w-0 relative">
-            <div class="flex-1 container mx-auto p-8 pb-24" hx-history-elt id="main-content">
+        <main class="flex-1 flex flex-col min-w-0 relative h-full">
+            <div class="flex-1 container mx-auto p-8 overflow-y-auto" hx-history-elt id="main-content">
                 {% block content %}{% endblock %}
             </div>
             
-            <div id="player-container" class="sticky bottom-0 w-full z-40">
+            <div id="player-container" class="w-full z-40 border-t border-sonata-border/30 bg-sonata-charcoal empty:hidden">
             </div>
         </main>
     </div>
