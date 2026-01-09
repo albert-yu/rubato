@@ -13,7 +13,7 @@
         </div>
     </div>
 
-    <div class="sonata-card !cursor-default mb-12">
+    <div class="sonata-card mb-12">
         <form action="{% if composition.id == 0 %}/admin/compositions{% else %}/admin/composition/{{ composition.id }}{% endif %}" method="POST" class="space-y-8">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div class="md:col-span-2">
@@ -60,7 +60,7 @@
     </div>
 
     {% if composition.id != 0 %}
-    <div class="sonata-card !p-0 !cursor-default overflow-hidden">
+    <div class="sonata-card !p-0 overflow-hidden">
         <div class="px-8 py-6 border-b border-sonata-border/30 bg-sonata-black/30">
             <h2 class="text-xs font-light tracking-widest text-sonata-pearl uppercase">Movements</h2>
         </div>

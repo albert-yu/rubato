@@ -580,7 +580,6 @@ video {
 
 .sonata-card {
   position: relative;
-  cursor: pointer;
   overflow: hidden;
   border-radius: 0.125rem;
   border-width: 1px;
@@ -588,19 +587,23 @@ video {
   border-color: rgb(42 42 42 / var(--tw-border-opacity));
   background-image: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
   padding: 2.5rem;
+}
+
+.sonata-card-interactive {
+  cursor: pointer;
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 500ms;
 }
 
-.sonata-card:hover {
+.sonata-card-interactive:hover {
   --tw-translate-y: -0.5rem;
   transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
   --tw-border-opacity: 1;
   border-color: rgb(58 58 58 / var(--tw-border-opacity));
 }
 
-.sonata-card::before {
+.sonata-card-interactive::before {
   content: '';
   position: absolute;
   top: 0px;
@@ -614,7 +617,7 @@ video {
   background: linear-gradient(90deg, transparent, #fff, transparent);
 }
 
-.sonata-card:hover::before {
+.sonata-card-interactive:hover::before {
   opacity: 0.3;
 }
 
@@ -948,10 +951,6 @@ video {
 
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-.\!cursor-default {
-  cursor: default !important;
 }
 
 .cursor-pointer {

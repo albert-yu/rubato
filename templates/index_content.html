@@ -15,7 +15,7 @@
     {% else %}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         {% for recording in recordings %}
-        <div class="sonata-card group" hx-get="/player/{{ recording.id }}" hx-target="#player-container" hx-swap="innerHTML">
+        <div class="sonata-card sonata-card-interactive group" hx-get="/player/{{ recording.id }}" hx-target="#player-container" hx-swap="innerHTML">
             <div class="mb-8 text-[10px] tracking-widest text-sonata-slate uppercase font-light">
                 {{ recording.created_at.format("%m.%d.%Y") }}
             </div>

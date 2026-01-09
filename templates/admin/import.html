@@ -46,7 +46,7 @@
     </div>
 
     {% if let Some(j) = job %}
-    <div class="sonata-card !p-0 !cursor-default overflow-hidden mb-12" 
+    <div class="sonata-card !p-0 overflow-hidden mb-12" 
          {% if j.status == ImportJobStatus::Processing %} hx-get="/admin/import" hx-trigger="every 2s" hx-select="#job-status" hx-target="#job-status" hx-swap="outerHTML" {% endif %}
          id="job-status">
         <div class="px-8 py-6 border-b border-sonata-border/30 bg-sonata-black/30">

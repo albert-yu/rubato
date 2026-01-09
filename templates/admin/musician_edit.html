@@ -13,7 +13,7 @@
         </div>
     </div>
 
-    <div class="sonata-card !cursor-default">
+    <div class="sonata-card">
         <form action="{% if musician.id == 0 %}/admin/musicians{% else %}/admin/musician/{{ musician.id }}{% endif %}" method="POST" class="space-y-8">
             <div>
                 <label for="handle" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Handle</label>
