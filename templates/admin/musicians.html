@@ -3,16 +3,19 @@
 {% block title %}Musicians - Admin{% endblock %}
 
 {% block content %}
-<div id="musicians-container">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold">Musicians</h1>
-        <div class="flex items-center space-x-4">
+<div id="musicians-container" class="max-w-6xl mx-auto py-8">
+    <div class="flex justify-between items-end mb-12 border-b border-sonata-border pb-6">
+        <div>
+            <h1 class="text-2xl font-light tracking-tighter text-sonata-pearl mb-1">Musicians</h1>
+            <p class="text-[10px] tracking-[0.3em] uppercase font-light text-sonata-slate">Manage Artists</p>
+        </div>
+        <div class="flex items-center space-x-6">
             <div class="relative">
                 <input type="text" 
                        name="q" 
-                       placeholder="Search musicians..." 
+                       placeholder="Search..." 
                        value="{% match q %}{% when Some with (query) %}{{ query }}{% when None %}{% endmatch %}"
-                       class="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                       class="bg-sonata-black border border-sonata-charcoal rounded-sm px-4 py-2 text-xs font-light text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors w-64"
                        hx-get="/admin/musicians"
                        hx-trigger="keyup[key=='Enter'], search"
                        hx-target="#musicians-container"
@@ -26,37 +29,37 @@
                             hx-select="#musicians-container" 
                             hx-swap="outerHTML"
                             hx-push-url="true"
-                            class="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            class="absolute right-2 top-1/2 transform -translate-y-1/2 text-sonata-slate hover:text-sonata-pearl">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                     {% when None %}
                 {% endmatch %}
             </div>
-            <a href="/admin/musician/new" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Add New Musician</a>
+            <a href="/admin/musician/new" class="sonata-btn !px-6 !py-2 text-[10px]">Add Musician</a>
         </div>
     </div>
 
-    <div class="bg-white shadow rounded-lg overflow-hidden">
+    <div class="sonata-card !p-0 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
+            <table class="min-w-full divide-y divide-sonata-border/30">
+            <thead class="bg-sonata-black/50">
                 <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Handle</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th class="px-8 py-4 text-left text-[10px] font-light text-sonata-slate uppercase tracking-[0.2em]">ID</th>
+                    <th class="px-8 py-4 text-left text-[10px] font-light text-sonata-slate uppercase tracking-[0.2em]">Handle</th>
+                    <th class="px-8 py-4 text-left text-[10px] font-light text-sonata-slate uppercase tracking-[0.2em]">Name</th>
+                    <th class="px-8 py-4 text-right text-[10px] font-light text-sonata-slate uppercase tracking-[0.2em]">Actions</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
+            <tbody class="divide-y divide-sonata-border/20">
                 {% for musician in musicians %}
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ musician.id }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ musician.handle }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ musician.given_name }} {{ musician.family_name }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <a href="/admin/musician/{{ musician.id }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                <tr class="hover:bg-sonata-black/30 transition-colors">
+                    <td class="px-8 py-5 whitespace-nowrap text-xs font-light text-sonata-slate">#{{ musician.id }}</td>
+                    <td class="px-8 py-5 whitespace-nowrap text-xs font-light text-sonata-pearl">@{{ musician.handle }}</td>
+                    <td class="px-8 py-5 whitespace-nowrap text-xs font-light text-sonata-pearl">{{ musician.given_name }} {{ musician.family_name }}</td>
+                    <td class="px-8 py-5 whitespace-nowrap text-right text-xs font-light">
+                        <a href="/admin/musician/{{ musician.id }}" class="text-sonata-slate hover:text-sonata-pearl transition-colors uppercase tracking-widest text-[10px]">Edit</a>
                     </td>
                 </tr>
                 {% endfor %}

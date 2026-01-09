@@ -3,81 +3,87 @@
 {% block title %}{% if composition.id == 0 %}New Composition{% else %}Edit Composition{% endif %} - Admin{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold">{% if composition.id == 0 %}New Composition{% else %}Edit Composition{% endif %}</h1>
-        <a href="/admin/compositions" class="text-gray-600 hover:text-gray-900">Back to List</a>
+<div class="max-w-4xl mx-auto py-8">
+    <div class="flex justify-between items-end mb-12 border-b border-sonata-border pb-6">
+        <div>
+            <h1 class="text-2xl font-light tracking-tighter text-sonata-pearl mb-1">
+                {% if composition.id == 0 %}New Composition{% else %}Edit Composition{% endif %}
+            </h1>
+            <a href="/admin/compositions" class="text-[10px] tracking-[0.3em] uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors">← Back to List</a>
+        </div>
     </div>
 
-    <!-- Composition Form -->
-    <form action="{% if composition.id == 0 %}/admin/compositions{% else %}/admin/composition/{{ composition.id }}{% endif %}" method="POST" class="bg-white shadow rounded-lg p-6 mb-8">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div class="col-span-2">
-                <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                <input type="text" name="title" id="title" value="{{ composition.title }}" required
-                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 border p-2">
+    <div class="sonata-card mb-12">
+        <form action="{% if composition.id == 0 %}/admin/compositions{% else %}/admin/composition/{{ composition.id }}{% endif %}" method="POST" class="space-y-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="md:col-span-2">
+                    <label for="title" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Title</label>
+                    <input type="text" name="title" id="title" value="{{ composition.title }}" required
+                        class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light">
+                </div>
+
+                <div>
+                    <label for="slug" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Slug</label>
+                    <input type="text" name="slug" id="slug" value="{{ composition.slug }}" required
+                        class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light">
+                </div>
+
+                <div>
+                    <label for="publish_date" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Publish Date</label>
+                    <input type="date" name="publish_date" id="publish_date" value="{% if let Some(date) = composition.publish_date %}{{ date }}{% endif %}"
+                        class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light [color-scheme:dark]">
+                </div>
+
+                <div class="md:col-span-2">
+                    <label for="composer_id" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Composer</label>
+                    <select name="composer_id" id="composer_id" required class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light appearance-none">
+                        <option value="">Select a composer...</option>
+                        {% for musician in musicians %}
+                        <option value="{{ musician.id }}" {% if musician.id == composition.composer_id %}selected{% endif %}>
+                            {{ musician.given_name }} {{ musician.family_name }} ({{ musician.handle }})
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
 
-            <div>
-                <label for="slug" class="block text-sm font-medium text-gray-700 mb-1">Slug</label>
-                <input type="text" name="slug" id="slug" value="{{ composition.slug }}" required
-                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 border p-2">
+            <div class="pt-8 border-t border-sonata-border/30 flex justify-between items-center">
+                {% if composition.id != 0 %}
+                <button type="button" hx-delete="/admin/composition/{{ composition.id }}" hx-confirm="Are you sure?" hx-target="body" hx-push-url="true"
+                    class="text-red-900/70 hover:text-red-500 text-[10px] uppercase tracking-widest transition-colors">Delete Composition</button>
+                {% else %}
+                <div></div>
+                {% endif %}
+                <button type="submit" class="sonata-btn !px-8">Save Changes</button>
             </div>
+        </form>
+    </div>
 
-            <div>
-                <label for="publish_date" class="block text-sm font-medium text-gray-700 mb-1">Publish Date</label>
-                <input type="date" name="publish_date" id="publish_date" value="{% if let Some(date) = composition.publish_date %}{{ date }}{% endif %}"
-                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 border p-2">
-            </div>
-
-            <div class="col-span-2">
-                <label for="composer_id" class="block text-sm font-medium text-gray-700 mb-1">Composer</label>
-                <select name="composer_id" id="composer_id" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 border p-2 bg-white">
-                    <option value="">Select a composer...</option>
-                    {% for musician in musicians %}
-                    <option value="{{ musician.id }}" {% if musician.id == composition.composer_id %}selected{% endif %}>
-                        {{ musician.given_name }} {{ musician.family_name }} ({{ musician.handle }})
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
-
-        <div class="flex justify-between">
-            {% if composition.id != 0 %}
-            <button type="button" hx-delete="/admin/composition/{{ composition.id }}" hx-confirm="Are you sure? This will delete all associated movements." hx-target="body" hx-push-url="true"
-                class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Delete Composition</button>
-            {% else %}
-            <div></div>
-            {% endif %}
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Save Composition</button>
-        </div>
-    </form>
-
-    <!-- Movements Section (Only for existing compositions) -->
     {% if composition.id != 0 %}
-    <div class="bg-white shadow rounded-lg p-6">
-        <h2 class="text-xl font-bold mb-4">Movements</h2>
+    <div class="sonata-card !p-0 overflow-hidden">
+        <div class="px-8 py-6 border-b border-sonata-border/30 bg-sonata-black/30">
+            <h2 class="text-xs font-light tracking-widest text-sonata-pearl uppercase">Movements</h2>
+        </div>
         
-        <div class="overflow-x-auto mb-6">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-sonata-border/30">
+                <thead class="bg-sonata-black/20">
                     <tr>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Index</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Title</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Slug</th>
-                        <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                        <th class="px-8 py-4 text-left text-[10px] font-light text-sonata-slate uppercase tracking-[0.2em]">Index</th>
+                        <th class="px-8 py-4 text-left text-[10px] font-light text-sonata-slate uppercase tracking-[0.2em]">Title</th>
+                        <th class="px-8 py-4 text-left text-[10px] font-light text-sonata-slate uppercase tracking-[0.2em]">Slug</th>
+                        <th class="px-8 py-4 text-right text-[10px] font-light text-sonata-slate uppercase tracking-[0.2em]">Actions</th>
                     </tr>
                 </thead>
-                <tbody id="movements-list" class="divide-y divide-gray-200">
+                <tbody id="movements-list" class="divide-y divide-sonata-border/20">
                     {% for movement in movements %}
-                    <tr>
-                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{{ movement.index }}</td>
-                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ movement.title }}</td>
-                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{{ movement.slug }}</td>
-                        <td class="px-4 py-2 whitespace-nowrap text-right text-sm font-medium">
+                    <tr class="hover:bg-sonata-black/30 transition-colors">
+                        <td class="px-8 py-4 whitespace-nowrap text-xs font-light text-sonata-slate">{{ movement.index }}</td>
+                        <td class="px-8 py-4 whitespace-nowrap text-xs font-light text-sonata-pearl">{{ movement.title }}</td>
+                        <td class="px-8 py-4 whitespace-nowrap text-xs font-light text-sonata-slate">{{ movement.slug }}</td>
+                        <td class="px-8 py-4 whitespace-nowrap text-right text-xs font-light">
                             <button hx-delete="/admin/movements/{{ movement.id }}" hx-confirm="Delete movement?" hx-target="closest tr"
-                                class="text-red-600 hover:text-red-900">Delete</button>
+                                class="text-red-900/70 hover:text-red-500 text-[10px] uppercase tracking-widest transition-colors">Delete</button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -85,23 +91,23 @@
             </table>
         </div>
 
-        <div class="border-t pt-4">
-            <h3 class="text-lg font-medium mb-3">Add Movement</h3>
-            <form hx-post="/admin/composition/{{ composition.id }}/movements" hx-target="#movements-list" hx-swap="beforeend" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+        <div class="p-8 border-t border-sonata-border/30 bg-sonata-black/10">
+            <h3 class="text-[10px] font-light text-sonata-slate uppercase tracking-widest mb-6">Add Movement</h3>
+            <form hx-post="/admin/composition/{{ composition.id }}/movements" hx-target="#movements-list" hx-swap="beforeend" class="grid grid-cols-1 md:grid-cols-4 gap-6 items-end">
                 <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Index</label>
-                    <input type="number" name="index" required class="w-full rounded-md border-gray-300 border p-2 text-sm">
+                    <label class="block text-[10px] font-light text-sonata-slate uppercase tracking-widest mb-2">Index</label>
+                    <input type="number" name="index" required class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-2 px-3 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-xs font-light">
                 </div>
                 <div class="md:col-span-2">
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Title</label>
-                    <input type="text" name="title" required class="w-full rounded-md border-gray-300 border p-2 text-sm">
+                    <label class="block text-[10px] font-light text-sonata-slate uppercase tracking-widest mb-2">Title</label>
+                    <input type="text" name="title" required class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-2 px-3 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-xs font-light">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-700 mb-1">Slug</label>
-                    <input type="text" name="slug" required class="w-full rounded-md border-gray-300 border p-2 text-sm">
+                    <label class="block text-[10px] font-light text-sonata-slate uppercase tracking-widest mb-2">Slug</label>
+                    <input type="text" name="slug" required class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-2 px-3 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-xs font-light">
                 </div>
                 <div class="md:col-span-4 flex justify-end">
-                    <button type="submit" class="bg-green-500 text-white px-3 py-2 rounded text-sm hover:bg-green-600">Add Movement</button>
+                    <button type="submit" class="sonata-btn !px-6 !py-2 text-[10px]">Add</button>
                 </div>
             </form>
         </div>

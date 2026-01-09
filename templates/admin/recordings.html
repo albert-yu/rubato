@@ -3,36 +3,40 @@
 {% block title %}Recordings - Admin{% endblock %}
 
 {% block content %}
-<div class="flex justify-between items-center mb-6">
-    <h1 class="text-3xl font-bold">Recordings</h1>
-    <a href="/admin/recording/new" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Add New Recording</a>
-</div>
-
-<div class="bg-white shadow rounded-lg overflow-hidden">
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-            <thead class="bg-gray-50">
-                <tr>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Content Hash</th>
-                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">File Key</th>
-                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                {% for recording in recordings %}
-                <tr>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ recording.id }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ recording.content_hash }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ recording.file_key }}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <a href="/admin/recording/{{ recording.id }}" class="text-indigo-600 hover:text-indigo-900">Edit</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="max-w-6xl mx-auto py-8">
+    <div class="flex justify-between items-end mb-12 border-b border-sonata-border pb-6">
+        <div>
+            <h1 class="text-2xl font-light tracking-tighter text-sonata-pearl mb-1">Recordings</h1>
+            <p class="text-[10px] tracking-[0.3em] uppercase font-light text-sonata-slate">Manage Audio Assets</p>
+        </div>
+        <a href="/admin/recording/new" class="sonata-btn !px-6 !py-2 text-[10px]">Add Recording</a>
     </div>
-    {% include "pagination.html" %}
-</div>
-{% endblock %}
+
+    <div class="sonata-card !p-0 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-sonata-border/30">
+                <thead class="bg-sonata-black/50">
+                    <tr>
+                        <th class="px-8 py-4 text-left text-[10px] font-light text-sonata-slate uppercase tracking-[0.2em]">ID</th>
+                        <th class="px-8 py-4 text-left text-[10px] font-light text-sonata-slate uppercase tracking-[0.2em]">Content Hash</th>
+                        <th class="px-8 py-4 text-left text-[10px] font-light text-sonata-slate uppercase tracking-[0.2em]">File Key</th>
+                        <th class="px-8 py-4 text-right text-[10px] font-light text-sonata-slate uppercase tracking-[0.2em]">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-sonata-border/20">
+                    {% for recording in recordings %}
+                    <tr class="hover:bg-sonata-black/30 transition-colors">
+                        <td class="px-8 py-5 whitespace-nowrap text-xs font-light text-sonata-slate">#{{ recording.id }}</td>
+                        <td class="px-8 py-5 whitespace-nowrap text-xs font-light text-sonata-slate font-mono">{{ recording.content_hash|truncate(20) }}</td>
+                        <td class="px-8 py-5 whitespace-nowrap text-xs font-light text-sonata-slate font-mono">{{ recording.file_key|truncate(20) }}</td>
+                        <td class="px-8 py-5 whitespace-nowrap text-right text-xs font-light">
+                            <a href="/admin/recording/{{ recording.id }}" class="text-sonata-slate hover:text-sonata-pearl transition-colors uppercase tracking-widest text-[10px]">Edit</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% include "pagination.html" %}
+    </div>
+</div>{% endblock %}

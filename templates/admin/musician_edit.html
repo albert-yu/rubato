@@ -3,56 +3,62 @@
 {% block title %}{% if musician.id == 0 %}New Musician{% else %}Edit Musician{% endif %} - Admin{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold">{% if musician.id == 0 %}New Musician{% else %}Edit Musician{% endif %}</h1>
-        <a href="/admin/musicians" class="text-gray-600 hover:text-gray-900">Back to List</a>
+<div class="max-w-2xl mx-auto py-8">
+    <div class="flex justify-between items-end mb-12 border-b border-sonata-border pb-6">
+        <div>
+            <h1 class="text-2xl font-light tracking-tighter text-sonata-pearl mb-1">
+                {% if musician.id == 0 %}New Musician{% else %}Edit Musician{% endif %}
+            </h1>
+            <a href="/admin/musicians" class="text-[10px] tracking-[0.3em] uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors">← Back to List</a>
+        </div>
     </div>
 
-    <form action="{% if musician.id == 0 %}/admin/musicians{% else %}/admin/musician/{{ musician.id }}{% endif %}" method="POST" class="bg-white shadow rounded-lg p-6">
-        <div class="mb-4">
-            <label for="handle" class="block text-sm font-medium text-gray-700 mb-1">Handle</label>
-            <input type="text" name="handle" id="handle" value="{{ musician.handle }}" required
-                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 border p-2">
-            <p class="text-xs text-gray-500 mt-1">Unique identifier for URLs.</p>
-        </div>
+    <div class="sonata-card">
+        <form action="{% if musician.id == 0 %}/admin/musicians{% else %}/admin/musician/{{ musician.id }}{% endif %}" method="POST" class="space-y-8">
+            <div>
+                <label for="handle" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Handle</label>
+                <input type="text" name="handle" id="handle" value="{{ musician.handle }}" required
+                    class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light">
+                <p class="text-[10px] text-sonata-slate/50 mt-2 italic">Unique identifier for URLs.</p>
+            </div>
 
-        <div class="grid grid-cols-2 gap-4 mb-4">
-            <div>
-                <label for="given_name" class="block text-sm font-medium text-gray-700 mb-1">Given Name</label>
-                <input type="text" name="given_name" id="given_name" value="{{ musician.given_name }}" required
-                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 border p-2">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <label for="given_name" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Given Name</label>
+                    <input type="text" name="given_name" id="given_name" value="{{ musician.given_name }}" required
+                        class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light">
+                </div>
+                <div>
+                    <label for="family_name" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Family Name</label>
+                    <input type="text" name="family_name" id="family_name" value="{{ musician.family_name }}" required
+                        class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light">
+                </div>
             </div>
-            <div>
-                <label for="family_name" class="block text-sm font-medium text-gray-700 mb-1">Family Name</label>
-                <input type="text" name="family_name" id="family_name" value="{{ musician.family_name }}" required
-                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 border p-2">
-            </div>
-        </div>
 
-        <div class="grid grid-cols-2 gap-4 mb-6">
-            <div>
-                <label for="birth_date" class="block text-sm font-medium text-gray-700 mb-1">Birth Date</label>
-                <input type="date" name="birth_date" id="birth_date" value="{% if let Some(date) = musician.birth_date %}{{ date }}{% endif %}"
-                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 border p-2">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <label for="birth_date" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Birth Date</label>
+                    <input type="date" name="birth_date" id="birth_date" value="{% if let Some(date) = musician.birth_date %}{{ date }}{% endif %}"
+                        class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light [color-scheme:dark]">
+                </div>
+                <div>
+                    <label for="death_date" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Death Date</label>
+                    <input type="date" name="death_date" id="death_date" value="{% if let Some(date) = musician.death_date %}{{ date }}{% endif %}"
+                        class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light [color-scheme:dark]">
+                </div>
             </div>
-            <div>
-                <label for="death_date" class="block text-sm font-medium text-gray-700 mb-1">Death Date</label>
-                <input type="date" name="death_date" id="death_date" value="{% if let Some(date) = musician.death_date %}{{ date }}{% endif %}"
-                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 border p-2">
-            </div>
-        </div>
 
-        <div class="flex justify-between">
-            {% if musician.id != 0 %}
-            <button type="button" hx-delete="/admin/musician/{{ musician.id }}" hx-confirm="Are you sure?" hx-target="body" hx-push-url="true"
-                class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Delete</button>
-            {% else %}
-            <div></div>
-            {% endif %}
-            
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Save Musician</button>
-        </div>
-    </form>
+            <div class="pt-8 border-t border-sonata-border/30 flex justify-between items-center">
+                {% if musician.id != 0 %}
+                <button type="button" hx-delete="/admin/musician/{{ musician.id }}" hx-confirm="Are you sure?" hx-target="body" hx-push-url="true"
+                    class="text-red-900/70 hover:text-red-500 text-[10px] uppercase tracking-widest transition-colors">Delete Musician</button>
+                {% else %}
+                <div></div>
+                {% endif %}
+                
+                <button type="submit" class="sonata-btn !px-8">Save Changes</button>
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock %}

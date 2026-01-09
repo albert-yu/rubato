@@ -2,6 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+    .sonata-hero-h1 {
+        @apply text-6xl md:text-8xl font-light tracking-tighter mb-5;
+        background: linear-gradient(135deg, #ffffff 0%, #a0a0a0 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .sonata-card {
+        @apply bg-card-gradient border border-sonata-border rounded-sm p-10 relative overflow-hidden;
+    }
+
+    .sonata-card-interactive {
+        @apply transition-all duration-500 cursor-pointer;
+    }
+
+    .sonata-card-interactive:hover {
+        @apply -translate-y-2 border-sonata-border-hover;
+    }
+
+    .sonata-card-interactive::before {
+        content: '';
+        @apply absolute top-0 left-0 right-0 h-[1px] opacity-0 transition-opacity duration-500;
+        background: linear-gradient(90deg, transparent, #fff, transparent);
+    }
+
+    .sonata-card-interactive:hover::before {
+        @apply opacity-30;
+    }
+
+    .sonata-btn {
+        @apply px-10 py-4 bg-transparent border border-sonata-charcoal text-sonata-pearl text-xs tracking-widest uppercase cursor-pointer transition-all duration-300 rounded-sm font-light;
+    }
+
+    .sonata-btn:hover {
+        @apply bg-sonata-pearl text-sonata-black border-sonata-pearl;
+    }
+}
+
 @layer utilities {
     .htmx-indicator {
         opacity: 0;
