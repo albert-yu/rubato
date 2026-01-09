@@ -319,7 +319,11 @@ pub async fn search_compositions(
         return axum::response::Html("".to_string()).into_response();
     }
 
-    let search_pattern = format!("%{}%", params.q);
+    let search_words: Vec<String> = params
+        .q
+        .split_whitespace()
+        .map(|s| format!("%{}%", s))
+        .collect();
 
     let results = sqlx::query_as::<_, SearchResult>(
         r#"
@@ -334,20 +338,12 @@ pub async fn search_compositions(
         JOIN musicians mus ON c.composer_id = mus.id
         LEFT JOIN movements m ON c.id = m.composition_id
         WHERE 
-          c.title ILIKE $1 
-         OR
-          m.title ILIKE $1
-         OR
-          mus.handle ILIKE  $1
-         OR
-          mus.given_name ILIKE  $1
-         OR
-          mus.family_name ILIKE $1
+          concat_ws(' ', c.title, m.title, mus.handle, mus.given_name, mus.family_name) ILIKE ALL($1)
         ORDER BY c.title, m.index
         LIMIT 50
         "#,
     )
-    .bind(search_pattern)
+    .bind(search_words)
     .fetch_all(&pool)
     .await
     .unwrap_or_default();
