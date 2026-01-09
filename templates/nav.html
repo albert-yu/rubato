@@ -1,28 +1,28 @@
-<nav class="w-64 bg-gray-50 border-r border-gray-200 flex flex-col p-6">
-    <div class="mb-10">
-        <h1 class="text-3xl font-serif font-bold text-black tracking-wide">Rubato</h1>
+<nav class="w-64 bg-white shadow-md flex flex-col p-4">
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-indigo-600">Rubato</h1>
     </div>
-    <ul class="space-y-1 flex-1" hx-boost="true" hx-target="#main-content">
+    <ul class="space-y-2 flex-1" hx-boost="true" hx-target="#main-content">
         <li>
-            <a href="/" class="block px-4 py-2 text-gray-600 hover:text-black hover:bg-gray-200 rounded transition-colors duration-200">Home</a>
+            <a href="/" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Home</a>
         </li>
         {% if let Some(user) = current_user %}
         <li>
-            <a href="/settings" class="block px-4 py-2 text-gray-600 hover:text-black hover:bg-gray-200 rounded transition-colors duration-200">Settings</a>
+            <a href="/settings" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Settings</a>
         </li>
         {% endif %}
     </ul>
-    <div class="mt-auto pt-6 border-t border-gray-200">
+    <div class="mt-auto">
         {% if let Some(user) = current_user %}
             {% if user.is_privileged() %}
-            <a href="/admin" class="block px-4 py-2 text-gray-600 hover:text-black hover:bg-gray-200 rounded transition-colors duration-200 mb-2">Admin</a>
+            <a href="/admin" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Admin</a>
             {% endif %}
             <form action="/logout" method="post">
-                <button type="submit" class="w-full text-left px-4 py-2 text-gray-500 hover:text-black hover:bg-gray-200 rounded transition-colors duration-200">Logout</button>
+                <button type="submit" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 rounded">Logout</button>
             </form>
         {% else %}
-            <a href="/login" class="block px-4 py-2 text-black font-medium hover:bg-gray-200 rounded transition-colors duration-200 mb-1">Login</a>
-            <a href="/signup" class="block px-4 py-2 text-gray-600 hover:text-black hover:bg-gray-200 rounded transition-colors duration-200">Sign Up</a>
+            <a href="/login" class="block px-4 py-2 text-indigo-600 hover:bg-indigo-50 rounded">Login</a>
+            <a href="/signup" class="block px-4 py-2 text-indigo-600 hover:bg-indigo-50 rounded">Sign Up</a>
         {% endif %}
     </div>
 </nav>

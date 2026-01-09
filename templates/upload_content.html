@@ -1,32 +1,31 @@
 <div class="py-12">
-    <h1 class="text-3xl font-serif font-bold text-black mb-10 text-center">Upload Recording</h1>
-    <div class="bg-white border border-gray-200 p-8 max-w-2xl mx-auto shadow-none">
+    <h1 class="text-3xl font-bold text-gray-900 mb-6">Upload Recording</h1>
+    <div class="bg-white shadow rounded-lg p-6 max-w-2xl">
         {% if let Some(err) = error %}
-        <div class="bg-gray-50 border border-gray-300 text-gray-800 px-4 py-3 rounded-none mb-6 font-mono text-sm">
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
             {{ err }}
         </div>
         {% endif %}
-        <form action="/upload" method="post" enctype="multipart/form-data" class="space-y-8">
+        <form action="/upload" method="post" enctype="multipart/form-data" class="space-y-6">
             {% include "composition_picker.html" %}
             <div>
-                <label for="file" class="block text-xs font-mono font-medium text-gray-500 uppercase tracking-wider mb-2">Audio File <span class="text-black">*</span></label>
-                <input type="file" name="file" id="file" accept="audio/*" required class="mt-1 block w-full text-sm text-gray-600
+                <label for="file" class="block text-sm font-medium text-gray-700">Audio File <span class="text-red-500">*</span></label>
+                <input type="file" name="file" id="file" accept="audio/*" required class="mt-1 block w-full text-sm text-gray-500
                   file:mr-4 file:py-2 file:px-4
-                  file:rounded-none file:border-0
-                  file:text-xs file:font-bold file:uppercase file:tracking-widest
-                  file:bg-black file:text-white
-                  hover:file:bg-gray-800
-                  cursor-pointer
+                  file:rounded-md file:border-0
+                  file:text-sm file:font-semibold
+                  file:bg-indigo-50 file:text-indigo-700
+                  hover:file:bg-indigo-100
                 ">
             </div>
 
             <div>
-                <label for="notes" class="block text-xs font-mono font-medium text-gray-500 uppercase tracking-wider mb-2">Notes</label>
-                <textarea name="notes" id="notes" rows="4" class="mt-1 block w-full rounded-none border-gray-300 shadow-sm focus:border-black focus:ring-black text-sm font-light" placeholder="Optional: Add some notes about this recording..."></textarea>
+                <label for="notes" class="block text-sm font-medium text-gray-700">Notes</label>
+                <textarea name="notes" id="notes" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm" placeholder="Optional: Add some notes about this recording..."></textarea>
             </div>
 
-            <div class="pt-6">
-                <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-none shadow-sm text-sm font-bold text-white bg-black hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 uppercase tracking-widest transition-colors">
+            <div class="pt-4">
+                <button type="submit" class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     Upload
                 </button>
             </div>
