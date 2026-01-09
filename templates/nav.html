@@ -1,46 +1,31 @@
-<nav class="w-64 bg-nocturne-panel border-r border-white/5 flex flex-col p-6">
-    <div class="mb-10 flex items-center gap-3">
-        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-nocturne-gold to-yellow-600 flex items-center justify-center shadow-lg shadow-nocturne-gold/20">
-            <span class="text-nocturne-bg font-serif font-bold text-xl italic">R</span>
-        </div>
-        <h1 class="text-2xl font-serif font-bold text-gray-100 tracking-wide">Rubato</h1>
+<nav class="w-64 bg-white shadow-md flex flex-col p-4">
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-indigo-600">Rubato</h1>
     </div>
-    <ul class="space-y-1 flex-1" hx-boost="true" hx-target="#main-content">
+    <ul class="space-y-2 flex-1" hx-boost="true" hx-target="#main-content">
         <li>
-            <a href="/" class="flex items-center gap-3 px-4 py-3 text-nocturne-muted hover:text-white hover:bg-white/5 rounded-lg transition-all duration-200 group">
-                <span class="text-lg opacity-70 group-hover:text-nocturne-gold transition-colors">♪</span>
-                <span class="font-medium">Home</span>
-            </a>
+            <a href="/" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Home</a>
         </li>
         {% if let Some(user) = current_user %}
         <li>
-            <a href="/upload" class="flex items-center gap-3 px-4 py-3 text-nocturne-muted hover:text-white hover:bg-white/5 rounded-lg transition-all duration-200 group">
-                <span class="text-lg opacity-70 group-hover:text-nocturne-gold transition-colors">↑</span>
-                <span class="font-medium">Upload</span>
-            </a>
+            <a href="/upload" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Upload</a>
         </li>
         <li>
-            <a href="/settings" class="flex items-center gap-3 px-4 py-3 text-nocturne-muted hover:text-white hover:bg-white/5 rounded-lg transition-all duration-200 group">
-                <span class="text-lg opacity-70 group-hover:text-nocturne-gold transition-colors">⚙</span>
-                <span class="font-medium">Settings</span>
-            </a>
+            <a href="/settings" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Settings</a>
         </li>
         {% endif %}
     </ul>
-    <div class="mt-auto pt-6 border-t border-white/5">
+    <div class="mt-auto">
         {% if let Some(user) = current_user %}
-            <div class="mb-4 px-4 text-xs font-medium text-nocturne-gold uppercase tracking-widest opacity-80">
-                {{ user.email }}
-            </div>
             {% if user.is_privileged() %}
-            <a href="/admin" class="block px-4 py-2 text-sm text-nocturne-muted hover:text-white hover:bg-white/5 rounded mb-1">Admin Dashboard</a>
+            <a href="/admin" class="block px-4 py-2 text-gray-700 hover:bg-gray-100 rounded">Admin</a>
             {% endif %}
             <form action="/logout" method="post">
-                <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded transition-colors">Logout</button>
+                <button type="submit" class="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 rounded">Logout</button>
             </form>
         {% else %}
-            <a href="/login" class="block text-center w-full px-4 py-2 bg-nocturne-gold hover:bg-nocturne-gold-light text-nocturne-bg font-bold rounded shadow-lg shadow-nocturne-gold/20 transition-all mb-3">Login</a>
-            <a href="/signup" class="block text-center w-full px-4 py-2 border border-nocturne-muted/30 text-nocturne-muted hover:text-white hover:border-white/50 rounded transition-all">Sign Up</a>
+            <a href="/login" class="block px-4 py-2 text-indigo-600 hover:bg-indigo-50 rounded">Login</a>
+            <a href="/signup" class="block px-4 py-2 text-indigo-600 hover:bg-indigo-50 rounded">Sign Up</a>
         {% endif %}
     </div>
 </nav>
