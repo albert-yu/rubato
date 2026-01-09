@@ -3,78 +3,86 @@
 {% block title %}{% if recording.id == 0 %}New Recording{% else %}Edit Recording{% endif %} - Admin{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold">{% if recording.id == 0 %}New Recording{% else %}Edit Recording{% endif %}</h1>
-        <a href="/admin/recordings" class="text-gray-600 hover:text-gray-900">Back to List</a>
+<div class="max-w-2xl mx-auto py-8">
+    <div class="flex justify-between items-end mb-12 border-b border-sonata-border pb-6">
+        <div>
+            <h1 class="text-2xl font-light tracking-tighter text-sonata-pearl mb-1">
+                {% if recording.id == 0 %}New Recording{% else %}Edit Recording{% endif %}
+            </h1>
+            <a href="/admin/recordings" class="text-[10px] tracking-[0.3em] uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors">← Back to List</a>
+        </div>
     </div>
 
-    <form action="{% if recording.id == 0 %}/admin/recordings{% else %}/admin/recording/{{ recording.id }}{% endif %}" method="POST" class="bg-white shadow rounded-lg p-6">
-        
-        <div class="mb-4">
-            <label for="artist_id" class="block text-sm font-medium text-gray-700 mb-1">Artist</label>
-            <select name="artist_id" id="artist_id" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 border p-2 bg-white">
-                <option value="">Select an artist...</option>
-                {% for musician in musicians %}
-                <option value="{{ musician.id }}" {% if musician.id == recording.artist_id %}selected{% endif %}>
-                    {{ musician.given_name }} {{ musician.family_name }}
-                </option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="mb-4">
-            <label for="composition_id" class="block text-sm font-medium text-gray-700 mb-1">Composition</label>
-            <select name="composition_id" id="composition_id" required class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 border p-2 bg-white">
-                <option value="">Select a composition...</option>
-                {% for composition in compositions %}
-                <option value="{{ composition.id }}" {% if composition.id == recording.composition_id %}selected{% endif %}>
-                    {{ composition.title }}
-                </option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="mb-4">
-            <label for="movement_id" class="block text-sm font-medium text-gray-700 mb-1">Movement (Optional)</label>
-            <select name="movement_id" id="movement_id" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 border p-2 bg-white">
-                <option value="">None</option>
-                {% for movement in movements %}
-                <option value="{{ movement.id }}" {% if movement.id == recording.movement_id.unwrap_or(0) %}selected{% endif %}>
-                   {{ movement.title }} (Comp ID: {{ movement.composition_id }})
-                </option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div class="mb-4">
-            <label for="content_hash" class="block text-sm font-medium text-gray-700 mb-1">Content Hash</label>
-            <input type="text" name="content_hash" id="content_hash" value="{{ recording.content_hash }}" required
-                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 border p-2">
-        </div>
-
-        <div class="mb-6">
-            <label for="file_key" class="block text-sm font-medium text-gray-700 mb-1">File Key</label>
-            <input type="text" name="file_key" id="file_key" value="{{ recording.file_key }}" required
-                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 border p-2">
-        </div>
-
-        <div class="mb-6">
-            <label for="mime_type" class="block text-sm font-medium text-gray-700 mb-1">Mime Type</label>
-            <input type="text" name="mime_type" id="mime_type" value="{{ recording.mime_type }}" required
-                class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 border p-2">
-        </div>
-
-        <div class="flex justify-between">
-            {% if recording.id != 0 %}
-            <button type="button" hx-delete="/admin/recording/{{ recording.id }}" hx-confirm="Are you sure?" hx-target="body" hx-push-url="true"
-                class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600">Delete</button>
-            {% else %}
-            <div></div>
-            {% endif %}
+    <div class="sonata-card !cursor-default">
+        <form action="{% if recording.id == 0 %}/admin/recordings{% else %}/admin/recording/{{ recording.id }}{% endif %}" method="POST" class="space-y-8">
             
-            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Save Recording</button>
-        </div>
-    </form>
+            <div>
+                <label for="artist_id" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Artist</label>
+                <select name="artist_id" id="artist_id" required class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light appearance-none">
+                    <option value="">Select an artist...</option>
+                    {% for musician in musicians %}
+                    <option value="{{ musician.id }}" {% if musician.id == recording.artist_id %}selected{% endif %}>
+                        {{ musician.given_name }} {{ musician.family_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="composition_id" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Composition</label>
+                <select name="composition_id" id="composition_id" required class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light appearance-none">
+                    <option value="">Select a composition...</option>
+                    {% for composition in compositions %}
+                    <option value="{{ composition.id }}" {% if composition.id == recording.composition_id %}selected{% endif %}>
+                        {{ composition.title }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="movement_id" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Movement (Optional)</label>
+                <select name="movement_id" id="movement_id" class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light appearance-none">
+                    <option value="">None</option>
+                    {% for movement in movements %}
+                    <option value="{{ movement.id }}" {% if movement.id == recording.movement_id.unwrap_or(0) %}selected{% endif %}>
+                       {{ movement.title }} (Comp ID: {{ movement.composition_id }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <label for="content_hash" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Content Hash</label>
+                    <input type="text" name="content_hash" id="content_hash" value="{{ recording.content_hash }}" required
+                        class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light font-mono">
+                </div>
+
+                <div>
+                    <label for="file_key" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">File Key</label>
+                    <input type="text" name="file_key" id="file_key" value="{{ recording.file_key }}" required
+                        class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light font-mono">
+                </div>
+            </div>
+
+            <div>
+                <label for="mime_type" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Mime Type</label>
+                <input type="text" name="mime_type" id="mime_type" value="{{ recording.mime_type }}" required
+                    class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light">
+            </div>
+
+            <div class="pt-8 border-t border-sonata-border/30 flex justify-between items-center">
+                {% if recording.id != 0 %}
+                <button type="button" hx-delete="/admin/recording/{{ recording.id }}" hx-confirm="Are you sure?" hx-target="body" hx-push-url="true"
+                    class="text-red-900/70 hover:text-red-500 text-[10px] uppercase tracking-widest transition-colors">Delete Recording</button>
+                {% else %}
+                <div></div>
+                {% endif %}
+                
+                <button type="submit" class="sonata-btn !px-8">Save Changes</button>
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock %}
