@@ -1,57 +1,58 @@
-<div class="py-12">
-    <h1 class="text-4xl font-bold text-gray-900 mb-8 text-center">Recent Uploads</h1>
+<div class="max-w-6xl mx-auto">
+    <div class="text-center mb-24 pt-12">
+        <h1 class="sonata-hero-h1">Sonata</h1>
+        <div class="w-16 h-[1px] bg-sonata-charcoal mx-auto mb-6"></div>
+        <p class="text-sonata-slate text-xs tracking-[0.3em] uppercase font-light">Where Music Meets Digital</p>
+    </div>
 
-    {% if let Some(user) = current_user %}
-    <div class="max-w-4xl mx-auto mb-6 flex justify-end">
-        <a href="/upload" hx-boost="true" hx-target="#main-content" class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150 shadow-sm">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-            </svg>
+    <div class="flex justify-between items-end mb-12 border-b border-sonata-border pb-6">
+        <h2 class="text-xs tracking-[0.3em] uppercase font-light text-sonata-slate">Recent Repertoire</h2>
+        {% if let Some(user) = current_user %}
+        <a href="/upload" hx-boost="true" hx-target="#main-content" class="sonata-btn !px-6 !py-2 text-[10px]">
             Upload
         </a>
+        {% endif %}
     </div>
-    {% endif %}
 
     {% if recordings.is_empty() %}
-    <div class="text-center text-gray-500 text-xl">
+    <div class="text-center text-sonata-slate font-light py-20">
         No recordings yet.
     </div>
     {% else %}
-    <div class="space-y-6 max-w-4xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         {% for recording in recordings %}
-        <div class="bg-white shadow rounded-lg p-6 flex flex-col">
-            <div class="flex justify-between items-start">
-                <div>
-                    <h2 class="text-2xl font-bold text-gray-900">{{ recording.composition_title }}</h2>
-                    {% if let Some(title) = recording.movement_title %}
-                    <h3 class="text-xl text-gray-700">
-                        {% if let Some(idx) = recording.movement_index %}
-                        {{ idx + 1 }}.
-                        {% endif %}
-                        {{ title }}
-                    </h3>
-                    {% endif %}
-                    <p class="text-lg text-indigo-600 mt-1">@{{ recording.artist_handle }}</p>
-                    {% if let Some(notes) = recording.notes %}
-                    <p class="mt-2 text-sm text-gray-600 italic whitespace-pre-wrap">{{ notes }}</p>
-                    {% endif %}
+        <div class="sonata-card group" hx-get="/player/{{ recording.id }}" hx-target="#player-container" hx-swap="innerHTML">
+            <div class="mb-8 text-[10px] tracking-widest text-sonata-slate uppercase font-light">
+                {{ recording.created_at.format("%m.%d.%Y") }}
+            </div>
+            
+            <h3 class="text-2xl font-light tracking-tight text-sonata-pearl mb-2 group-hover:text-white transition-colors">
+                {{ recording.composition_title }}
+            </h3>
+            
+            {% if let Some(title) = recording.movement_title %}
+            <div class="text-sm font-light text-sonata-slate mb-4 italic">
+                {% if let Some(idx) = recording.movement_index %}
+                {{ idx + 1 }}.
+                {% endif %}
+                {{ title }}
+            </div>
+            {% endif %}
+            
+            <div class="flex items-center justify-between mt-12">
+                <span class="text-xs tracking-widest uppercase font-light text-sonata-slate">@{{ recording.artist_handle }}</span>
+                <div class="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <svg class="w-5 h-5 text-sonata-pearl" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
+                    </svg>
                 </div>
-                <span class="text-sm text-gray-500">{{ recording.created_at.format("%Y-%m-%d") }}</span>
             </div>
 
-            <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
-                <button hx-get="/player/{{ recording.id }}" hx-target="#player-container" hx-swap="innerHTML"
-                    class="flex items-center px-4 py-2 bg-indigo-50 text-indigo-700 rounded-full hover:bg-indigo-100 transition-colors">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
-                        </path>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    Play
-                </button>
+            {% if let Some(notes) = recording.notes %}
+            <div class="mt-6 pt-6 border-t border-sonata-border/50 text-[11px] text-sonata-slate font-light leading-relaxed line-clamp-2">
+                {{ notes }}
             </div>
+            {% endif %}
         </div>
         {% endfor %}
     </div>

@@ -7,11 +7,11 @@
     <link href="/assets/main.css" rel="stylesheet">
     <script src="/assets/vendor/htmx.js"></script>
 </head>
-<body class="bg-gray-100 text-gray-900 font-sans min-h-screen">
+<body class="bg-sonata-black text-sonata-pearl font-sans min-h-screen {% block body_class %}{% endblock %}">
     <div class="flex min-h-screen">
         {% block nav %}{% endblock %}
         <main class="flex-1 flex flex-col min-w-0 relative">
-            <div class="flex-1 container mx-auto p-4 pb-24" hx-history-elt id="main-content">
+            <div class="flex-1 container mx-auto p-8 pb-24" hx-history-elt id="main-content">
                 {% block content %}{% endblock %}
             </div>
             

@@ -1,5 +1,7 @@
 {% extends "../base.html" %}
 
+{% block body_class %}bg-gray-100 text-gray-900{% endblock %}
+
 {% block nav %}
     {% if current_user.is_some() %}
     <nav class="w-64 bg-gray-800 text-white flex flex-col p-4">

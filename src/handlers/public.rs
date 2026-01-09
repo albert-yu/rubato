@@ -355,7 +355,7 @@ pub async fn search_compositions(
 
     if results.is_empty() {
         return axum::response::Html(
-            r#"<div class="p-4 text-sm text-gray-500 text-center">No compositions found.</div>"#
+            r#"<div class="p-6 text-[10px] uppercase tracking-widest text-sonata-slate text-center font-light">No repertoire found.</div>"#
                 .to_string(),
         )
         .into_response();
@@ -384,7 +384,7 @@ pub async fn search_compositions(
         }
 
         html.push_str(&format!(
-            r##"<div class="cursor-pointer hover:bg-indigo-50 p-2 text-sm text-gray-700 border-b last:border-b-0" 
+            r##"<div class="cursor-pointer hover:bg-sonata-black p-4 text-xs font-light text-sonata-pearl border-b border-sonata-border/30 last:border-b-0 transition-colors" 
                     hx-get="{}"
                     hx-target="#composition-picker"
                     hx-swap="outerHTML">
@@ -477,18 +477,18 @@ pub async fn select_composition(
 
         let html = format!(
             r##"<div id="composition-picker" class="relative">
-                <label class="block text-sm font-medium text-gray-700">Composition <span class="text-red-500">*</span></label>
+                <label class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Selected Repertoire</label>
                 <input type="hidden" name="composition_id" value="{}" required>
                 {}
-                <div class="mt-1 flex items-center justify-between p-2 border border-gray-300 rounded-md bg-gray-50">
-                    <span class="text-sm text-gray-900 font-medium">{}</span>
+                <div class="flex items-center justify-between p-4 border border-sonata-charcoal rounded-sm bg-sonata-black">
+                    <span class="text-xs font-light text-sonata-pearl">{}</span>
                     <button type="button" 
                             hx-get="/upload/reset-composition" 
                             hx-target="#composition-picker" 
                             hx-swap="outerHTML" 
-                            class="text-gray-400 hover:text-gray-500">
-                        <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            class="text-sonata-slate hover:text-sonata-pearl transition-colors">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
                 </div>
