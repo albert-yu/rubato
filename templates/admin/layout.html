@@ -2,38 +2,38 @@
 
 {% block nav %}
     {% if current_user.is_some() %}
-    <nav class="w-64 bg-atelier-panel border-r border-atelier-border flex flex-col p-6">
+    <nav class="w-64 bg-nocturne-panel border-r border-white/5 flex flex-col p-6">
         <div class="mb-10 flex items-center gap-3">
-            <div class="w-8 h-8 rounded bg-atelier-ink text-white flex items-center justify-center">
-                <span class="font-bold text-sm">ADM</span>
+            <div class="w-8 h-8 rounded bg-nocturne-gold flex items-center justify-center">
+                <span class="text-nocturne-bg font-bold text-sm">ADM</span>
             </div>
-            <h1 class="text-xl font-serif font-bold text-atelier-ink tracking-wide">Admin</h1>
+            <h1 class="text-xl font-serif font-bold text-gray-100 tracking-wide">Admin</h1>
         </div>
         <ul class="space-y-1 flex-1">
             <li>
-                <a href="/" class="flex items-center gap-3 px-4 py-3 text-atelier-muted hover:text-atelier-ink hover:bg-atelier-bg rounded-lg transition-all text-sm font-medium">
+                <a href="/" class="flex items-center gap-3 px-4 py-3 text-nocturne-gold/70 hover:text-nocturne-gold hover:bg-white/5 rounded-lg transition-all text-sm font-medium">
                     <span>←</span> Back to Archive
                 </a>
             </li>
             <li class="pt-6 pb-2">
-                <span class="px-4 text-[10px] font-bold text-atelier-muted uppercase tracking-[0.2em] opacity-50">Management</span>
+                <span class="px-4 text-[10px] font-bold text-nocturne-muted uppercase tracking-[0.2em] opacity-50">Management</span>
             </li>
             <li>
-                <a href="/admin/musicians" class="block px-4 py-2.5 rounded-lg transition-all text-sm {% if active_nav == "musicians" %}bg-atelier-ink text-white font-bold shadow-md{% else %}text-atelier-muted hover:text-atelier-ink hover:bg-atelier-bg{% endif %}">Musicians</a>
+                <a href="/admin/musicians" class="block px-4 py-2.5 rounded-lg transition-all text-sm {% if active_nav == "musicians" %}bg-nocturne-gold text-nocturne-bg font-bold shadow-lg shadow-nocturne-gold/10{% else %}text-nocturne-muted hover:text-white hover:bg-white/5{% endif %}">Musicians</a>
             </li>
             <li>
-                <a href="/admin/compositions" class="block px-4 py-2.5 rounded-lg transition-all text-sm {% if active_nav == "compositions" %}bg-atelier-ink text-white font-bold shadow-md{% else %}text-atelier-muted hover:text-atelier-ink hover:bg-atelier-bg{% endif %}">Compositions</a>
+                <a href="/admin/compositions" class="block px-4 py-2.5 rounded-lg transition-all text-sm {% if active_nav == "compositions" %}bg-nocturne-gold text-nocturne-bg font-bold shadow-lg shadow-nocturne-gold/10{% else %}text-nocturne-muted hover:text-white hover:bg-white/5{% endif %}">Compositions</a>
             </li>
             <li>
-                <a href="/admin/recordings" class="block px-4 py-2.5 rounded-lg transition-all text-sm {% if active_nav == "recordings" %}bg-atelier-ink text-white font-bold shadow-md{% else %}text-atelier-muted hover:text-atelier-ink hover:bg-atelier-bg{% endif %}">Recordings</a>
+                <a href="/admin/recordings" class="block px-4 py-2.5 rounded-lg transition-all text-sm {% if active_nav == "recordings" %}bg-nocturne-gold text-nocturne-bg font-bold shadow-lg shadow-nocturne-gold/10{% else %}text-nocturne-muted hover:text-white hover:bg-white/5{% endif %}">Recordings</a>
             </li>
             <li>
-                <a href="/admin/import" class="block px-4 py-2.5 rounded-lg transition-all text-sm {% if active_nav == "import" %}bg-atelier-ink text-white font-bold shadow-md{% else %}text-atelier-muted hover:text-atelier-ink hover:bg-atelier-bg{% endif %}">Data Import</a>
+                <a href="/admin/import" class="block px-4 py-2.5 rounded-lg transition-all text-sm {% if active_nav == "import" %}bg-nocturne-gold text-nocturne-bg font-bold shadow-lg shadow-nocturne-gold/10{% else %}text-nocturne-muted hover:text-white hover:bg-white/5{% endif %}">Data Import</a>
             </li>
         </ul>
-        <div class="mt-auto pt-6 border-t border-atelier-border">
+        <div class="mt-auto pt-6 border-t border-white/5">
              <form action="/logout" method="post">
-                <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors">Logout</button>
+                <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-colors">Logout</button>
             </form>
         </div>
     </nav>

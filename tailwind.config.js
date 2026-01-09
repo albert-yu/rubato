@@ -4,14 +4,13 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        atelier: {
-          bg: '#fdfcf8', // Warm Paper / Off-white
-          panel: '#ffffff', // Pure White
-          text: '#292524', // Stone 800 (Warm Black)
-          muted: '#78716c', // Stone 500
-          ink: '#1e293b', // Slate 800 (Deep Ink Blue)
-          'ink-light': '#334155', // Slate 700
-          border: '#e7e5e4', // Stone 200
+        nocturne: {
+          bg: '#09090b', // Zinc 950
+          panel: '#18181b', // Zinc 900
+          gold: '#d4af37',
+          'gold-light': '#f3cf55',
+          text: '#e4e4e7', // Zinc 200
+          muted: '#a1a1aa', // Zinc 400
         }
       },
       fontFamily: {

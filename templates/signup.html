@@ -6,38 +6,38 @@
 
 {% block content %}
 <div class="max-w-md mx-auto mt-20">
-    <div class="bg-atelier-panel border border-atelier-border shadow-lg rounded-xl p-8">
-        <h1 class="text-3xl font-serif font-bold text-atelier-ink mb-8 text-center">Join the <span class="text-atelier-muted italic">Archive</span></h1>
+    <div class="bg-nocturne-panel border border-white/5 shadow-2xl rounded-xl p-8">
+        <h1 class="text-3xl font-serif font-bold text-white mb-8 text-center">Join the <span class="text-nocturne-gold italic">Archive</span></h1>
         {% if let Some(error) = error %}
-            <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6 text-sm">
+            <div class="bg-red-900/20 border border-red-900/50 text-red-400 px-4 py-3 rounded-lg mb-6 text-sm">
                 {{ error }}
             </div>
         {% endif %}
         <form action="/signup" method="post" class="space-y-6">
             <div>
-                <label for="handle" class="block text-xs font-medium text-atelier-muted uppercase tracking-widest mb-2">Username</label>
-                <input type="text" name="handle" id="handle" required autocomplete="username" class="mt-1 block w-full bg-white border-atelier-border rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-1 focus:ring-atelier-ink focus:border-atelier-ink text-atelier-text transition-all">
-                <p class="mt-2 text-[10px] text-atelier-muted/70 uppercase tracking-tighter">Alphanumeric & hyphens only.</p>
+                <label for="handle" class="block text-xs font-medium text-nocturne-muted uppercase tracking-widest mb-2">Username</label>
+                <input type="text" name="handle" id="handle" required autocomplete="username" class="mt-1 block w-full bg-nocturne-bg border-white/10 rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-1 focus:ring-nocturne-gold focus:border-nocturne-gold text-white transition-all">
+                <p class="mt-2 text-[10px] text-nocturne-muted/50 uppercase tracking-tighter">Alphanumeric & hyphens only.</p>
             </div>
             <div class="grid grid-cols-1 gap-6">
                 <div>
-                    <label for="email" class="block text-xs font-medium text-atelier-muted uppercase tracking-widest mb-2">Email Address</label>
-                    <input type="email" name="email" id="email" required autocomplete="email" class="mt-1 block w-full bg-white border-atelier-border rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-1 focus:ring-atelier-ink focus:border-atelier-ink text-atelier-text transition-all">
+                    <label for="email" class="block text-xs font-medium text-nocturne-muted uppercase tracking-widest mb-2">Email Address</label>
+                    <input type="email" name="email" id="email" required autocomplete="email" class="mt-1 block w-full bg-nocturne-bg border-white/10 rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-1 focus:ring-nocturne-gold focus:border-nocturne-gold text-white transition-all">
                 </div>
                 <div>
-                    <label for="password" class="block text-xs font-medium text-atelier-muted uppercase tracking-widest mb-2">Password</label>
-                    <input type="password" name="password" id="password" required autocomplete="new-password" class="mt-1 block w-full bg-white border-atelier-border rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-1 focus:ring-atelier-ink focus:border-atelier-ink text-atelier-text transition-all">
+                    <label for="password" class="block text-xs font-medium text-nocturne-muted uppercase tracking-widest mb-2">Password</label>
+                    <input type="password" name="password" id="password" required autocomplete="new-password" class="mt-1 block w-full bg-nocturne-bg border-white/10 rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-1 focus:ring-nocturne-gold focus:border-nocturne-gold text-white transition-all">
                 </div>
             </div>
             <div class="pt-2">
-                <button type="submit" class="w-full flex justify-center py-3 px-4 bg-atelier-ink hover:bg-atelier-ink-light text-white font-bold rounded-lg shadow-md transition-all text-sm uppercase tracking-widest">
+                <button type="submit" class="w-full flex justify-center py-3 px-4 bg-nocturne-gold hover:bg-nocturne-gold-light text-nocturne-bg font-bold rounded-lg shadow-lg shadow-nocturne-gold/10 transition-all text-sm uppercase tracking-widest">
                     Create Account
                 </button>
             </div>
         </form>
-        <div class="mt-8 text-center pt-6 border-t border-atelier-border">
-            <p class="text-sm text-atelier-muted">
-                Already registered? <a href="/login" class="font-medium text-atelier-ink hover:text-atelier-ink-light underline underline-offset-4">Log in</a>
+        <div class="mt-8 text-center pt-6 border-t border-white/5">
+            <p class="text-sm text-nocturne-muted">
+                Already registered? <a href="/login" class="font-medium text-nocturne-gold hover:text-nocturne-gold-light underline underline-offset-4">Log in</a>
             </p>
         </div>
     </div>
