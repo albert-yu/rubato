@@ -6,31 +6,31 @@
 
 {% block content %}
 <div class="max-w-md mx-auto mt-20">
-    <div class="bg-nocturne-panel border border-white/5 shadow-2xl rounded-xl p-8">
-        <h1 class="text-3xl font-serif font-bold text-white mb-8 text-center">Sign <span class="text-nocturne-gold italic">In</span></h1>
+    <div class="bg-atelier-panel border border-atelier-border shadow-lg rounded-xl p-8">
+        <h1 class="text-3xl font-serif font-bold text-atelier-ink mb-8 text-center">Sign <span class="text-atelier-muted italic">In</span></h1>
         {% if let Some(error) = error %}
-            <div class="bg-red-900/20 border border-red-900/50 text-red-400 px-4 py-3 rounded-lg mb-6 text-sm">
+            <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6 text-sm">
                 {{ error }}
             </div>
         {% endif %}
         <form action="/login" method="post" class="space-y-6">
             <div>
-                <label for="identity" class="block text-xs font-medium text-nocturne-muted uppercase tracking-widest mb-2">Email or Username</label>
-                <input type="text" name="identity" id="identity" required autocomplete="username" class="mt-1 block w-full bg-nocturne-bg border-white/10 rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-1 focus:ring-nocturne-gold focus:border-nocturne-gold text-white transition-all">
+                <label for="identity" class="block text-xs font-medium text-atelier-muted uppercase tracking-widest mb-2">Email or Username</label>
+                <input type="text" name="identity" id="identity" required autocomplete="username" class="mt-1 block w-full bg-white border-atelier-border rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-1 focus:ring-atelier-ink focus:border-atelier-ink text-atelier-text transition-all">
             </div>
             <div>
-                <label for="password" class="block text-xs font-medium text-nocturne-muted uppercase tracking-widest mb-2">Password</label>
-                <input type="password" name="password" id="password" required autocomplete="current-password" class="mt-1 block w-full bg-nocturne-bg border-white/10 rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-1 focus:ring-nocturne-gold focus:border-nocturne-gold text-white transition-all">
+                <label for="password" class="block text-xs font-medium text-atelier-muted uppercase tracking-widest mb-2">Password</label>
+                <input type="password" name="password" id="password" required autocomplete="current-password" class="mt-1 block w-full bg-white border-atelier-border rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-1 focus:ring-atelier-ink focus:border-atelier-ink text-atelier-text transition-all">
             </div>
             <div class="pt-2">
-                <button type="submit" class="w-full flex justify-center py-3 px-4 bg-nocturne-gold hover:bg-nocturne-gold-light text-nocturne-bg font-bold rounded-lg shadow-lg shadow-nocturne-gold/10 transition-all text-sm uppercase tracking-widest">
+                <button type="submit" class="w-full flex justify-center py-3 px-4 bg-atelier-ink hover:bg-atelier-ink-light text-white font-bold rounded-lg shadow-md transition-all text-sm uppercase tracking-widest">
                     Enter the Archive
                 </button>
             </div>
         </form>
-        <div class="mt-8 text-center pt-6 border-t border-white/5">
-            <p class="text-sm text-nocturne-muted">
-                New here? <a href="/signup" class="font-medium text-nocturne-gold hover:text-nocturne-gold-light underline underline-offset-4">Create an account</a>
+        <div class="mt-8 text-center pt-6 border-t border-atelier-border">
+            <p class="text-sm text-atelier-muted">
+                New here? <a href="/signup" class="font-medium text-atelier-ink hover:text-atelier-ink-light underline underline-offset-4">Create an account</a>
             </p>
         </div>
     </div>

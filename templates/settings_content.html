@@ -1,50 +1,50 @@
-<h1 class="text-4xl font-serif font-bold text-white mb-8 tracking-tight">User <span class="text-nocturne-gold italic">Settings</span></h1>
-<div class="bg-nocturne-panel border border-white/5 shadow-2xl rounded-xl p-8 max-w-2xl">
-    <div class="mb-10 border-b border-white/5 pb-8">
-        <h2 class="text-xs font-medium text-nocturne-gold uppercase tracking-[0.2em] mb-6">Account Archive Info</h2>
+<h1 class="text-4xl font-serif font-bold text-atelier-ink mb-8 tracking-tight">User <span class="text-atelier-muted italic">Settings</span></h1>
+<div class="bg-atelier-panel border border-atelier-border shadow-lg rounded-xl p-8 max-w-2xl">
+    <div class="mb-10 border-b border-atelier-border pb-8">
+        <h2 class="text-xs font-medium text-atelier-ink uppercase tracking-[0.2em] mb-6">Account Archive Info</h2>
         <div class="grid grid-cols-1 gap-6">
             <div>
-                <label class="block text-[10px] font-medium text-nocturne-muted uppercase tracking-widest mb-1">Registered Email</label>
-                <p class="text-lg text-white font-medium">{{ current_user.as_ref().unwrap().email }}</p>
+                <label class="block text-[10px] font-medium text-atelier-muted uppercase tracking-widest mb-1">Registered Email</label>
+                <p class="text-lg text-atelier-text font-medium">{{ current_user.as_ref().unwrap().email }}</p>
             </div>
             {% if current_user.as_ref().unwrap().is_privileged() %}
             <div>
-                <label class="block text-[10px] font-medium text-nocturne-muted uppercase tracking-widest mb-1">Access Level</label>
-                <p class="text-lg text-nocturne-gold font-serif italic">{{ current_user.as_ref().unwrap().role }}</p>
+                <label class="block text-[10px] font-medium text-atelier-muted uppercase tracking-widest mb-1">Access Level</label>
+                <p class="text-lg text-atelier-ink font-serif italic">{{ current_user.as_ref().unwrap().role }}</p>
             </div>
             {% endif %}
         </div>
     </div>
 
     <div>
-        <h2 class="text-xs font-medium text-nocturne-gold uppercase tracking-[0.2em] mb-6">Musician Identity</h2>
+        <h2 class="text-xs font-medium text-atelier-ink uppercase tracking-[0.2em] mb-6">Musician Identity</h2>
         <form action="/settings" method="post" class="space-y-6">
             <div>
-                <label for="handle" class="block text-xs font-medium text-nocturne-muted uppercase tracking-widest mb-2">Handle</label>
-                <input type="text" name="handle" id="handle" value="{{ musician.handle }}" required class="mt-1 block w-full bg-nocturne-bg border-white/10 rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-1 focus:ring-nocturne-gold focus:border-nocturne-gold text-white transition-all">
+                <label for="handle" class="block text-xs font-medium text-atelier-muted uppercase tracking-widest mb-2">Handle</label>
+                <input type="text" name="handle" id="handle" value="{{ musician.handle }}" required class="mt-1 block w-full bg-white border-atelier-border rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-1 focus:ring-atelier-ink focus:border-atelier-ink text-atelier-text transition-all">
             </div>
             <div class="grid grid-cols-2 gap-6">
                 <div>
-                    <label for="given_name" class="block text-xs font-medium text-nocturne-muted uppercase tracking-widest mb-2">Given Name</label>
-                    <input type="text" name="given_name" id="given_name" value="{{ musician.given_name }}" required class="mt-1 block w-full bg-nocturne-bg border-white/10 rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-1 focus:ring-nocturne-gold focus:border-nocturne-gold text-white transition-all">
+                    <label for="given_name" class="block text-xs font-medium text-atelier-muted uppercase tracking-widest mb-2">Given Name</label>
+                    <input type="text" name="given_name" id="given_name" value="{{ musician.given_name }}" required class="mt-1 block w-full bg-white border-atelier-border rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-1 focus:ring-atelier-ink focus:border-atelier-ink text-atelier-text transition-all">
                 </div>
                 <div>
-                    <label for="family_name" class="block text-xs font-medium text-nocturne-muted uppercase tracking-widest mb-2">Family Name</label>
-                    <input type="text" name="family_name" id="family_name" value="{{ musician.family_name }}" required class="mt-1 block w-full bg-nocturne-bg border-white/10 rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-1 focus:ring-nocturne-gold focus:border-nocturne-gold text-white transition-all">
+                    <label for="family_name" class="block text-xs font-medium text-atelier-muted uppercase tracking-widest mb-2">Family Name</label>
+                    <input type="text" name="family_name" id="family_name" value="{{ musician.family_name }}" required class="mt-1 block w-full bg-white border-atelier-border rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-1 focus:ring-atelier-ink focus:border-atelier-ink text-atelier-text transition-all">
                 </div>
             </div>
             <div class="grid grid-cols-2 gap-6">
                 <div>
-                    <label for="birth_date" class="block text-xs font-medium text-nocturne-muted uppercase tracking-widest mb-2">Birth Date</label>
-                    <input type="date" name="birth_date" id="birth_date" value="{% if let Some(date) = musician.birth_date %}{{ date }}{% endif %}" class="mt-1 block w-full bg-nocturne-bg border-white/10 rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-1 focus:ring-nocturne-gold focus:border-nocturne-gold text-white transition-all [color-scheme:dark]">
+                    <label for="birth_date" class="block text-xs font-medium text-atelier-muted uppercase tracking-widest mb-2">Birth Date</label>
+                    <input type="date" name="birth_date" id="birth_date" value="{% if let Some(date) = musician.birth_date %}{{ date }}{% endif %}" class="mt-1 block w-full bg-white border-atelier-border rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-1 focus:ring-atelier-ink focus:border-atelier-ink text-atelier-text transition-all">
                 </div>
                 <div>
-                    <label for="death_date" class="block text-xs font-medium text-nocturne-muted uppercase tracking-widest mb-2">Death Date</label>
-                    <input type="date" name="death_date" id="death_date" value="{% if let Some(date) = musician.death_date %}{{ date }}{% endif %}" class="mt-1 block w-full bg-nocturne-bg border-white/10 rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-1 focus:ring-nocturne-gold focus:border-nocturne-gold text-white transition-all [color-scheme:dark]">
+                    <label for="death_date" class="block text-xs font-medium text-atelier-muted uppercase tracking-widest mb-2">Death Date</label>
+                    <input type="date" name="death_date" id="death_date" value="{% if let Some(date) = musician.death_date %}{{ date }}{% endif %}" class="mt-1 block w-full bg-white border-atelier-border rounded-lg shadow-sm py-2.5 px-4 focus:outline-none focus:ring-1 focus:ring-atelier-ink focus:border-atelier-ink text-atelier-text transition-all">
                 </div>
             </div>
             <div class="pt-6">
-                <button type="submit" class="bg-nocturne-gold hover:bg-nocturne-gold-light text-nocturne-bg px-8 py-3 rounded-lg font-bold shadow-lg shadow-nocturne-gold/10 transition-all text-sm uppercase tracking-widest">
+                <button type="submit" class="bg-atelier-ink hover:bg-atelier-ink-light text-white px-8 py-3 rounded-lg font-bold shadow-md transition-all text-sm uppercase tracking-widest">
                     Update Profile
                 </button>
             </div>

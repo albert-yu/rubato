@@ -1,46 +1,46 @@
-<nav class="w-64 bg-nocturne-panel border-r border-white/5 flex flex-col p-6">
+<nav class="w-64 bg-atelier-panel border-r border-atelier-border flex flex-col p-6">
     <div class="mb-10 flex items-center gap-3">
-        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-nocturne-gold to-yellow-600 flex items-center justify-center shadow-lg shadow-nocturne-gold/20">
-            <span class="text-nocturne-bg font-serif font-bold text-xl italic">R</span>
+        <div class="w-8 h-8 rounded-full bg-atelier-ink text-white flex items-center justify-center shadow-md">
+            <span class="font-serif font-bold text-xl italic">R</span>
         </div>
-        <h1 class="text-2xl font-serif font-bold text-gray-100 tracking-wide">Rubato</h1>
+        <h1 class="text-2xl font-serif font-bold text-atelier-ink tracking-tight">Rubato</h1>
     </div>
     <ul class="space-y-1 flex-1" hx-boost="true" hx-target="#main-content">
         <li>
-            <a href="/" class="flex items-center gap-3 px-4 py-3 text-nocturne-muted hover:text-white hover:bg-white/5 rounded-lg transition-all duration-200 group">
-                <span class="text-lg opacity-70 group-hover:text-nocturne-gold transition-colors">♪</span>
+            <a href="/" class="flex items-center gap-3 px-4 py-3 text-atelier-muted hover:text-atelier-ink hover:bg-atelier-bg rounded-lg transition-all duration-200 group">
+                <span class="text-lg opacity-70 group-hover:text-atelier-ink transition-colors">♪</span>
                 <span class="font-medium">Home</span>
             </a>
         </li>
         {% if let Some(user) = current_user %}
         <li>
-            <a href="/upload" class="flex items-center gap-3 px-4 py-3 text-nocturne-muted hover:text-white hover:bg-white/5 rounded-lg transition-all duration-200 group">
-                <span class="text-lg opacity-70 group-hover:text-nocturne-gold transition-colors">↑</span>
+            <a href="/upload" class="flex items-center gap-3 px-4 py-3 text-atelier-muted hover:text-atelier-ink hover:bg-atelier-bg rounded-lg transition-all duration-200 group">
+                <span class="text-lg opacity-70 group-hover:text-atelier-ink transition-colors">↑</span>
                 <span class="font-medium">Upload</span>
             </a>
         </li>
         <li>
-            <a href="/settings" class="flex items-center gap-3 px-4 py-3 text-nocturne-muted hover:text-white hover:bg-white/5 rounded-lg transition-all duration-200 group">
-                <span class="text-lg opacity-70 group-hover:text-nocturne-gold transition-colors">⚙</span>
+            <a href="/settings" class="flex items-center gap-3 px-4 py-3 text-atelier-muted hover:text-atelier-ink hover:bg-atelier-bg rounded-lg transition-all duration-200 group">
+                <span class="text-lg opacity-70 group-hover:text-atelier-ink transition-colors">⚙</span>
                 <span class="font-medium">Settings</span>
             </a>
         </li>
         {% endif %}
     </ul>
-    <div class="mt-auto pt-6 border-t border-white/5">
+    <div class="mt-auto pt-6 border-t border-atelier-border">
         {% if let Some(user) = current_user %}
-            <div class="mb-4 px-4 text-xs font-medium text-nocturne-gold uppercase tracking-widest opacity-80">
+            <div class="mb-4 px-4 text-xs font-medium text-atelier-muted uppercase tracking-widest opacity-80">
                 {{ user.email }}
             </div>
             {% if user.is_privileged() %}
-            <a href="/admin" class="block px-4 py-2 text-sm text-nocturne-muted hover:text-white hover:bg-white/5 rounded mb-1">Admin Dashboard</a>
+            <a href="/admin" class="block px-4 py-2 text-sm text-atelier-muted hover:text-atelier-ink hover:bg-atelier-bg rounded mb-1">Admin Dashboard</a>
             {% endif %}
             <form action="/logout" method="post">
-                <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded transition-colors">Logout</button>
+                <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors">Logout</button>
             </form>
         {% else %}
-            <a href="/login" class="block text-center w-full px-4 py-2 bg-nocturne-gold hover:bg-nocturne-gold-light text-nocturne-bg font-bold rounded shadow-lg shadow-nocturne-gold/20 transition-all mb-3">Login</a>
-            <a href="/signup" class="block text-center w-full px-4 py-2 border border-nocturne-muted/30 text-nocturne-muted hover:text-white hover:border-white/50 rounded transition-all">Sign Up</a>
+            <a href="/login" class="block text-center w-full px-4 py-2 bg-atelier-ink hover:bg-atelier-ink-light text-white font-bold rounded shadow-md transition-all mb-3">Login</a>
+            <a href="/signup" class="block text-center w-full px-4 py-2 border border-atelier-border text-atelier-muted hover:text-atelier-ink hover:border-atelier-ink rounded transition-all">Sign Up</a>
         {% endif %}
     </div>
 </nav>

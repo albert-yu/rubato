@@ -1,38 +1,38 @@
 <div class="py-12">
-    <h1 class="text-5xl font-serif font-bold text-white mb-12 text-center tracking-tight">Recent <span class="text-nocturne-gold italic">Recordings</span></h1>
+    <h1 class="text-5xl font-serif font-bold text-atelier-ink mb-12 text-center tracking-tight">Recent <span class="text-atelier-muted italic">Recordings</span></h1>
 
     {% if recordings.is_empty() %}
-    <div class="text-center text-nocturne-muted text-xl font-light italic">
+    <div class="text-center text-atelier-muted text-xl font-light italic">
         The archive is currently empty.
     </div>
     {% else %}
     <div class="space-y-8 max-w-4xl mx-auto">
         {% for recording in recordings %}
-        <div class="bg-nocturne-panel border border-white/5 shadow-2xl rounded-xl p-8 transition-transform hover:scale-[1.01]">
+        <div class="bg-atelier-panel border border-atelier-border shadow-sm rounded-xl p-8 transition-transform hover:-translate-y-1 hover:shadow-md">
             <div class="flex justify-between items-start">
                 <div class="space-y-1">
-                    <h2 class="text-3xl font-serif font-bold text-gray-100">{{ recording.composition_title }}</h2>
+                    <h2 class="text-3xl font-serif font-bold text-atelier-text">{{ recording.composition_title }}</h2>
                     {% if let Some(title) = recording.movement_title %}
-                    <h3 class="text-xl text-nocturne-muted font-medium">
+                    <h3 class="text-xl text-atelier-muted font-medium">
                         {% if let Some(idx) = recording.movement_index %}
-                        <span class="text-nocturne-gold/50 font-serif italic mr-1">{{ idx + 1 }}.</span>
+                        <span class="text-atelier-ink font-serif italic mr-1">{{ idx + 1 }}.</span>
                         {% endif %}
                         {{ title }}
                     </h3>
                     {% endif %}
                     <div class="flex items-center gap-2 mt-2">
-                        <span class="text-nocturne-gold font-medium">@{{ recording.artist_handle }}</span>
+                        <span class="text-atelier-ink font-medium">@{{ recording.artist_handle }}</span>
                     </div>
                     {% if let Some(notes) = recording.notes %}
-                    <p class="mt-4 text-sm text-nocturne-muted/80 italic leading-relaxed border-l-2 border-nocturne-gold/30 pl-4">{{ notes }}</p>
+                    <p class="mt-4 text-sm text-atelier-muted italic leading-relaxed border-l-2 border-atelier-border pl-4">{{ notes }}</p>
                     {% endif %}
                 </div>
-                <span class="text-xs font-mono uppercase tracking-widest text-nocturne-muted/50">{{ recording.created_at.format("%b %d, %Y") }}</span>
+                <span class="text-xs font-mono uppercase tracking-widest text-atelier-muted">{{ recording.created_at.format("%b %d, %Y") }}</span>
             </div>
 
-            <div class="mt-8 pt-6 border-t border-white/5 flex items-center justify-between">
+            <div class="mt-8 pt-6 border-t border-atelier-border flex items-center justify-between">
                 <button hx-get="/player/{{ recording.id }}" hx-target="#player-container" hx-swap="innerHTML"
-                    class="group flex items-center px-6 py-2.5 bg-nocturne-gold text-nocturne-bg font-bold rounded-full hover:bg-nocturne-gold-light transition-all shadow-lg shadow-nocturne-gold/10">
+                    class="group flex items-center px-6 py-2.5 bg-atelier-ink text-white font-bold rounded-full hover:bg-atelier-ink-light transition-all shadow-md">
                     <svg class="w-5 h-5 mr-2 transition-transform group-hover:scale-110" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M8 5v14l11-7z"></path>
                     </svg>
