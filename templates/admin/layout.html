@@ -2,35 +2,38 @@
 
 {% block nav %}
     {% if current_user.is_some() %}
-    <nav class="w-64 bg-gray-800 text-white flex flex-col p-4">
-        <div class="mb-8">
-            <h1 class="text-2xl font-bold">Admin</h1>
+    <nav class="w-64 bg-nocturne-panel border-r border-white/5 flex flex-col p-6">
+        <div class="mb-10 flex items-center gap-3">
+            <div class="w-8 h-8 rounded bg-nocturne-gold flex items-center justify-center">
+                <span class="text-nocturne-bg font-bold text-sm">ADM</span>
+            </div>
+            <h1 class="text-xl font-serif font-bold text-gray-100 tracking-wide">Admin</h1>
         </div>
-        <ul class="space-y-2 flex-1">
+        <ul class="space-y-1 flex-1">
             <li>
-                <a href="/" class="block px-4 py-2 hover:bg-gray-700 rounded text-gray-300 hover:text-white">
-                    ← Back to App
+                <a href="/" class="flex items-center gap-3 px-4 py-3 text-nocturne-gold/70 hover:text-nocturne-gold hover:bg-white/5 rounded-lg transition-all text-sm font-medium">
+                    <span>←</span> Back to Archive
                 </a>
             </li>
-            <li class="pt-4 border-t border-gray-700 mt-4">
-                <span class="px-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Management</span>
+            <li class="pt-6 pb-2">
+                <span class="px-4 text-[10px] font-bold text-nocturne-muted uppercase tracking-[0.2em] opacity-50">Management</span>
             </li>
             <li>
-                <a href="/admin/musicians" class="block px-4 py-2 rounded {% if active_nav == "musicians" %}bg-gray-900 text-white{% else %}text-gray-300 hover:bg-gray-700 hover:text-white{% endif %}">Musicians</a>
+                <a href="/admin/musicians" class="block px-4 py-2.5 rounded-lg transition-all text-sm {% if active_nav == "musicians" %}bg-nocturne-gold text-nocturne-bg font-bold shadow-lg shadow-nocturne-gold/10{% else %}text-nocturne-muted hover:text-white hover:bg-white/5{% endif %}">Musicians</a>
             </li>
             <li>
-                <a href="/admin/compositions" class="block px-4 py-2 rounded {% if active_nav == "compositions" %}bg-gray-900 text-white{% else %}text-gray-300 hover:bg-gray-700 hover:text-white{% endif %}">Compositions</a>
+                <a href="/admin/compositions" class="block px-4 py-2.5 rounded-lg transition-all text-sm {% if active_nav == "compositions" %}bg-nocturne-gold text-nocturne-bg font-bold shadow-lg shadow-nocturne-gold/10{% else %}text-nocturne-muted hover:text-white hover:bg-white/5{% endif %}">Compositions</a>
             </li>
             <li>
-                <a href="/admin/recordings" class="block px-4 py-2 rounded {% if active_nav == "recordings" %}bg-gray-900 text-white{% else %}text-gray-300 hover:bg-gray-700 hover:text-white{% endif %}">Recordings</a>
+                <a href="/admin/recordings" class="block px-4 py-2.5 rounded-lg transition-all text-sm {% if active_nav == "recordings" %}bg-nocturne-gold text-nocturne-bg font-bold shadow-lg shadow-nocturne-gold/10{% else %}text-nocturne-muted hover:text-white hover:bg-white/5{% endif %}">Recordings</a>
             </li>
             <li>
-                <a href="/admin/import" class="block px-4 py-2 rounded {% if active_nav == "import" %}bg-gray-900 text-white{% else %}text-gray-300 hover:bg-gray-700 hover:text-white{% endif %}">Import</a>
+                <a href="/admin/import" class="block px-4 py-2.5 rounded-lg transition-all text-sm {% if active_nav == "import" %}bg-nocturne-gold text-nocturne-bg font-bold shadow-lg shadow-nocturne-gold/10{% else %}text-nocturne-muted hover:text-white hover:bg-white/5{% endif %}">Data Import</a>
             </li>
         </ul>
-        <div class="mt-auto">
+        <div class="mt-auto pt-6 border-t border-white/5">
              <form action="/logout" method="post">
-                <button type="submit" class="w-full text-left px-4 py-2 text-red-400 hover:bg-gray-700 rounded">Logout</button>
+                <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded-lg transition-colors">Logout</button>
             </form>
         </div>
     </nav>
