@@ -171,11 +171,7 @@ async fn main() -> anyhow::Result<()> {
         if std::env::var("APP_ENV").unwrap_or_default() == "production" {
             tracing::info!("Initializing S3 Storage");
 
-            let region = std::env::var("AWS_REGION").ok().map(aws_config::Region::new);
-            let config = aws_config::from_env()
-                .region(region)
-                .load()
-                .await;
+            let config = aws_config::load_defaults(aws_config::BehaviorVersion::latest()).await;
 
             let client = aws_sdk_s3::Client::new(&config);
             let bucket =

@@ -236,65 +236,40 @@ pub async fn serve_audio(
     State(storage): State<Arc<dyn StorageService>>,
     req: Request,
 ) -> Response {
-    use axum::http::header::{ACCEPT_RANGES, CONTENT_LENGTH, CONTENT_RANGE, CONTENT_TYPE, RANGE};
-
-    // 1. Fetch all bytes (S3 or Local)
-    let bytes = match storage.get("recordings", &key).await {
-        Ok(bytes) => bytes,
-        Err(e) => {
-            tracing::error!("Failed to fetch file '{}': {}", key, e);
-            return (StatusCode::NOT_FOUND, "Resource not found").into_response();
-        }
-    };
-
-    // 2. Determine MIME type
-    let mime_type = match infer::get(&bytes) {
-        Some(kind) if kind.mime_type().starts_with("audio/") => kind.mime_type().to_string(),
-        _ => "application/octet-stream".to_string(),
-    };
-
-    let total_len = bytes.len() as u64;
-
-    // 3. Handle Range Header
-    if let Some(range_header) = req.headers().get(RANGE).and_then(|h| h.to_str().ok()) {
-        // Basic parser for "bytes=start-end"
-        if let Some(range_val) = range_header.strip_prefix("bytes=") {
-            let parts: Vec<&str> = range_val.split('-').collect();
-            let start_parse = parts.get(0).and_then(|s| s.parse::<u64>().ok());
-            let end_parse = parts.get(1).and_then(|s| s.parse::<u64>().ok());
-
-            if let Some(start) = start_parse {
-                let end = end_parse.unwrap_or(total_len - 1).min(total_len - 1);
-
-                if start > end {
-                    return StatusCode::RANGE_NOT_SATISFIABLE.into_response();
-                }
-
-                let content_length = end - start + 1;
-                let slice = bytes[start as usize..=end as usize].to_vec();
-
-                return Response::builder()
-                    .status(StatusCode::PARTIAL_CONTENT)
-                    .header(CONTENT_TYPE, mime_type)
-                    .header(ACCEPT_RANGES, "bytes")
-                    .header(
-                        CONTENT_RANGE,
-                        format!("bytes {}-{}/{}", start, end, total_len),
-                    )
-                    .header(CONTENT_LENGTH, content_length)
-                    .body(axum::body::Body::from(slice))
-                    .unwrap();
-            }
-        }
+    if std::env::var("APP_ENV").unwrap_or_default() == "production" {
+        return Redirect::temporary(&storage.get_url("recordings", &key)).into_response();
     }
 
-    // 4. No Range request (serve full file)
-    Response::builder()
-        .header(CONTENT_TYPE, mime_type)
-        .header(ACCEPT_RANGES, "bytes")
-        .header(CONTENT_LENGTH, total_len)
-        .body(axum::body::Body::from(bytes))
-        .unwrap()
+    let path = format!("uploads/recordings/{}", key);
+
+    let mut file = match tokio::fs::File::open(&path).await {
+        Ok(file) => file,
+        Err(_) => return (StatusCode::NOT_FOUND, "File not found").into_response(),
+    };
+
+    let mut buffer = [0; 1024];
+    let n = match file.read(&mut buffer).await {
+        Ok(n) => n,
+        Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, "Error reading file").into_response(),
+    };
+
+    let mime_type = match infer::get(&buffer[..n]) {
+        Some(kind) if kind.mime_type().starts_with("audio/") => kind.mime_type().to_string(),
+        _ => return (StatusCode::BAD_REQUEST, "File is not an audio file").into_response(),
+    };
+
+    match ServeFile::new(&path).oneshot(req).await {
+        Ok(response) => {
+            let mut response = response.into_response();
+            if let Ok(value) = axum::http::HeaderValue::from_str(&mime_type) {
+                response
+                    .headers_mut()
+                    .insert(axum::http::header::CONTENT_TYPE, value);
+            }
+            response
+        }
+        Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Error serving file").into_response(),
+    }
 }
 
 pub async fn get_player(
