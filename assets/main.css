@@ -1909,8 +1909,8 @@ video {
     justify-content: flex-start;
   }
 
-  .md\:gap-6 {
-    gap: 1.5rem;
+  .md\:gap-8 {
+    gap: 2rem;
   }
 
   .md\:space-x-6 > :not([hidden]) ~ :not([hidden]) {
