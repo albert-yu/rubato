@@ -158,7 +158,7 @@
                     analyser.connect(audioCtx.destination);
                     
                     // Setup analyser
-                    analyser.fftSize = 64; // Small size for simple bars (32 bins)
+                    analyser.fftSize = 256; // Larger size for better low/high freq resolution
                     visualize();
                 } catch (e) {
                     console.error("Web Audio API Error:", e);
@@ -185,13 +185,16 @@
                     const totalWidth = canvas.width;
                     const barWidth = (totalWidth - (spacing * (barCount - 1))) / barCount;
                     
-                    // We pick a few frequencies from the lower-mid range for better visual movement
-                    const relevantIndices = [2, 6, 10, 6, 2]; 
+                    // Low to High frequency mapping (indices based on fftSize=256)
+                    // Bins: Bass(~1), LowMid(~3), Mid(~8), HighMid(~20), High(~50)
+                    const relevantIndices = [1, 3, 8, 20, 50]; 
 
                     for (let i = 0; i < barCount; i++) {
                         const value = dataArray[relevantIndices[i]] || 0;
                         const percent = value / 255;
-                        const height = Math.max(percent * canvas.height * 0.8, 4); // Min height 4px
+                        
+                        // Scale height based on value, removed artificial shape
+                        const height = Math.max(percent * canvas.height, 6); // Min height 6px
                         
                         const x = i * (barWidth + spacing);
                         const y = (canvas.height - height) / 2; // Center vertically
