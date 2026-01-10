@@ -1,10 +1,66 @@
 <div class="bg-sonata-charcoal border-t border-sonata-border p-4 md:p-6 flex flex-col md:flex-row items-center justify-between shadow-2xl">
-    <div class="w-full md:w-auto flex justify-between md:justify-start items-center mb-4 md:mb-0 md:space-x-6">
-        <div class="flex items-center space-x-6">
-            <div class="text-sonata-slate">
+    <style>
+        /* Custom Range Slider Styling */
+        input[type=range] {
+            -webkit-appearance: none; /* Hides the slider so that custom slider can be made */
+            width: 100%; /* Specific width is required for Firefox. */
+            background: transparent; /* Otherwise white in Chrome */
+        }
+        
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 12px;
+            width: 12px;
+            border-radius: 50%;
+            background: #e8e8e8;
+            margin-top: -5px; /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
+            cursor: pointer;
+            box-shadow: 0 0 0 0 rgba(232, 232, 232, 0);
+            transition: box-shadow 0.2s ease;
+        }
+
+        input[type=range]:hover::-webkit-slider-thumb {
+            box-shadow: 0 0 0 4px rgba(232, 232, 232, 0.1);
+        }
+
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 2px;
+            cursor: pointer;
+            background: transparent; /* Managed by JS for progress fill */
+            border-radius: 1px;
+        }
+
+        /* Firefox */
+        input[type=range]::-moz-range-thumb {
+            height: 12px;
+            width: 12px;
+            border: none;
+            border-radius: 50%;
+            background: #e8e8e8;
+            cursor: pointer;
+            box-shadow: 0 0 0 0 rgba(232, 232, 232, 0);
+            transition: box-shadow 0.2s ease;
+        }
+        input[type=range]:hover::-moz-range-thumb {
+            box-shadow: 0 0 0 4px rgba(232, 232, 232, 0.1);
+        }
+
+        input[type=range]::-moz-range-track {
+            width: 100%;
+            height: 2px;
+            cursor: pointer;
+            background: transparent;
+            border-radius: 1px;
+        }
+    </style>
+
+    <div class="w-full md:w-auto flex justify-between md:justify-start items-center mb-4 md:mb-0 md:space-x-6 md:min-w-[200px]">
+        <div class="flex items-center space-x-6 overflow-hidden">
+            <div class="text-sonata-slate flex-shrink-0">
                 <div class="w-8 h-8 stroke-1">{% include "icons/musical_note.svg" %}</div>
             </div>
-            <div>
+            <div class="overflow-hidden">
                 <h3 class="text-sm font-light tracking-wide text-sonata-pearl line-clamp-1">{{ recording.composition_title }}</h3>
                 <p class="text-[10px] uppercase tracking-widest text-sonata-slate mt-1 line-clamp-1">
                     {% if let Some(title) = recording.movement_title %}
@@ -16,15 +72,42 @@
         </div>
         
         <!-- Mobile Close Button -->
-        <button onclick="document.getElementById('player-container').innerHTML=''" class="md:hidden text-sonata-slate hover:text-sonata-pearl transition-colors">
+        <button onclick="document.getElementById('player-container').innerHTML=''" class="md:hidden text-sonata-slate hover:text-sonata-pearl transition-colors ml-4 flex-shrink-0">
             <div class="w-5 h-5 stroke-1">{% include "icons/close.svg" %}</div>
         </button>
     </div>
     
-    <div class="w-full md:flex-1 md:max-w-xl md:mx-12">
-        <audio controls autoplay class="w-full h-8 opacity-80 hover:opacity-100 transition-opacity" src="/audio/{{ recording.file_key }}" type="{{ recording.mime_type }}">
-            Your browser does not support the audio element.
-        </audio>
+    <div class="w-full md:flex-1 md:max-w-3xl md:mx-8 flex flex-col justify-center">
+        <audio id="audio-player" src="/audio/{{ recording.file_key }}" type="{{ recording.mime_type }}" autoplay></audio>
+        
+        <div class="flex items-center gap-4 md:gap-6">
+            <!-- Play/Pause -->
+            <button id="play-pause-btn" class="text-sonata-pearl hover:text-white transition-colors focus:outline-none flex-shrink-0">
+                <div id="icon-play" class="w-8 h-8 hidden">{% include "icons/play.svg" %}</div>
+                <div id="icon-pause" class="w-8 h-8">{% include "icons/pause.svg" %}</div>
+            </button>
+
+            <!-- Time & Progress -->
+            <div class="flex-1 flex items-center gap-3 min-w-0">
+                <span id="current-time" class="text-[10px] md:text-xs text-sonata-slate font-mono w-8 md:w-10 text-right flex-shrink-0">0:00</span>
+                
+                <div class="relative flex-1 h-8 flex items-center group">
+                     <input type="range" id="seek-slider" class="w-full h-[2px] bg-sonata-border appearance-none focus:outline-none z-10 cursor-pointer" style="background-image: linear-gradient(#e8e8e8, #e8e8e8); background-size: 0% 100%; background-repeat: no-repeat;" min="0" value="0" step="0.1">
+                </div>
+
+                <span id="duration" class="text-[10px] md:text-xs text-sonata-slate font-mono w-8 md:w-10 flex-shrink-0">--:--</span>
+            </div>
+
+            <!-- Volume (Desktop) -->
+            <div class="hidden sm:flex items-center gap-2 group flex-shrink-0">
+                 <button id="mute-btn" class="text-sonata-slate hover:text-sonata-pearl transition-colors">
+                    <div class="w-5 h-5">{% include "icons/volume.svg" %}</div>
+                 </button>
+                 <div class="w-16 md:w-20 flex items-center h-8">
+                     <input type="range" id="volume-slider" class="w-full h-[2px] bg-sonata-border appearance-none focus:outline-none cursor-pointer" style="background-image: linear-gradient(#e8e8e8, #e8e8e8); background-size: 100% 100%; background-repeat: no-repeat;" min="0" max="1" step="0.05" value="1">
+                 </div>
+            </div>
+        </div>
     </div>
     
     <!-- Desktop Close Button -->
@@ -33,4 +116,132 @@
             <div class="w-5 h-5 stroke-1">{% include "icons/close.svg" %}</div>
         </button>
     </div>
+
+    <script>
+        (function() {
+            const audio = document.getElementById('audio-player');
+            const playPauseBtn = document.getElementById('play-pause-btn');
+            const iconPlay = document.getElementById('icon-play');
+            const iconPause = document.getElementById('icon-pause');
+            const seekSlider = document.getElementById('seek-slider');
+            const volumeSlider = document.getElementById('volume-slider');
+            const currentTimeElem = document.getElementById('current-time');
+            const durationElem = document.getElementById('duration');
+            const muteBtn = document.getElementById('mute-btn');
+            
+            let isSeeking = false;
+            let lastVolume = 1;
+
+            const formatTime = (secs) => {
+                if(isNaN(secs)) return "0:00";
+                const minutes = Math.floor(secs / 60);
+                const seconds = Math.floor(secs % 60);
+                return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+            }
+
+            // Helpers to update slider background fill
+            const updateSliderFill = (slider) => {
+                if (!slider) return;
+                const min = parseFloat(slider.min) || 0;
+                const max = parseFloat(slider.max) || 100;
+                const val = parseFloat(slider.value);
+                // Avoid divide by zero
+                const percentage = max > min ? (val - min) * 100 / (max - min) : 0;
+                slider.style.backgroundSize = `${percentage}% 100%`;
+            };
+
+            // Initial State
+            audio.volume = 1;
+            updateSliderFill(volumeSlider);
+            
+            // Play/Pause
+            playPauseBtn.addEventListener('click', () => {
+                if (audio.paused) {
+                    audio.play();
+                } else {
+                    audio.pause();
+                }
+            });
+
+            audio.addEventListener('play', () => {
+                iconPlay.classList.add('hidden');
+                iconPause.classList.remove('hidden');
+            });
+
+            audio.addEventListener('pause', () => {
+                iconPlay.classList.remove('hidden');
+                iconPause.classList.add('hidden');
+            });
+            
+            audio.addEventListener('loadedmetadata', () => {
+                durationElem.textContent = formatTime(audio.duration);
+                seekSlider.max = Math.floor(audio.duration);
+            });
+
+            audio.addEventListener('timeupdate', () => {
+                if (!isSeeking) {
+                    seekSlider.value = audio.currentTime;
+                    currentTimeElem.textContent = formatTime(audio.currentTime);
+                    updateSliderFill(seekSlider);
+                }
+            });
+
+            audio.addEventListener('ended', () => {
+                iconPlay.classList.remove('hidden');
+                iconPause.classList.add('hidden');
+                seekSlider.value = 0;
+                updateSliderFill(seekSlider);
+                currentTimeElem.textContent = "0:00";
+            });
+
+            // Seek
+            seekSlider.addEventListener('input', (e) => {
+                isSeeking = true;
+                currentTimeElem.textContent = formatTime(seekSlider.value);
+                updateSliderFill(seekSlider);
+            });
+
+            seekSlider.addEventListener('change', () => {
+                audio.currentTime = seekSlider.value;
+                isSeeking = false;
+            });
+
+            // Volume
+            if(volumeSlider) {
+                volumeSlider.addEventListener('input', (e) => {
+                    audio.volume = e.target.value;
+                    if(audio.volume === 0) {
+                        muteBtn.classList.add('opacity-50');
+                    } else {
+                        muteBtn.classList.remove('opacity-50');
+                    }
+                    updateSliderFill(volumeSlider);
+                });
+            }
+            
+            if(muteBtn) {
+                muteBtn.addEventListener('click', () => {
+                    if (audio.volume > 0) {
+                        lastVolume = audio.volume;
+                        audio.volume = 0;
+                        volumeSlider.value = 0;
+                        muteBtn.classList.add('opacity-50');
+                    } else {
+                        audio.volume = lastVolume || 1;
+                        volumeSlider.value = audio.volume;
+                        muteBtn.classList.remove('opacity-50');
+                    }
+                    updateSliderFill(volumeSlider);
+                });
+            }
+
+            // Handle Autoplay logic check
+            // If the audio starts playing automatically, ensure icons are correct
+            if (!audio.paused) {
+                 iconPlay.classList.add('hidden');
+                 iconPause.classList.remove('hidden');
+            }
+
+        })();
+    </script>
 </div>
