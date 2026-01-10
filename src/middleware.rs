@@ -18,19 +18,24 @@ fn compute_fnv1a(text: &str) -> u64 {
 pub async fn etag_middleware(req: Request, next: Next) -> Response {
     let if_none_match = req.headers().get(header::IF_NONE_MATCH).cloned();
 
-    let response = next.run(req).await;
+    let mut response = next.run(req).await;
 
     if !response.status().is_success() {
         return response;
     }
 
-    let headers = response.headers();
-    if headers.contains_key(header::ETAG) {
+    // Always add Cache-Control: no-cache as requested
+    response.headers_mut().insert(
+        header::CACHE_CONTROL,
+        header::HeaderValue::from_static("no-cache"),
+    );
+
+    if response.headers().contains_key(header::ETAG) {
         return response;
     }
 
-    let last_modified = headers.get(header::LAST_MODIFIED);
-    let content_length = headers.get(header::CONTENT_LENGTH);
+    let last_modified = response.headers().get(header::LAST_MODIFIED).cloned();
+    let content_length = response.headers().get(header::CONTENT_LENGTH).cloned();
 
     if let (Some(last_modified), Some(content_length)) = (last_modified, content_length) {
         let last_modified_str = last_modified.to_str().unwrap_or_default();
@@ -54,9 +59,9 @@ pub async fn etag_middleware(req: Request, next: Next) -> Response {
             }
         }
 
-        let (mut parts, body) = response.into_parts();
-        parts.headers.insert(header::ETAG, etag.parse().unwrap());
-        return Response::from_parts(parts, body);
+        response
+            .headers_mut()
+            .insert(header::ETAG, etag.parse().unwrap());
     }
 
     response
