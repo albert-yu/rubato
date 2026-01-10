@@ -16,12 +16,14 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tokio_util::sync::CancellationToken;
+use tower::ServiceBuilder;
 use tower_http::services::ServeDir;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod db;
 mod extractors;
 mod handlers;
+mod middleware;
 mod storage;
 mod view;
 
@@ -267,7 +269,12 @@ async fn main() -> anyhow::Result<()> {
                 .layer(DefaultBodyLimit::max(1024 * 1024 * 50)),
         )
         .route("/admin/import/cancel", post(admin::admin_import_cancel))
-        .nest_service("/assets", ServeDir::new("assets"))
+        .nest_service(
+            "/assets",
+            ServiceBuilder::new()
+                .layer(axum::middleware::from_fn(middleware::etag_middleware))
+                .service(ServeDir::new("assets")),
+        )
         .nest_service("/uploads", ServeDir::new("uploads"))
         .layer(tower_http::trace::TraceLayer::new_for_http())
         .with_state(app_state);
