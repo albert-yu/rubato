@@ -1,29 +1,36 @@
-<nav class="w-64 bg-sonata-black border-r border-sonata-border flex flex-col p-8">
+<nav id="main-nav" class="fixed inset-y-0 left-0 z-50 w-64 bg-sonata-black border-r border-sonata-border flex flex-col p-8 transform -translate-x-full transition-transform duration-300 md:translate-x-0 md:static shadow-2xl md:shadow-none">
+    <!-- Mobile Close Button -->
+    <button onclick="toggleNav()" class="absolute top-6 right-6 md:hidden text-sonata-slate hover:text-sonata-pearl transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+    </button>
+
     <div class="mb-12">
         <h1 class="text-3xl font-light tracking-tighter text-sonata-pearl">Rubato</h1>
         <div class="w-10 h-[1px] bg-sonata-slate mt-4"></div>
     </div>
     <ul class="space-y-4 flex-1" hx-boost="true" hx-target="#main-content">
         <li>
-            <a href="/" class="block text-sm tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors">Home</a>
+            <a href="/" onclick="toggleNav()" class="block text-sm tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors">Home</a>
         </li>
         {% if let Some(user) = current_user %}
         <li>
-            <a href="/settings" class="block text-sm tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors">Settings</a>
+            <a href="/settings" onclick="toggleNav()" class="block text-sm tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors">Settings</a>
         </li>
         {% endif %}
     </ul>
     <div class="mt-auto space-y-4">
         {% if let Some(user) = current_user %}
             {% if user.is_privileged() %}
-            <a href="/admin" class="block text-xs tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors">Admin</a>
+            <a href="/admin" onclick="toggleNav()" class="block text-xs tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors">Admin</a>
             {% endif %}
             <form action="/logout" method="post">
                 <button type="submit" class="w-full text-left text-xs tracking-widest uppercase font-light text-red-900/70 hover:text-red-500 transition-colors">Logout</button>
             </form>
         {% else %}
-            <a href="/login" class="block text-sm tracking-widest uppercase font-light text-sonata-pearl border border-sonata-charcoal px-4 py-2 text-center hover:bg-sonata-pearl hover:text-sonata-black transition-all">Login</a>
-            <a href="/signup" class="block text-sm tracking-widest uppercase font-light text-sonata-slate text-center hover:text-sonata-pearl transition-colors">Sign Up</a>
+            <a href="/login" onclick="toggleNav()" class="block text-sm tracking-widest uppercase font-light text-sonata-pearl border border-sonata-charcoal px-4 py-2 text-center hover:bg-sonata-pearl hover:text-sonata-black transition-all">Login</a>
+            <a href="/signup" onclick="toggleNav()" class="block text-sm tracking-widest uppercase font-light text-sonata-slate text-center hover:text-sonata-pearl transition-colors">Sign Up</a>
         {% endif %}
     </div>
 </nav>

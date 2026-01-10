@@ -1,26 +1,34 @@
-<div class="bg-sonata-charcoal border-t border-sonata-border p-6 flex items-center justify-between shadow-2xl">
-    <div class="flex items-center space-x-6">
-        <div class="text-sonata-slate">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 19V6l12-6v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-6c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"></path></svg>
+<div class="bg-sonata-charcoal border-t border-sonata-border p-4 md:p-6 flex flex-col md:flex-row items-center justify-between shadow-2xl">
+    <div class="w-full md:w-auto flex justify-between md:justify-start items-center mb-4 md:mb-0 md:space-x-6">
+        <div class="flex items-center space-x-6">
+            <div class="text-sonata-slate">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 19V6l12-6v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-6c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2z"></path></svg>
+            </div>
+            <div>
+                <h3 class="text-sm font-light tracking-wide text-sonata-pearl line-clamp-1">{{ recording.composition_title }}</h3>
+                <p class="text-[10px] uppercase tracking-widest text-sonata-slate mt-1 line-clamp-1">
+                    {% if let Some(title) = recording.movement_title %}
+                        {{ title }} — 
+                    {% endif %}
+                    {{ recording.artist_handle }}
+                </p>
+            </div>
         </div>
-        <div>
-            <h3 class="text-sm font-light tracking-wide text-sonata-pearl">{{ recording.composition_title }}</h3>
-            <p class="text-[10px] uppercase tracking-widest text-sonata-slate mt-1">
-                {% if let Some(title) = recording.movement_title %}
-                    {{ title }} — 
-                {% endif %}
-                {{ recording.artist_handle }}
-            </p>
-        </div>
+        
+        <!-- Mobile Close Button -->
+        <button onclick="document.getElementById('player-container').innerHTML=''" class="md:hidden text-sonata-slate hover:text-sonata-pearl transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
     </div>
     
-    <div class="flex-1 max-w-xl mx-12">
+    <div class="w-full md:flex-1 md:max-w-xl md:mx-12">
         <audio controls autoplay class="w-full h-8 opacity-80 hover:opacity-100 transition-opacity" src="/audio/{{ recording.file_key }}" type="{{ recording.mime_type }}">
             Your browser does not support the audio element.
         </audio>
     </div>
     
-    <div>
+    <!-- Desktop Close Button -->
+    <div class="hidden md:block">
         <button onclick="document.getElementById('player-container').innerHTML=''" class="text-sonata-slate hover:text-sonata-pearl transition-colors">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M6 18L18 6M6 6l12 12"></path></svg>
         </button>
