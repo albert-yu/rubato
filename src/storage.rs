@@ -13,11 +13,14 @@ pub trait StorageService: Send + Sync {
         content_type: &str,
     ) -> Result<String>;
 
+    /// Fetches data from the storage provider.
+    async fn get(&self, folder: &str, key: &str) -> Result<Vec<u8>>;
+
     /// Deletes a file from the storage provider.
     async fn delete(&self, folder: &str, key: &str) -> Result<()>;
 
-    /// Returns the public URL for a given key.
-    fn get_url(&self, folder: &str, key: &str) -> String;
+    // /// Returns the public URL for a given key.
+    // async fn get_url(&self, folder: &str, key: &str) -> String;
 }
 
 // --- Local Filesystem Implementation ---
@@ -59,6 +62,13 @@ impl StorageService for LocalStorage {
         Ok(format!("{}/{}", self.base_url, full_key))
     }
 
+    async fn get(&self, folder: &str, key: &str) -> Result<Vec<u8>> {
+        let folder = folder.trim_start_matches('/');
+        let file_path = self.base_path.join(folder).join(key);
+        let data = tokio::fs::read(file_path).await?;
+        Ok(data)
+    }
+
     async fn delete(&self, folder: &str, key: &str) -> Result<()> {
         let folder = folder.trim_start_matches('/');
         let file_path = self.base_path.join(folder).join(key);
@@ -68,10 +78,10 @@ impl StorageService for LocalStorage {
         Ok(())
     }
 
-    fn get_url(&self, folder: &str, key: &str) -> String {
-        let folder = folder.trim_start_matches('/');
-        format!("{}/{}/{}", self.base_url, folder, key)
-    }
+    // async fn get_url(&self, folder: &str, key: &str) -> String {
+    //     let folder = folder.trim_start_matches('/');
+    //     format!("{}/{}/{}", self.base_url, folder, key)
+    // }
 }
 
 // --- S3 Implementation ---
@@ -118,6 +128,22 @@ impl StorageService for S3Storage {
         Ok(format!("{}/{}", self.public_url, full_key))
     }
 
+    async fn get(&self, folder: &str, key: &str) -> Result<Vec<u8>> {
+        let folder = folder.trim_start_matches('/');
+        let full_key = format!("{}/{}", folder, key);
+        let res = self
+            .client
+            .get_object()
+            .bucket(&self.bucket)
+            .key(full_key)
+            .send()
+            .await
+            .map_err(|e| anyhow::anyhow!("S3 Get failed: {}", e))?;
+
+        let data = res.body.collect().await?.to_vec();
+        Ok(data)
+    }
+
     async fn delete(&self, folder: &str, key: &str) -> Result<()> {
         let folder = folder.trim_start_matches('/');
         let full_key = format!("{}/{}", folder, key);
@@ -131,8 +157,19 @@ impl StorageService for S3Storage {
         Ok(())
     }
 
-    fn get_url(&self, folder: &str, key: &str) -> String {
-        let folder = folder.trim_start_matches('/');
-        format!("{}/{}/{}", self.public_url, folder, key)
-    }
+    // async fn get_url(&self, folder: &str, key: &str) -> String {
+    //     let folder = folder.trim_start_matches('/');
+    //     let full_key = format!("{}/{}", folder, key);
+
+    //     // If you want to serve private files with credentials, you can use presigned URLs:
+    //     match self.client
+    //         .get_object()
+    //         .bucket(&self.bucket)
+    //         .key(full_key)
+    //         .presigned(aws_sdk_s3::presigning::PresigningConfig::expires_in(std::time::Duration::from_secs(3600)).unwrap())
+    //         .await {
+    //             Ok(req) => req.uri().to_string(),
+    //             Err(_) => format!("{}/{}/{}", self.public_url, folder, key),
+    //         }
+    // }
 }
