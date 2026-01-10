@@ -30,9 +30,7 @@
                             hx-swap="outerHTML"
                             hx-push-url="true"
                             class="absolute right-2 top-1/2 transform -translate-y-1/2 text-sonata-slate hover:text-sonata-pearl">
-                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        <div class="h-4 w-4 stroke-1">{% include "icons/close.svg" %}</div>
                     </button>
                     {% when None %}
                 {% endmatch %}
