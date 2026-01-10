@@ -8,10 +8,24 @@
     <script src="/assets/vendor/htmx.js"></script>
 </head>
 <body class="bg-sonata-black text-sonata-pearl font-sans h-screen overflow-hidden {% block body_class %}{% endblock %}">
-    <div class="flex h-full">
+    <div class="flex h-full flex-col md:flex-row relative">
+        <!-- Mobile Header -->
+        <header class="md:hidden h-16 border-b border-sonata-border flex items-center justify-between px-4 bg-sonata-black flex-shrink-0 z-40">
+            <span class="text-xl font-light tracking-tighter text-sonata-pearl">Rubato</span>
+            <button onclick="toggleNav()" class="text-sonata-slate hover:text-sonata-pearl transition-colors p-2">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </header>
+
+        <!-- Backdrop -->
+        <div id="nav-backdrop" onclick="toggleNav()" class="fixed inset-0 bg-black/80 z-40 hidden transition-opacity md:hidden glass-backdrop"></div>
+
         {% block nav %}{% endblock %}
-        <main class="flex-1 flex flex-col min-w-0 relative h-full">
-            <div class="flex-1 container mx-auto p-8 overflow-y-auto" hx-history-elt id="main-content">
+        
+        <main class="flex-1 flex flex-col min-w-0 relative h-full overflow-hidden">
+            <div class="flex-1 container mx-auto p-4 md:p-8 overflow-y-auto" hx-history-elt id="main-content">
                 {% block content %}{% endblock %}
             </div>
             
@@ -19,5 +33,16 @@
             </div>
         </main>
     </div>
+
+    <script>
+        function toggleNav() {
+            const nav = document.getElementById('main-nav');
+            const backdrop = document.getElementById('nav-backdrop');
+            if (nav && backdrop) {
+                nav.classList.toggle('-translate-x-full');
+                backdrop.classList.toggle('hidden');
+            }
+        }
+    </script>
 </body>
 </html>

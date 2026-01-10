@@ -1,4 +1,11 @@
-<nav class="w-64 bg-sonata-black border-r border-sonata-border flex flex-col p-8">
+<nav id="main-nav" class="fixed inset-y-0 left-0 z-50 w-64 bg-sonata-black border-r border-sonata-border flex flex-col p-8 transform -translate-x-full transition-transform duration-300 md:translate-x-0 md:static shadow-2xl md:shadow-none">
+    <!-- Mobile Close Button -->
+    <button onclick="toggleNav()" class="absolute top-6 right-6 md:hidden text-sonata-slate hover:text-sonata-pearl transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+    </button>
+
     <div class="mb-12">
         <h1 class="text-3xl font-light tracking-tighter text-sonata-pearl">Rubato</h1>
         <div class="w-10 h-[1px] bg-sonata-slate mt-4"></div>
