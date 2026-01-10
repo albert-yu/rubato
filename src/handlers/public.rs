@@ -206,7 +206,10 @@ pub async fn upload_post(
     }
 
     let file_key = Uuid::new_v4().to_string();
-    if let Err(e) = storage.upload(&file_key, data.to_vec(), &mime_type).await {
+    if let Err(e) = storage
+        .upload("recordings", &file_key, data.to_vec(), &mime_type)
+        .await
+    {
         tracing::error!("Failed to upload file: {}", e);
         return render_error("Failed to save file.".to_string());
     }
@@ -234,7 +237,7 @@ pub async fn serve_audio(
     req: Request,
 ) -> Response {
     if std::env::var("APP_ENV").unwrap_or_default() == "production" {
-        return Redirect::temporary(&storage.get_url(&key)).into_response();
+        return Redirect::temporary(&storage.get_url("recordings", &key)).into_response();
     }
 
     let path = format!("uploads/recordings/{}", key);

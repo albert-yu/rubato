@@ -5,13 +5,19 @@ use std::path::PathBuf;
 #[async_trait]
 pub trait StorageService: Send + Sync {
     /// Uploads data to the storage provider and returns the public URL or file path.
-    async fn upload(&self, key: &str, data: Vec<u8>, content_type: &str) -> Result<String>;
+    async fn upload(
+        &self,
+        folder: &str,
+        key: &str,
+        data: Vec<u8>,
+        content_type: &str,
+    ) -> Result<String>;
 
     /// Deletes a file from the storage provider.
-    async fn delete(&self, key: &str) -> Result<()>;
+    async fn delete(&self, folder: &str, key: &str) -> Result<()>;
 
     /// Returns the public URL for a given key.
-    fn get_url(&self, key: &str) -> String;
+    fn get_url(&self, folder: &str, key: &str) -> String;
 }
 
 // --- Local Filesystem Implementation ---
@@ -34,27 +40,37 @@ impl LocalStorage {
 
 #[async_trait]
 impl StorageService for LocalStorage {
-    async fn upload(&self, key: &str, data: Vec<u8>, _content_type: &str) -> Result<String> {
-        let file_path = self.base_path.join(key);
+    async fn upload(
+        &self,
+        folder: &str,
+        key: &str,
+        data: Vec<u8>,
+        _content_type: &str,
+    ) -> Result<String> {
+        let folder = folder.trim_start_matches('/');
+        let full_key = format!("{}/{}", folder, key);
+        let file_path = self.base_path.join(&full_key);
         if let Some(parent) = file_path.parent() {
             tokio::fs::create_dir_all(parent).await?;
         }
         tokio::fs::write(&file_path, data).await?;
 
         // Return relative URL (e.g., "/uploads/my-image.jpg")
-        Ok(format!("{}/{}", self.base_url, key))
+        Ok(format!("{}/{}", self.base_url, full_key))
     }
 
-    async fn delete(&self, key: &str) -> Result<()> {
-        let file_path = self.base_path.join(key);
+    async fn delete(&self, folder: &str, key: &str) -> Result<()> {
+        let folder = folder.trim_start_matches('/');
+        let file_path = self.base_path.join(folder).join(key);
         if file_path.exists() {
             tokio::fs::remove_file(file_path).await?;
         }
         Ok(())
     }
 
-    fn get_url(&self, key: &str) -> String {
-        format!("{}/{}", self.base_url, key)
+    fn get_url(&self, folder: &str, key: &str) -> String {
+        let folder = folder.trim_start_matches('/');
+        format!("{}/{}/{}", self.base_url, folder, key)
     }
 }
 
@@ -79,11 +95,19 @@ impl S3Storage {
 
 #[async_trait]
 impl StorageService for S3Storage {
-    async fn upload(&self, key: &str, data: Vec<u8>, content_type: &str) -> Result<String> {
+    async fn upload(
+        &self,
+        folder: &str,
+        key: &str,
+        data: Vec<u8>,
+        content_type: &str,
+    ) -> Result<String> {
+        let folder = folder.trim_start_matches('/');
+        let full_key = format!("{}/{}", folder, key);
         self.client
             .put_object()
             .bucket(&self.bucket)
-            .key(key)
+            .key(&full_key)
             .body(data.into())
             .content_type(content_type)
             // .acl(aws_sdk_s3::types::ObjectCannedAcl::PublicRead) // Optional: specific ACLs
@@ -91,21 +115,24 @@ impl StorageService for S3Storage {
             .await
             .map_err(|e| anyhow::anyhow!("S3 Upload failed: {}", e))?;
 
-        Ok(format!("{}/{}", self.public_url, key))
+        Ok(format!("{}/{}", self.public_url, full_key))
     }
 
-    async fn delete(&self, key: &str) -> Result<()> {
+    async fn delete(&self, folder: &str, key: &str) -> Result<()> {
+        let folder = folder.trim_start_matches('/');
+        let full_key = format!("{}/{}", folder, key);
         self.client
             .delete_object()
             .bucket(&self.bucket)
-            .key(key)
+            .key(full_key)
             .send()
             .await
             .map_err(|e| anyhow::anyhow!("S3 Delete failed: {}", e))?;
         Ok(())
     }
 
-    fn get_url(&self, key: &str) -> String {
-        format!("{}/{}", self.public_url, key)
+    fn get_url(&self, folder: &str, key: &str) -> String {
+        let folder = folder.trim_start_matches('/');
+        format!("{}/{}/{}", self.public_url, folder, key)
     }
 }
