@@ -14,7 +14,8 @@ use crate::extractors::{AuthUser, HtmxRequest, OptionalAuthUser};
 use crate::storage::StorageService;
 use crate::view::{
     CompositionPickerTemplate, HtmlTemplate, IndexContentTemplate, IndexTemplate, PlayerTemplate,
-    SettingsContentTemplate, SettingsTemplate, UploadContentTemplate, UploadTemplate,
+    ProfileContentTemplate, ProfileTemplate, SettingsContentTemplate, SettingsTemplate,
+    UploadContentTemplate, UploadTemplate,
 };
 
 pub async fn index(
@@ -507,4 +508,63 @@ pub async fn select_composition(
 
 pub async fn reset_composition() -> impl IntoResponse {
     HtmlTemplate(CompositionPickerTemplate)
+}
+
+pub async fn profile(
+    Path(handle): Path<String>,
+    auth: OptionalAuthUser,
+    htmx: HtmxRequest,
+    State(pool): State<Pool<Postgres>>,
+) -> Response {
+    let profile_user =
+        match sqlx::query_as::<_, Musician>("SELECT * FROM musicians WHERE handle = $1")
+            .bind(&handle)
+            .fetch_optional(&pool)
+            .await
+        {
+            Ok(Some(m)) => m,
+            Ok(None) => return StatusCode::NOT_FOUND.into_response(),
+            Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+        };
+
+    let recordings = sqlx::query_as::<_, RecordingFeedItem>(
+        r#"
+        SELECT 
+            r.id,
+            m.handle as artist_handle,
+            c.title as composition_title,
+            mv.index as movement_index,
+            mv.title as movement_title,
+            r.created_at,
+            r.file_key,
+            r.mime_type,
+            r.notes
+        FROM recordings r
+        JOIN musicians m ON r.artist_id = m.id
+        JOIN compositions c ON r.composition_id = c.id
+        LEFT JOIN movements mv ON r.movement_id = mv.id
+        WHERE m.id = $1
+        ORDER BY r.created_at DESC
+        "#,
+    )
+    .bind(profile_user.id)
+    .fetch_all(&pool)
+    .await
+    .unwrap_or_default();
+
+    if htmx.is_hx_boosted {
+        HtmlTemplate(ProfileContentTemplate {
+            current_user: auth.0,
+            profile_user,
+            recordings,
+        })
+        .into_response()
+    } else {
+        HtmlTemplate(ProfileTemplate {
+            current_user: auth.0,
+            profile_user,
+            recordings,
+        })
+        .into_response()
+    }
 }

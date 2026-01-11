@@ -1,11 +1,28 @@
 <div class="max-w-6xl mx-auto">
-    <div class="flex justify-between items-end mb-12 border-b border-sonata-border pb-6">
-        <h2 class="text-xs tracking-[0.3em] uppercase font-light text-sonata-slate">Recent Recordings</h2>
+    <div class="flex flex-col items-center mb-16 space-y-4">
+        <h1 class="text-4xl font-light text-sonata-pearl tracking-tight">{{ profile_user.given_name }} {{ profile_user.family_name }}</h1>
+        <div class="text-sm tracking-widest uppercase font-light text-sonata-slate">@{{ profile_user.handle }}</div>
+        
         {% if let Some(user) = current_user %}
-        <a href="/upload" hx-boost="true" hx-target="#main-content" class="sonata-btn !px-6 !py-2 text-[10px]">
-            Upload
-        </a>
+            {% if user.musician_id == profile_user.id %}
+            <a href="/settings" hx-boost="true" hx-target="#main-content" class="text-[10px] uppercase tracking-widest text-sonata-pearl border border-sonata-charcoal px-3 py-1 hover:bg-sonata-pearl hover:text-sonata-black transition-all">
+                Edit Profile
+            </a>
+            {% endif %}
         {% endif %}
+        
+        {% if let Some(birth) = profile_user.birth_date %}
+        <div class="text-xs font-light text-sonata-slate/70">
+            {{ birth.format("%Y") }}
+            {% if let Some(death) = profile_user.death_date %}
+            - {{ death.format("%Y") }}
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="mb-12 border-b border-sonata-border pb-6">
+        <h2 class="text-xs tracking-[0.3em] uppercase font-light text-sonata-slate">Recordings</h2>
     </div>
 
     {% if recordings.is_empty() %}
@@ -34,7 +51,7 @@
             {% endif %}
             
             <div class="flex items-center justify-between mt-12">
-                <a href="/{{ recording.artist_handle }}" class="text-xs tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors">@{{ recording.artist_handle }}</a>
+                <span class="text-xs tracking-widest uppercase font-light text-sonata-slate">@{{ recording.artist_handle }}</span>
                 <div class="opacity-0 group-hover:opacity-100 transition-opacity">
                     <div class="w-5 h-5 text-sonata-pearl stroke-1">{% include "icons/play.svg" %}</div>
                 </div>

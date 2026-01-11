@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}{{ profile_user.handle }}{% endblock %}
+
+{% block nav %}
+    {% include "nav.html" %}
+{% endblock %}
+
+{% block content %}
+    {% include "profile_content.html" %}
+{% endblock %}

@@ -266,6 +266,7 @@ async fn main() -> anyhow::Result<()> {
                 .layer(DefaultBodyLimit::max(1024 * 1024 * 50)),
         )
         .route("/admin/import/cancel", post(admin::admin_import_cancel))
+        .route("/{handle}", get(public::profile))
         .nest_service(
             "/assets",
             ServiceBuilder::new()

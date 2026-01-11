@@ -18,6 +18,22 @@ pub struct IndexContentTemplate {
 }
 
 #[derive(Template)]
+#[template(path = "profile.html")]
+pub struct ProfileTemplate {
+    pub current_user: Option<User>,
+    pub profile_user: Musician,
+    pub recordings: Vec<RecordingFeedItem>,
+}
+
+#[derive(Template)]
+#[template(path = "profile_content.html")]
+pub struct ProfileContentTemplate {
+    pub current_user: Option<User>,
+    pub profile_user: Musician,
+    pub recordings: Vec<RecordingFeedItem>,
+}
+
+#[derive(Template)]
 #[template(path = "settings.html")]
 pub struct SettingsTemplate {
     pub current_user: Option<User>,
