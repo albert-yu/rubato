@@ -269,6 +269,14 @@ async fn main() -> anyhow::Result<()> {
         )
         .route("/admin/import/cancel", post(admin::admin_import_cancel))
         .route("/{handle}", get(public::profile))
+        .route(
+            "/{handle}/recordings/{slug_id}",
+            get(public::recording_detail),
+        )
+        .route(
+            "/{handle}/recordings/{slug_id}/edit",
+            get(public::recording_edit).post(public::recording_update),
+        )
         .nest_service(
             "/assets",
             ServiceBuilder::new()

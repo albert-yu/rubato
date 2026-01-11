@@ -32,30 +32,34 @@
     {% else %}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
         {% for recording in recordings %}
-        <div class="sonata-card sonata-card-interactive group" hx-get="/player/{{ recording.id }}" hx-target="#player-container" hx-swap="innerHTML">
-            <div class="mb-8 text-[10px] tracking-widest text-sonata-slate uppercase font-light">
-                {{ recording.created_at.format("%m.%d.%Y") }}
-            </div>
-            
-            <h3 class="text-2xl font-light tracking-tight text-sonata-pearl mb-2 group-hover:text-white transition-colors">
-                {{ recording.composition_title }}
-            </h3>
-            
-            {% if let Some(title) = recording.movement_title %}
-            <div class="text-sm font-light text-sonata-slate mb-4 italic">
-                {% if let Some(idx) = recording.movement_index %}
-                {{ idx + 1 }}.
-                {% endif %}
-                {{ title }}
-            </div>
-            {% endif %}
-            
-            <div class="flex items-center justify-between mt-12">
-                <span class="text-xs tracking-widest uppercase font-light text-sonata-slate">@{{ recording.artist_handle }}</span>
-                <div class="opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div class="w-5 h-5 text-sonata-pearl stroke-1">{% include "icons/play.svg" %}</div>
+        <div class="sonata-card sonata-card-interactive group relative">
+            <a href="/{{ recording.artist_handle }}/recordings/{{ recording.slug_id }}" hx-boost="true" hx-target="#main-content" class="block">
+                <div class="mb-8 text-[10px] tracking-widest text-sonata-slate uppercase font-light">
+                    {{ recording.created_at.format("%m.%d.%Y") }}
                 </div>
-            </div>
+                
+                <h3 class="text-2xl font-light tracking-tight text-sonata-pearl mb-2 group-hover:text-white transition-colors">
+                    {{ recording.composition_title }}
+                </h3>
+                
+                {% if let Some(title) = recording.movement_title %}
+                <div class="text-sm font-light text-sonata-slate mb-4 italic">
+                    {% if let Some(idx) = recording.movement_index %}
+                    {{ idx + 1 }}.
+                    {% endif %}
+                    {{ title }}
+                </div>
+                {% endif %}
+                
+                <div class="mt-12">
+                    <span class="text-xs tracking-widest uppercase font-light text-sonata-slate">@{{ recording.artist_handle }}</span>
+                </div>
+            </a>
+
+            <button hx-get="/player/{{ recording.id }}" hx-target="#player-container" hx-swap="innerHTML" 
+                    class="absolute bottom-8 right-8 w-10 h-10 flex items-center justify-center rounded-full border border-sonata-border hover:bg-sonata-pearl hover:text-sonata-black transition-all opacity-0 group-hover:opacity-100">
+                <div class="w-4 h-4">{% include "icons/play.svg" %}</div>
+            </button>
 
             {% if let Some(notes) = recording.notes %}
             <div class="mt-6 pt-6 border-t border-sonata-border/50 text-[11px] text-sonata-slate font-light leading-relaxed line-clamp-2">

@@ -14,8 +14,9 @@ use crate::extractors::{AuthUser, HtmxRequest, OptionalAuthUser};
 use crate::storage::StorageService;
 use crate::view::{
     CompositionPickerTemplate, HtmlTemplate, IndexContentTemplate, IndexTemplate, PlayerTemplate,
-    ProfileContentTemplate, ProfileTemplate, SettingsContentTemplate, SettingsTemplate,
-    UploadContentTemplate, UploadTemplate,
+    ProfileContentTemplate, ProfileTemplate, RecordingContentTemplate, RecordingEditTemplate,
+    RecordingTemplate, SettingsContentTemplate, SettingsTemplate, UploadContentTemplate,
+    UploadTemplate,
 };
 
 pub async fn index(
@@ -27,6 +28,7 @@ pub async fn index(
         r#"
         SELECT 
             r.id,
+            r.slug_id,
             m.handle as artist_handle,
             c.title as composition_title,
             mv.index as movement_index,
@@ -281,6 +283,7 @@ pub async fn get_player(
         r#"
         SELECT 
             r.id,
+            r.slug_id,
             m.handle as artist_handle,
             c.title as composition_title,
             mv.index as movement_index,
@@ -531,6 +534,7 @@ pub async fn profile(
         r#"
         SELECT 
             r.id,
+            r.slug_id,
             m.handle as artist_handle,
             c.title as composition_title,
             mv.index as movement_index,
@@ -567,4 +571,162 @@ pub async fn profile(
         })
         .into_response()
     }
+}
+
+pub async fn recording_detail(
+    Path((handle, slug_id)): Path<(String, i32)>,
+    auth: OptionalAuthUser,
+    htmx: HtmxRequest,
+    State(pool): State<Pool<Postgres>>,
+) -> Response {
+    let recording = match sqlx::query_as::<_, RecordingFeedItem>(
+        r#"
+        SELECT 
+            r.id,
+            r.slug_id,
+            m.handle as artist_handle,
+            c.title as composition_title,
+            mv.index as movement_index,
+            mv.title as movement_title,
+            r.created_at,
+            r.file_key,
+            r.mime_type,
+            r.notes
+        FROM recordings r
+        JOIN musicians m ON r.artist_id = m.id
+        JOIN compositions c ON r.composition_id = c.id
+        LEFT JOIN movements mv ON r.movement_id = mv.id
+        WHERE m.handle = $1 AND r.slug_id = $2
+        "#,
+    )
+    .bind(&handle)
+    .bind(slug_id)
+    .fetch_optional(&pool)
+    .await
+    {
+        Ok(Some(r)) => r,
+        Ok(None) => return StatusCode::NOT_FOUND.into_response(),
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+    };
+
+    if htmx.is_hx_boosted {
+        HtmlTemplate(RecordingContentTemplate {
+            current_user: auth.0,
+            recording,
+        })
+        .into_response()
+    } else {
+        HtmlTemplate(RecordingTemplate {
+            current_user: auth.0,
+            recording,
+        })
+        .into_response()
+    }
+}
+
+pub async fn recording_edit(
+    Path((handle, slug_id)): Path<(String, i32)>,
+    auth: AuthUser,
+    State(pool): State<Pool<Postgres>>,
+) -> Response {
+    let recording = match sqlx::query_as::<_, RecordingFeedItem>(
+        r#"
+        SELECT 
+            r.id,
+            r.slug_id,
+            m.handle as artist_handle,
+            c.title as composition_title,
+            mv.index as movement_index,
+            mv.title as movement_title,
+            r.created_at,
+            r.file_key,
+            r.mime_type,
+            r.notes
+        FROM recordings r
+        JOIN musicians m ON r.artist_id = m.id
+        JOIN compositions c ON r.composition_id = c.id
+        LEFT JOIN movements mv ON r.movement_id = mv.id
+        WHERE m.handle = $1 AND r.slug_id = $2
+        "#,
+    )
+    .bind(&handle)
+    .bind(slug_id)
+    .fetch_optional(&pool)
+    .await
+    {
+        Ok(Some(r)) => r,
+        Ok(None) => return StatusCode::NOT_FOUND.into_response(),
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+    };
+
+    if auth.0.handle != recording.artist_handle {
+        return StatusCode::FORBIDDEN.into_response();
+    }
+
+    HtmlTemplate(RecordingEditTemplate {
+        current_user: Some(auth.0),
+        recording,
+    })
+    .into_response()
+}
+
+#[derive(Deserialize)]
+pub struct UpdateRecordingNotes {
+    pub notes: String,
+}
+
+pub async fn recording_update(
+    Path((handle, slug_id)): Path<(String, i32)>,
+    auth: AuthUser,
+    State(pool): State<Pool<Postgres>>,
+    Form(form): Form<UpdateRecordingNotes>,
+) -> impl IntoResponse {
+    // 1. Verify existence and ownership
+    let recording = match sqlx::query_as::<_, RecordingFeedItem>(
+        r#"
+        SELECT 
+            r.id,
+            r.slug_id,
+            m.handle as artist_handle,
+            c.title as composition_title,
+            mv.index as movement_index,
+            mv.title as movement_title,
+            r.created_at,
+            r.file_key,
+            r.mime_type,
+            r.notes
+        FROM recordings r
+        JOIN musicians m ON r.artist_id = m.id
+        JOIN compositions c ON r.composition_id = c.id
+        LEFT JOIN movements mv ON r.movement_id = mv.id
+        WHERE m.handle = $1 AND r.slug_id = $2
+        "#,
+    )
+    .bind(&handle)
+    .bind(slug_id)
+    .fetch_optional(&pool)
+    .await
+    {
+        Ok(Some(r)) => r,
+        Ok(None) => return StatusCode::NOT_FOUND.into_response(),
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+    };
+
+    if auth.0.handle != recording.artist_handle {
+        return StatusCode::FORBIDDEN.into_response();
+    }
+
+    // 2. Update notes
+    let _ = sqlx::query("UPDATE recordings SET notes = $1 WHERE id = $2")
+        .bind(if form.notes.trim().is_empty() {
+            None
+        } else {
+            Some(form.notes.trim())
+        })
+        .bind(recording.id)
+        .execute(&pool)
+        .await
+        .unwrap();
+
+    Redirect::to(&format!("/{}/recordings/{}", handle, slug_id)).into_response()
 }

@@ -1,0 +1,48 @@
+<div class="max-w-4xl mx-auto py-12">
+    <div class="mb-12">
+        <a href="/{{ recording.artist_handle }}" hx-boost="true" class="text-xs tracking-[0.3em] uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors">
+            @{{ recording.artist_handle }}
+        </a>
+        <h1 class="text-5xl font-light tracking-tight text-sonata-pearl mt-4 mb-2">
+            {{ recording.composition_title }}
+        </h1>
+        
+        {% if let Some(title) = recording.movement_title %}
+        <div class="text-xl font-light text-sonata-slate italic">
+            {% if let Some(idx) = recording.movement_index %}
+            {{ idx + 1 }}.
+            {% endif %}
+            {{ title }}
+        </div>
+        {% endif %}
+
+        <div class="mt-8 text-[10px] tracking-widest text-sonata-slate uppercase font-light">
+            Recorded on {{ recording.created_at.format("%B %d, %Y") }}
+        </div>
+    </div>
+
+    <div class="flex items-center space-x-8 mb-16">
+        <button hx-get="/player/{{ recording.id }}" 
+                hx-target="#player-container" 
+                hx-swap="innerHTML"
+                class="sonata-btn !px-12 !py-4 flex items-center space-x-3">
+            <div class="w-5 h-5 text-sonata-slate">{% include "icons/play.svg" %}</div>
+            <span class="text-xs uppercase tracking-widest">Play Recording</span>
+        </button>
+
+        {% if let Some(user) = current_user %}
+            {% if user.handle == recording.artist_handle %}
+            <a hx-boost="true" hx-target="#main-content" href="/{{ recording.artist_handle }}/recordings/{{ recording.slug_id }}/edit" class="text-[10px] uppercase tracking-widest text-sonata-slate border border-sonata-border px-6 py-4 hover:bg-sonata-pearl hover:text-sonata-black hover:border-sonata-pearl transition-all">
+                Edit Recording
+            </a>
+            {% endif %}
+        {% endif %}
+    </div>
+
+    {% if let Some(notes) = recording.notes %}
+    <div class="prose prose-invert max-w-none">
+        <h3 class="text-xs uppercase tracking-[0.2em] font-light text-sonata-slate mb-6 border-b border-sonata-border pb-4">Notes</h3>
+        <div class="text-sonata-pearl font-light leading-relaxed whitespace-pre-wrap">{{ notes }}</div>
+    </div>
+    {% endif %}
+</div>

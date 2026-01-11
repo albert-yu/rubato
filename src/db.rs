@@ -130,6 +130,7 @@ pub struct CreateMovement {
 pub struct Recording {
     pub id: i32,
     pub artist_id: i32,
+    pub slug_id: i32,
     pub composition_id: i32,
     pub movement_id: Option<i32>,
     pub content_hash: String,
@@ -142,6 +143,7 @@ pub struct Recording {
 #[derive(serde::Deserialize)]
 pub struct CreateRecording {
     pub artist_id: i32,
+    pub slug_id: Option<i32>,
     pub composition_id: i32,
     #[serde(default)]
     #[serde(deserialize_with = "empty_string_as_none_i32")]
@@ -154,6 +156,7 @@ pub struct CreateRecording {
 #[derive(sqlx::FromRow, serde::Serialize, Clone, Debug)]
 pub struct RecordingFeedItem {
     pub id: i32,
+    pub slug_id: i32,
     pub artist_handle: String,
     pub composition_title: String,
     pub movement_index: Option<i32>,

@@ -71,6 +71,27 @@ pub struct PlayerTemplate {
 }
 
 #[derive(Template)]
+#[template(path = "recording.html")]
+pub struct RecordingTemplate {
+    pub current_user: Option<User>,
+    pub recording: RecordingFeedItem,
+}
+
+#[derive(Template)]
+#[template(path = "recording_content.html")]
+pub struct RecordingContentTemplate {
+    pub current_user: Option<User>,
+    pub recording: RecordingFeedItem,
+}
+
+#[derive(Template)]
+#[template(path = "recording_edit.html")]
+pub struct RecordingEditTemplate {
+    pub current_user: Option<User>,
+    pub recording: RecordingFeedItem,
+}
+
+#[derive(Template)]
 #[template(path = "admin/index.html")]
 pub struct AdminIndexTemplate {
     pub current_user: Option<User>,
