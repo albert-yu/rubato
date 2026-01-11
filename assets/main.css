@@ -1565,6 +1565,10 @@ video {
   color: rgb(239 68 68 / 0.8);
 }
 
+.text-red-500\/90 {
+  color: rgb(239 68 68 / 0.9);
+}
+
 .text-red-900\/70 {
   color: rgb(127 29 29 / 0.7);
 }
