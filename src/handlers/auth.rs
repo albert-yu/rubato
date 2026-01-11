@@ -177,7 +177,7 @@ pub async fn signup_post(
         cookie.set_http_only(true);
         cookie.set_same_site(SameSite::Lax);
         cookie.set_path("/");
-        return (jar.add(cookie), Redirect::to("/admin")).into_response();
+        return (jar.add(cookie), Redirect::to("/")).into_response();
     }
 
     (
@@ -221,7 +221,7 @@ pub async fn login_post(
                 cookie.set_http_only(true);
                 cookie.set_same_site(SameSite::Lax);
                 cookie.set_path("/");
-                return (jar.add(cookie), Redirect::to("/admin")).into_response();
+                return (jar.add(cookie), Redirect::to("/")).into_response();
             }
         }
     }
