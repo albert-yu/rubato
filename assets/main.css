@@ -1295,7 +1295,7 @@ video {
 
 .bg-sonata-slate {
   --tw-bg-opacity: 1;
-  background-color: rgb(102 102 102 / var(--tw-bg-opacity));
+  background-color: rgb(160 160 160 / var(--tw-bg-opacity));
 }
 
 .stroke-1 {
@@ -1576,11 +1576,11 @@ video {
 
 .text-sonata-slate {
   --tw-text-opacity: 1;
-  color: rgb(102 102 102 / var(--tw-text-opacity));
+  color: rgb(160 160 160 / var(--tw-text-opacity));
 }
 
 .text-sonata-slate\/50 {
-  color: rgb(102 102 102 / 0.5);
+  color: rgb(160 160 160 / 0.5);
 }
 
 .text-yellow-500\/80 {
@@ -1791,7 +1791,7 @@ video {
 
 .focus\:border-sonata-slate:focus {
   --tw-border-opacity: 1;
-  border-color: rgb(102 102 102 / var(--tw-border-opacity));
+  border-color: rgb(160 160 160 / var(--tw-border-opacity));
 }
 
 .focus\:outline-none:focus {

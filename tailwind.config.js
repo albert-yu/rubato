@@ -6,7 +6,7 @@ module.exports = {
       colors: {
         'sonata-black': '#0a0a0a',
         'sonata-charcoal': '#1a1a1a',
-        'sonata-slate': '#666666',
+        'sonata-slate': '#a0a0a0',
         'sonata-pearl': '#e8e8e8',
         'sonata-border': '#2a2a2a',
         'sonata-border-hover': '#3a3a3a',
