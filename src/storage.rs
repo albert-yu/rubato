@@ -26,7 +26,7 @@ pub trait StorageService: Send + Sync {
     async fn delete(&self, folder: &str, key: &str) -> Result<()>;
 
     /// Returns the public URL for a given key.
-    fn get_url(&self, folder: &str, key: &str) -> String;
+    fn get_url(&self, folder: &str, key: &str) -> Result<String>;
 
     /// Retrieves content, optionally serving a partial range.
     async fn get_content(
@@ -115,6 +115,13 @@ impl StorageService for LocalStorage {
         data: Vec<u8>,
         _content_type: &str,
     ) -> Result<String> {
+        if folder.contains("..")
+            || folder.contains('\\')
+            || key.contains("..")
+            || key.contains('\\')
+        {
+            return Err(anyhow::anyhow!("Not found"));
+        }
         let folder = folder.trim_start_matches('/');
         let full_key = format!("{}/{}", folder, key);
         let file_path = self.base_path.join(&full_key);
@@ -128,6 +135,13 @@ impl StorageService for LocalStorage {
     }
 
     async fn delete(&self, folder: &str, key: &str) -> Result<()> {
+        if folder.contains("..")
+            || folder.contains('\\')
+            || key.contains("..")
+            || key.contains('\\')
+        {
+            return Err(anyhow::anyhow!("Not found"));
+        }
         let folder = folder.trim_start_matches('/');
         let file_path = self.base_path.join(folder).join(key);
         if file_path.exists() {
@@ -136,9 +150,16 @@ impl StorageService for LocalStorage {
         Ok(())
     }
 
-    fn get_url(&self, folder: &str, key: &str) -> String {
+    fn get_url(&self, folder: &str, key: &str) -> Result<String> {
+        if folder.contains("..")
+            || folder.contains('\\')
+            || key.contains("..")
+            || key.contains('\\')
+        {
+            return Err(anyhow::anyhow!("Not found"));
+        }
         let folder = folder.trim_start_matches('/');
-        format!("{}/{}/{}", self.base_url, folder, key)
+        Ok(format!("{}/{}/{}", self.base_url, folder, key))
     }
 
     async fn get_content(
@@ -147,6 +168,13 @@ impl StorageService for LocalStorage {
         key: &str,
         range: Option<&str>,
     ) -> Result<FileResponse> {
+        if folder.contains("..")
+            || folder.contains('\\')
+            || key.contains("..")
+            || key.contains('\\')
+        {
+            return Err(anyhow::anyhow!("Not found"));
+        }
         let folder = folder.trim_start_matches('/');
         let file_path = self.base_path.join(folder).join(key);
 
@@ -247,9 +275,9 @@ impl StorageService for S3Storage {
         Ok(())
     }
 
-    fn get_url(&self, folder: &str, key: &str) -> String {
+    fn get_url(&self, folder: &str, key: &str) -> Result<String> {
         let folder = folder.trim_start_matches('/');
-        format!("{}/{}/{}", self.public_url, folder, key)
+        Ok(format!("{}/{}/{}", self.public_url, folder, key))
     }
 
     async fn get_content(
