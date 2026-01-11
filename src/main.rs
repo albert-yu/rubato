@@ -108,9 +108,11 @@ async fn main() -> anyhow::Result<()> {
     tracing::info!("Migrations executed successfully.");
 
     // Check for root user
-    let root_user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE role = 'root'")
-        .fetch_optional(&pool)
-        .await?;
+    let root_user = sqlx::query_as::<_, User>(
+        "SELECT u.*, m.handle FROM users u JOIN musicians m ON u.musician_id = m.id WHERE u.role = 'root'"
+    )
+    .fetch_optional(&pool)
+    .await?;
 
     if root_user.is_none() {
         println!("Root user not found. Please create one.");

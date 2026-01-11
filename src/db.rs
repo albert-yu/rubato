@@ -58,6 +58,7 @@ pub struct User {
     pub password_hash: String,
     pub salt: String,
     pub musician_id: i32,
+    pub handle: String,
     pub role: UserRole,
 }
 

@@ -14,6 +14,9 @@
         </li>
         {% if let Some(user) = current_user %}
         <li>
+            <a href="/{{ user.handle }}" onclick="toggleNav()" class="block text-sm tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors">Profile</a>
+        </li>
+        <li>
             <a href="/settings" onclick="toggleNav()" class="block text-sm tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors">Settings</a>
         </li>
         {% endif %}

@@ -45,10 +45,12 @@ where
             let validation = Validation::default();
             if let Ok(token_data) = decode::<Claims>(token, &decoding_key, &validation) {
                 if let Ok(id) = token_data.claims.sub.parse::<i32>() {
-                    if let Ok(user) = sqlx::query_as::<_, User>("SELECT * FROM users WHERE id = $1")
-                        .bind(id)
-                        .fetch_one(&pool)
-                        .await
+                    if let Ok(user) = sqlx::query_as::<_, User>(
+                        "SELECT u.*, m.handle FROM users u JOIN musicians m ON u.musician_id = m.id WHERE u.id = $1"
+                    )
+                    .bind(id)
+                    .fetch_one(&pool)
+                    .await
                     {
                         return Ok(AuthUser(user));
                     }
@@ -81,10 +83,12 @@ where
             let validation = Validation::default();
             if let Ok(token_data) = decode::<Claims>(token, &decoding_key, &validation) {
                 if let Ok(id) = token_data.claims.sub.parse::<i32>() {
-                    if let Ok(user) = sqlx::query_as::<_, User>("SELECT * FROM users WHERE id = $1")
-                        .bind(id)
-                        .fetch_one(&pool)
-                        .await
+                    if let Ok(user) = sqlx::query_as::<_, User>(
+                        "SELECT u.*, m.handle FROM users u JOIN musicians m ON u.musician_id = m.id WHERE u.id = $1"
+                    )
+                    .bind(id)
+                    .fetch_one(&pool)
+                    .await
                     {
                         return Ok(OptionalAuthUser(Some(user)));
                     }

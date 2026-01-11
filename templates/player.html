@@ -67,7 +67,7 @@
                     {% if let Some(title) = recording.movement_title %}
                         {{ title }} — 
                     {% endif %}
-                    {{ recording.artist_handle }}
+                    <a href="/{{ recording.artist_handle }}" hx-boost="true" hx-target="#main-content" class="hover:text-sonata-pearl transition-colors">{{ recording.artist_handle }}</a>
                 </p>
             </div>
         </div>
