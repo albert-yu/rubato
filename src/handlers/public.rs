@@ -144,11 +144,13 @@ pub async fn upload_post(
     let mut composition_id = None;
     let mut movement_id = None;
     let mut notes = None;
+    let mut field_mime = None;
 
     while let Ok(Some(field)) = multipart.next_field().await {
         let name = field.name().unwrap_or_default().to_string();
         tracing::info!("Received field: {}", name);
         if name == "file" {
+            field_mime = field.content_type().map(|s| s.to_string());
             match field.bytes().await {
                 Ok(bytes) => {
                     tracing::info!("Received file bytes: {} bytes", bytes.len());
@@ -195,7 +197,7 @@ pub async fn upload_post(
     let mime_type = if let Some(kind) = infer::get(&data) {
         kind.mime_type().to_string()
     } else {
-        "application/octet-stream".to_string()
+        field_mime.unwrap_or_else(|| "application/octet-stream".to_string())
     };
 
     if !mime_type.starts_with("audio/") {
