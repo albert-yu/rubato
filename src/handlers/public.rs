@@ -14,9 +14,9 @@ use crate::extractors::{AuthUser, HtmxRequest, OptionalAuthUser};
 use crate::storage::StorageService;
 use crate::view::{
     CompositionPickerTemplate, HtmlTemplate, IndexContentTemplate, IndexTemplate, PlayerTemplate,
-    ProfileContentTemplate, ProfileTemplate, RecordingContentTemplate, RecordingEditTemplate,
-    RecordingTemplate, SettingsContentTemplate, SettingsTemplate, UploadContentTemplate,
-    UploadTemplate,
+    ProfileContentTemplate, ProfileTemplate, RecordingContentTemplate,
+    RecordingEditContentTemplate, RecordingEditTemplate, RecordingTemplate,
+    SettingsContentTemplate, SettingsTemplate, UploadContentTemplate, UploadTemplate,
 };
 
 pub async fn index(
@@ -627,6 +627,7 @@ pub async fn recording_detail(
 pub async fn recording_edit(
     Path((handle, slug_id)): Path<(String, i32)>,
     auth: AuthUser,
+    htmx: HtmxRequest,
     State(pool): State<Pool<Postgres>>,
 ) -> Response {
     let recording = match sqlx::query_as::<_, RecordingFeedItem>(
@@ -663,11 +664,19 @@ pub async fn recording_edit(
         return StatusCode::FORBIDDEN.into_response();
     }
 
-    HtmlTemplate(RecordingEditTemplate {
-        current_user: Some(auth.0),
-        recording,
-    })
-    .into_response()
+    if htmx.is_hx_boosted {
+        HtmlTemplate(RecordingEditContentTemplate {
+            current_user: Some(auth.0),
+            recording,
+        })
+        .into_response()
+    } else {
+        HtmlTemplate(RecordingEditTemplate {
+            current_user: Some(auth.0),
+            recording,
+        })
+        .into_response()
+    }
 }
 
 #[derive(Deserialize)]

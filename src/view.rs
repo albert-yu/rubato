@@ -92,6 +92,13 @@ pub struct RecordingEditTemplate {
 }
 
 #[derive(Template)]
+#[template(path = "recording_edit_content.html")]
+pub struct RecordingEditContentTemplate {
+    pub current_user: Option<User>,
+    pub recording: RecordingFeedItem,
+}
+
+#[derive(Template)]
 #[template(path = "admin/index.html")]
 pub struct AdminIndexTemplate {
     pub current_user: Option<User>,
