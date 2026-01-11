@@ -1,6 +1,15 @@
 use anyhow::Result;
 use async_trait::async_trait;
 use std::path::PathBuf;
+use tokio::io::{AsyncReadExt, AsyncSeekExt};
+
+pub struct FileResponse {
+    pub bytes: Vec<u8>,
+    pub content_type: String,
+    pub content_length: u64,
+    pub content_range: Option<String>,
+    pub accept_ranges: String,
+}
 
 #[async_trait]
 pub trait StorageService: Send + Sync {
@@ -18,6 +27,14 @@ pub trait StorageService: Send + Sync {
 
     /// Returns the public URL for a given key.
     fn get_url(&self, folder: &str, key: &str) -> String;
+
+    /// Retrieves content, optionally serving a partial range.
+    async fn get_content(
+        &self,
+        folder: &str,
+        key: &str,
+        range: Option<&str>,
+    ) -> Result<FileResponse>;
 }
 
 // --- Local Filesystem Implementation ---
@@ -35,6 +52,57 @@ impl LocalStorage {
             base_path: PathBuf::from(base_path),
             base_url: base_url.to_string(),
         }
+    }
+}
+
+fn parse_range_header(range_header: &str, file_size: u64) -> Option<(u64, u64)> {
+    if !range_header.starts_with("bytes=") {
+        return None;
+    }
+    let range_str = &range_header[6..];
+    let parts: Vec<&str> = range_str.split('-').collect();
+    if parts.len() != 2 {
+        return None;
+    }
+
+    let start_str = parts[0];
+    let end_str = parts[1];
+
+    let start = if start_str.is_empty() {
+        None
+    } else {
+        start_str.parse::<u64>().ok()
+    };
+
+    let end = if end_str.is_empty() {
+        None
+    } else {
+        end_str.parse::<u64>().ok()
+    };
+
+    match (start, end) {
+        (Some(s), Some(e)) => {
+            if s <= e && s < file_size {
+                Some((s, std::cmp::min(e, file_size - 1)))
+            } else {
+                None
+            }
+        }
+        (Some(s), None) => {
+            if s < file_size {
+                Some((s, file_size - 1))
+            } else {
+                None
+            }
+        }
+        (None, Some(e)) => {
+            if e == 0 {
+                return None;
+            }
+            let s = if e > file_size { 0 } else { file_size - e };
+            Some((s, file_size - 1))
+        }
+        _ => None,
     }
 }
 
@@ -71,6 +139,54 @@ impl StorageService for LocalStorage {
     fn get_url(&self, folder: &str, key: &str) -> String {
         let folder = folder.trim_start_matches('/');
         format!("{}/{}/{}", self.base_url, folder, key)
+    }
+
+    async fn get_content(
+        &self,
+        folder: &str,
+        key: &str,
+        range: Option<&str>,
+    ) -> Result<FileResponse> {
+        let folder = folder.trim_start_matches('/');
+        let file_path = self.base_path.join(folder).join(key);
+
+        let mut file = tokio::fs::File::open(&file_path).await?;
+        let metadata = file.metadata().await?;
+        let file_size = metadata.len();
+
+        // Infer content type from the beginning of the file
+        let mut head = [0u8; 1024];
+        let n = file.read(&mut head).await?;
+        let content_type = infer::get(&head[..n])
+            .map(|k| k.mime_type())
+            .unwrap_or("application/octet-stream")
+            .to_string();
+
+        let (start, end) = if let Some(range_header) = range {
+            parse_range_header(range_header, file_size).unwrap_or((0, file_size - 1))
+        } else {
+            (0, file_size - 1)
+        };
+
+        let length = end - start + 1;
+        file.seek(std::io::SeekFrom::Start(start)).await?;
+
+        let mut buffer = vec![0u8; length as usize];
+        file.read_exact(&mut buffer).await?;
+
+        let content_range = if range.is_some() {
+            Some(format!("bytes {}-{}/{}", start, end, file_size))
+        } else {
+            None
+        };
+
+        Ok(FileResponse {
+            bytes: buffer,
+            content_type,
+            content_length: length,
+            content_range,
+            accept_ranges: "bytes".to_string(),
+        })
     }
 }
 
@@ -134,5 +250,40 @@ impl StorageService for S3Storage {
     fn get_url(&self, folder: &str, key: &str) -> String {
         let folder = folder.trim_start_matches('/');
         format!("{}/{}/{}", self.public_url, folder, key)
+    }
+
+    async fn get_content(
+        &self,
+        folder: &str,
+        key: &str,
+        range: Option<&str>,
+    ) -> Result<FileResponse> {
+        let folder = folder.trim_start_matches('/');
+        let full_key = format!("{}/{}", folder, key);
+        let output = self
+            .client
+            .get_object()
+            .bucket(&self.bucket)
+            .key(&full_key)
+            .set_range(range.map(|s| s.to_string()))
+            .send()
+            .await
+            .map_err(|e| anyhow::anyhow!("S3 GetObject failed: {}", e))?;
+
+        let content_type = output
+            .content_type
+            .unwrap_or_else(|| "application/octet-stream".to_string());
+
+        let content_range = output.content_range;
+        let bytes = output.body.collect().await?.into_bytes().to_vec();
+        let content_length = bytes.len() as u64;
+
+        Ok(FileResponse {
+            bytes,
+            content_type,
+            content_length,
+            content_range,
+            accept_ranges: "bytes".to_string(),
+        })
     }
 }

@@ -7,9 +7,6 @@ use axum::{
 use serde::Deserialize;
 use sqlx::{Pool, Postgres};
 use std::sync::Arc;
-use tokio::io::AsyncReadExt;
-use tower::ServiceExt;
-use tower_http::services::ServeFile;
 use uuid::Uuid;
 
 use crate::db::{CreateMusician, Musician, RecordingFeedItem};
@@ -236,39 +233,40 @@ pub async fn serve_audio(
     State(storage): State<Arc<dyn StorageService>>,
     req: Request,
 ) -> Response {
-    if std::env::var("APP_ENV").unwrap_or_default() == "production" {
-        return Redirect::temporary(&storage.get_url("recordings", &key)).into_response();
-    }
+    let range = req
+        .headers()
+        .get(axum::http::header::RANGE)
+        .and_then(|v| v.to_str().ok());
 
-    let path = format!("uploads/recordings/{}", key);
+    match storage.get_content("recordings", &key, range).await {
+        Ok(file) => {
+            let status = if file.content_range.is_some() {
+                StatusCode::PARTIAL_CONTENT
+            } else {
+                StatusCode::OK
+            };
 
-    let mut file = match tokio::fs::File::open(&path).await {
-        Ok(file) => file,
-        Err(_) => return (StatusCode::NOT_FOUND, "File not found").into_response(),
-    };
+            let mut response = (status, file.bytes).into_response();
+            let headers = response.headers_mut();
 
-    let mut buffer = [0; 1024];
-    let n = match file.read(&mut buffer).await {
-        Ok(n) => n,
-        Err(_) => return (StatusCode::INTERNAL_SERVER_ERROR, "Error reading file").into_response(),
-    };
-
-    let mime_type = match infer::get(&buffer[..n]) {
-        Some(kind) if kind.mime_type().starts_with("audio/") => kind.mime_type().to_string(),
-        _ => return (StatusCode::BAD_REQUEST, "File is not an audio file").into_response(),
-    };
-
-    match ServeFile::new(&path).oneshot(req).await {
-        Ok(response) => {
-            let mut response = response.into_response();
-            if let Ok(value) = axum::http::HeaderValue::from_str(&mime_type) {
-                response
-                    .headers_mut()
-                    .insert(axum::http::header::CONTENT_TYPE, value);
+            if let Ok(content_type) = file.content_type.parse() {
+                headers.insert(axum::http::header::CONTENT_TYPE, content_type);
             }
+            if let Ok(accept_ranges) = file.accept_ranges.parse() {
+                headers.insert(axum::http::header::ACCEPT_RANGES, accept_ranges);
+            }
+            if let Some(content_range) = file.content_range {
+                if let Ok(content_range) = content_range.parse() {
+                    headers.insert(axum::http::header::CONTENT_RANGE, content_range);
+                }
+            }
+
             response
         }
-        Err(_) => (StatusCode::INTERNAL_SERVER_ERROR, "Error serving file").into_response(),
+        Err(e) => {
+            tracing::error!("Error serving audio for key {}: {}", key, e);
+            StatusCode::NOT_FOUND.into_response()
+        }
     }
 }
 
