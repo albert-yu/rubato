@@ -665,11 +665,7 @@ pub async fn recording_edit(
     }
 
     if htmx.is_hx_boosted {
-        HtmlTemplate(RecordingEditContentTemplate {
-            current_user: Some(auth.0),
-            recording,
-        })
-        .into_response()
+        HtmlTemplate(RecordingEditContentTemplate { recording }).into_response()
     } else {
         HtmlTemplate(RecordingEditTemplate {
             current_user: Some(auth.0),

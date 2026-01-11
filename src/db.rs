@@ -143,7 +143,6 @@ pub struct Recording {
 #[derive(serde::Deserialize)]
 pub struct CreateRecording {
     pub artist_id: i32,
-    pub slug_id: Option<i32>,
     pub composition_id: i32,
     #[serde(default)]
     #[serde(deserialize_with = "empty_string_as_none_i32")]
