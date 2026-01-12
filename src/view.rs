@@ -65,12 +65,6 @@ pub struct UploadContentTemplate {
 pub struct CompositionPickerTemplate;
 
 #[derive(Template)]
-#[template(path = "player.html")]
-pub struct PlayerTemplate {
-    pub recording: RecordingFeedItem,
-}
-
-#[derive(Template)]
 #[template(path = "recording.html")]
 pub struct RecordingTemplate {
     pub current_user: Option<User>,

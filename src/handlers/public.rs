@@ -13,7 +13,7 @@ use crate::db::{CreateMusician, Musician, RecordingFeedItem};
 use crate::extractors::{AuthUser, HtmxRequest, OptionalAuthUser};
 use crate::storage::StorageService;
 use crate::view::{
-    CompositionPickerTemplate, HtmlTemplate, IndexContentTemplate, IndexTemplate, PlayerTemplate,
+    CompositionPickerTemplate, HtmlTemplate, IndexContentTemplate, IndexTemplate,
     ProfileContentTemplate, ProfileTemplate, RecordingContentTemplate,
     RecordingEditContentTemplate, RecordingEditTemplate, RecordingTemplate,
     SettingsContentTemplate, SettingsTemplate, UploadContentTemplate, UploadTemplate,
@@ -273,38 +273,6 @@ pub async fn serve_audio(
             StatusCode::NOT_FOUND.into_response()
         }
     }
-}
-
-pub async fn get_player(
-    Path(id): Path<i32>,
-    State(pool): State<Pool<Postgres>>,
-) -> impl IntoResponse {
-    let recording = sqlx::query_as::<_, RecordingFeedItem>(
-        r#"
-        SELECT 
-            r.id,
-            r.slug_id,
-            m.handle as artist_handle,
-            c.title as composition_title,
-            mv.index as movement_index,
-            mv.title as movement_title,
-            r.created_at,
-            r.file_key,
-            r.mime_type,
-            r.notes
-        FROM recordings r
-        JOIN musicians m ON r.artist_id = m.id
-        JOIN compositions c ON r.composition_id = c.id
-        LEFT JOIN movements mv ON r.movement_id = mv.id
-        WHERE r.id = $1
-        "#,
-    )
-    .bind(id)
-    .fetch_one(&pool)
-    .await
-    .unwrap();
-
-    HtmlTemplate(PlayerTemplate { recording })
 }
 
 #[derive(Deserialize)]

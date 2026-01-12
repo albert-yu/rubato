@@ -22,9 +22,15 @@
     </div>
 
     <div class="flex items-center space-x-8 mb-16">
-        <button hx-get="/player/{{ recording.id }}" 
-                hx-target="#player-container" 
-                hx-swap="innerHTML"
+        <button 
+                data-composition-title="{{ recording.composition_title }}"
+                {% if let Some(title) = recording.movement_title %}
+                data-movement-title="{{ title }}"
+                {% endif %}
+                data-artist-handle="{{ recording.artist_handle }}"
+                data-file-key="{{ recording.file_key }}"
+                data-mime-type="{{ recording.mime_type }}"
+                onclick="playRecording(this.dataset)"
                 class="sonata-btn !px-12 !py-4 flex items-center space-x-3">
             <div class="w-5 h-5 text-sonata-slate">{% include "icons/play.svg" %}</div>
             <span class="text-xs uppercase tracking-widest">Play Recording</span>
