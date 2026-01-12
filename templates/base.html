@@ -231,10 +231,6 @@
                             function initAudioContext() {
                                 if (audioCtx) return;
 
-                                // Disable Web Audio API on iOS to prevent background audio muting
-                                const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-                                if (isIOS) return;
-
                                 const AudioContext = window.AudioContext || window.webkitAudioContext;
                                 audioCtx = new AudioContext();
                                 analyser = audioCtx.createAnalyser();
