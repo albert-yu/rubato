@@ -7,7 +7,7 @@
     <link href="/assets/main.css" rel="stylesheet">
     <script src="/assets/vendor/htmx.js"></script>
 </head>
-<body class="bg-sonata-black text-sonata-pearl font-sans h-screen overflow-hidden {% block body_class %}{% endblock %}">
+<body class="bg-sonata-black text-sonata-pearl font-sans h-[100dvh] overflow-hidden {% block body_class %}{% endblock %}">
     <div class="flex h-full flex-col md:flex-row relative">
         <!-- Mobile Header -->
         <header class="md:hidden h-16 border-b border-sonata-border flex items-center justify-between px-4 bg-sonata-black flex-shrink-0 z-40">
@@ -28,7 +28,7 @@
                 {% block content %}{% endblock %}
             </div>
             
-            <div id="player-container" class="w-full z-40 border-t border-sonata-border/30 bg-sonata-charcoal empty:hidden">
+            <div id="player-container" class="w-full z-40 border-t border-sonata-border/30 bg-sonata-charcoal empty:hidden pb-[env(safe-area-inset-bottom)]">
             </div>
         </main>
     </div>
