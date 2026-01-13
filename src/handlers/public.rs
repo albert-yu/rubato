@@ -235,9 +235,21 @@ pub async fn upload_post(
 
 pub async fn serve_audio(
     Path(key): Path<String>,
+    State(pool): State<Pool<Postgres>>,
     State(storage): State<Arc<dyn StorageService>>,
     req: Request,
 ) -> Response {
+    let recording = match sqlx::query!(
+        "SELECT content_hash FROM recordings WHERE file_key = $1",
+        key
+    )
+    .fetch_optional(&pool)
+    .await
+    {
+        Ok(Some(r)) => r,
+        _ => return StatusCode::NOT_FOUND.into_response(),
+    };
+
     let range = req
         .headers()
         .get(axum::http::header::RANGE)
@@ -269,6 +281,12 @@ pub async fn serve_audio(
                 }
             }
 
+            // Safari requires an ETag (or Last-Modified) for Range requests to work reliably
+            let etag = format!("\"{}\"", recording.content_hash);
+            if let Ok(hv) = etag.parse() {
+                headers.insert(axum::http::header::ETAG, hv);
+            }
+
             headers.insert(
                 axum::http::header::CACHE_CONTROL,
                 // 1 month
@@ -279,6 +297,7 @@ pub async fn serve_audio(
         }
         Err(e) => {
             tracing::error!("Error serving audio for key {}: {}", key, e);
+            // If it was a range error from S3, it might manifest as a 416, but we'll return 404 for simplicity unless we want more complex mapping
             StatusCode::NOT_FOUND.into_response()
         }
     }
