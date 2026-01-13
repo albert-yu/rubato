@@ -266,6 +266,12 @@ pub async fn serve_audio(
                 }
             }
 
+            headers.insert(
+                axum::http::header::CACHE_CONTROL,
+                // 1 month
+                axum::http::HeaderValue::from_static("s-maxage=2592000"),
+            );
+
             response
         }
         Err(e) => {
