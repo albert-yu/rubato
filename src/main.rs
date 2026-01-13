@@ -5,6 +5,7 @@ use argon2::{
 use axum::{
     Router,
     extract::{DefaultBodyLimit, FromRef},
+    http::StatusCode,
     routing::{delete, get, post},
 };
 use axum_extra::extract::cookie::Key;
@@ -14,6 +15,7 @@ use sqlx::{Pool, Postgres, migrate::MigrateDatabase, postgres::PgPoolOptions};
 use std::io::Write;
 use std::net::SocketAddr;
 use std::sync::Arc;
+use std::time::Duration;
 use tokio::sync::Mutex;
 use tokio_util::sync::CancellationToken;
 use tower::ServiceBuilder;
@@ -284,6 +286,10 @@ async fn main() -> anyhow::Result<()> {
         )
         .nest_service("/uploads", ServeDir::new("uploads"))
         .layer(tower_http::trace::TraceLayer::new_for_http())
+        .layer(tower_http::timeout::TimeoutLayer::with_status_code(
+            StatusCode::REQUEST_TIMEOUT,
+            Duration::from_secs(30),
+        ))
         .with_state(app_state);
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
