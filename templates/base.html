@@ -88,10 +88,6 @@
 
                     <div class="w-full lg:w-auto flex justify-between lg:justify-start items-center mb-4 lg:mb-0 lg:space-x-6 lg:min-w-[200px]">
                         <div class="flex items-center space-x-6 overflow-hidden">
-                            <!-- Waveform Visualizer -->
-                            <div class="text-sonata-slate flex-shrink-0 w-10 h-10 flex items-center justify-center">
-                                 <canvas id="waveform-canvas" width="64" height="64" class="w-full h-full opacity-80"></canvas>
-                            </div>
                             <div class="overflow-hidden">
                                 <h3 id="player-composition" class="text-sm font-light tracking-wide text-sonata-pearl line-clamp-1"></h3>
                                 <div class="flex items-center gap-2 mt-1">
@@ -101,7 +97,7 @@
                                         </span>
                                         <a id="player-artist" href="#" hx-boost="true" hx-target="#main-content" class="hover:text-sonata-pearl transition-colors"></a>
                                     </p>
-                                    <span id="player-loading" class="hidden text-[8px] uppercase tracking-widest text-sonata-slate animate-pulse bg-sonata-border px-1 py-0 rounded-sm">Loading</span>
+                                    <span id="player-loading" class="hidden text-[7px] uppercase tracking-widest text-sonata-slate animate-pulse bg-sonata-border px-1 py-0 rounded-sm">Loading</span>
                                 </div>
                             </div>
                         </div>
@@ -164,19 +160,11 @@
                             const currentTimeElem = document.getElementById('current-time');
                             const durationElem = document.getElementById('duration');
                             const muteBtn = document.getElementById('mute-btn');
-                            const canvas = document.getElementById('waveform-canvas');
-                            const canvasCtx = canvas.getContext('2d');
                             const playerContainer = document.getElementById('player-container');
                             const loadingIndicator = document.getElementById('player-loading');
                             
                             let isSeeking = false;
                             let lastVolume = 1;
-
-                            // Audio Context Variables
-                            let audioCtx;
-                            let analyser;
-                            let source;
-                            let animationId;
 
                             // Global Play Function
                             window.playRecording = function(data) {
@@ -203,9 +191,7 @@
                                 playerContainer.classList.remove('hidden');
 
                                 // Play
-                                audio.play().then(() => {
-                                    ensureAudioContext();
-                                }).catch(e => console.error("Playback failed:", e));
+                                audio.play().catch(e => console.error("Playback failed:", e));
 
                                 // Update Media Session
                                 if ('mediaSession' in navigator) {
@@ -227,71 +213,6 @@
                                 playerContainer.classList.add('hidden');
                             };
 
-                            // Initialize Audio Context
-                            function initAudioContext() {
-                                if (audioCtx) return;
-
-                                const AudioContext = window.AudioContext || window.webkitAudioContext;
-                                audioCtx = new AudioContext();
-                                analyser = audioCtx.createAnalyser();
-                                
-                                try {
-                                    source = audioCtx.createMediaElementSource(audio);
-                                    source.connect(analyser);
-                                    analyser.connect(audioCtx.destination);
-                                    analyser.fftSize = 256;
-                                    visualize();
-                                } catch (e) {
-                                    console.error("Web Audio API Error:", e);
-                                }
-                            }
-
-                            function visualize() {
-                                const bufferLength = analyser.frequencyBinCount;
-                                const dataArray = new Uint8Array(bufferLength);
-                                
-                                const draw = () => {
-                                    if (!playerContainer.classList.contains('hidden')) {
-                                        animationId = requestAnimationFrame(draw);
-                                    }
-                                    
-                                    analyser.getByteFrequencyData(dataArray);
-
-                                    canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
-                                    canvasCtx.fillStyle = '#666666'; 
-
-                                    const barCount = 5;
-                                    const spacing = 4;
-                                    const totalWidth = canvas.width;
-                                    const barWidth = (totalWidth - (spacing * (barCount - 1))) / barCount;
-                                    const relevantIndices = [1, 3, 8, 20, 50]; 
-
-                                    for (let i = 0; i < barCount; i++) {
-                                        const value = dataArray[relevantIndices[i]] || 0;
-                                        const percent = value / 255;
-                                        const height = Math.max(percent * canvas.height, 6); 
-                                        const x = i * (barWidth + spacing);
-                                        const y = (canvas.height - height) / 2; 
-                                        roundRect(canvasCtx, x, y, barWidth, height, barWidth / 2);
-                                    }
-                                };
-
-                                draw();
-                            }
-
-                            function roundRect(ctx, x, y, w, h, r) {
-                                if (w < 2 * r) r = w / 2;
-                                if (h < 2 * r) r = h / 2;
-                                ctx.beginPath();
-                                ctx.moveTo(x + r, y);
-                                ctx.arcTo(x + w, y, x + w, y + h, r);
-                                ctx.arcTo(x + w, y + h, x, y + h, r);
-                                ctx.arcTo(x, y + h, x, y, r);
-                                ctx.arcTo(x, y, x + w, y, r);
-                                ctx.closePath();
-                                ctx.fill();
-                            }
-
                             const formatTime = (secs) => {
                                 if(isNaN(secs)) return "0:00";
                                 const minutes = Math.floor(secs / 60);
@@ -312,16 +233,7 @@
                             audio.volume = 1;
                             updateSliderFill(volumeSlider);
                             
-                            const ensureAudioContext = () => {
-                                if (!audioCtx) {
-                                    initAudioContext();
-                                } else if (audioCtx.state === 'suspended') {
-                                    audioCtx.resume();
-                                }
-                            };
-
                             playPauseBtn.addEventListener('click', () => {
-                                ensureAudioContext();
                                 if (audio.paused) {
                                     audio.play();
                                 } else {
@@ -332,12 +244,6 @@
                             audio.addEventListener('play', () => {
                                 iconPlay.classList.add('hidden');
                                 iconPause.classList.remove('hidden');
-                                ensureAudioContext();
-                                
-                                if (animationId === undefined) {
-                                    // Restart visualizer if it stopped
-                                    if (analyser) visualize();
-                                }
                                 
                                 if ('mediaSession' in navigator) {
                                      navigator.mediaSession.playbackState = 'playing';
@@ -402,7 +308,6 @@
                             
                             if(muteBtn) {
                                 muteBtn.addEventListener('click', () => {
-                                    ensureAudioContext();
                                     if (audio.volume > 0) {
                                         lastVolume = audio.volume;
                                         audio.volume = 0;
