@@ -1,10 +1,12 @@
 use anyhow::Result;
 use async_trait::async_trait;
+use axum::body::Body;
 use std::path::PathBuf;
 use tokio::io::{AsyncReadExt, AsyncSeekExt};
+use tokio_util::io::ReaderStream;
 
 pub struct FileResponse {
-    pub bytes: Vec<u8>,
+    pub body: Body,
     pub content_type: String,
     pub content_length: u64,
     pub content_range: Option<String>,
@@ -199,8 +201,8 @@ impl StorageService for LocalStorage {
         let length = end - start + 1;
         file.seek(std::io::SeekFrom::Start(start)).await?;
 
-        let mut buffer = vec![0u8; length as usize];
-        file.read_exact(&mut buffer).await?;
+        let stream = ReaderStream::new(file.take(length));
+        let body = Body::from_stream(stream);
 
         let content_range = if range.is_some() {
             Some(format!("bytes {}-{}/{}", start, end, file_size))
@@ -209,7 +211,7 @@ impl StorageService for LocalStorage {
         };
 
         Ok(FileResponse {
-            bytes: buffer,
+            body,
             content_type,
             content_length: length,
             content_range,
@@ -303,11 +305,11 @@ impl StorageService for S3Storage {
             .unwrap_or_else(|| "application/octet-stream".to_string());
 
         let content_range = output.content_range;
-        let bytes = output.body.collect().await?.into_bytes().to_vec();
-        let content_length = bytes.len() as u64;
+        let content_length = output.content_length.unwrap_or(0) as u64;
+        let body = Body::from_stream(ReaderStream::new(output.body.into_async_read()));
 
         Ok(FileResponse {
-            bytes,
+            body,
             content_type,
             content_length,
             content_range,
