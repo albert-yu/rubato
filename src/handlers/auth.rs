@@ -8,7 +8,7 @@ use axum_extra::extract::cookie::{Cookie, CookieJar, SameSite};
 use jsonwebtoken::{EncodingKey, Header, encode};
 use serde::Deserialize;
 use sqlx::{Pool, Postgres};
-use tracing::{error, info, warn};
+use tracing::{error, info};
 
 use crate::db::{User, UserRole};
 use crate::extractors::{Claims, OptionalAuthUser};
@@ -218,19 +218,11 @@ pub async fn login_post(
     };
 
     if let Some(user) = user {
-        info!(
-            "User found for identity: {}, verifying password",
-            payload.identity
-        );
         let parsed_hash = PasswordHash::new(&user.password_hash).unwrap();
         if Argon2::default()
             .verify_password(payload.password.as_bytes(), &parsed_hash)
             .is_ok()
         {
-            info!(
-                "Password verified successfully for user: {}",
-                payload.identity
-            );
             let claims = Claims {
                 sub: user.id.to_string(),
                 exp: (chrono::Utc::now() + chrono::Duration::hours(24)).timestamp() as usize,
@@ -245,14 +237,7 @@ pub async fn login_post(
             } else {
                 error!("Failed to encode token for user: {}", payload.identity);
             }
-        } else {
-            warn!(
-                "Password verification failed for user: {}",
-                payload.identity
-            );
         }
-    } else {
-        warn!("User not found for identity: {}", payload.identity);
     }
 
     (
