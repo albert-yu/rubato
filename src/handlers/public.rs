@@ -5,6 +5,7 @@ use axum::{
     response::{IntoResponse, Redirect, Response},
 };
 use serde::Deserialize;
+use sha2::{Digest, Sha256};
 use sqlx::{Pool, Postgres};
 use std::sync::Arc;
 use uuid::Uuid;
@@ -207,6 +208,10 @@ pub async fn upload_post(
         return render_error("Uploaded file is not a valid audio file.".to_string());
     }
 
+    let mut hasher = Sha256::new();
+    hasher.update(&data);
+    let content_hash = hex::encode(hasher.finalize());
+
     let file_key = Uuid::new_v4().to_string();
     if let Err(e) = storage
         .upload("recordings", &file_key, data.to_vec(), &mime_type)
@@ -222,7 +227,7 @@ pub async fn upload_post(
     .bind(auth.0.musician_id)
     .bind(comp_id)
     .bind(movement_id)
-    .bind("hash_placeholder")
+    .bind(content_hash)
     .bind(file_key)
     .bind(mime_type)
     .bind(notes)
