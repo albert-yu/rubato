@@ -8,6 +8,7 @@ use axum_extra::extract::cookie::{Cookie, CookieJar, SameSite};
 use jsonwebtoken::{EncodingKey, Header, encode};
 use serde::Deserialize;
 use sqlx::{Pool, Postgres};
+use tracing::{error, info, warn};
 
 use crate::db::{User, UserRole};
 use crate::extractors::{Claims, OptionalAuthUser};
@@ -197,20 +198,39 @@ pub async fn login_post(
     jar: CookieJar,
     Form(payload): Form<LoginPayload>,
 ) -> impl IntoResponse {
-    let user = sqlx::query_as::<_, User>(
-        "SELECT u.* FROM users u JOIN musicians m ON u.musician_id = m.id WHERE u.email = $1 OR m.handle = $1"
+    info!("Attempting login for identity: '{}'", payload.identity);
+    let user_result = sqlx::query_as::<_, User>(
+        "SELECT u.*, m.handle FROM users u JOIN musicians m ON u.musician_id = m.id WHERE u.email = $1 OR m.handle = $1"
     )
         .bind(&payload.identity)
         .fetch_optional(&pool)
-        .await
-        .unwrap_or(None);
+        .await;
+
+    let user = match user_result {
+        Ok(user) => user,
+        Err(e) => {
+            error!(
+                "Database error looking up user '{}': {}",
+                payload.identity, e
+            );
+            None
+        }
+    };
 
     if let Some(user) = user {
+        info!(
+            "User found for identity: {}, verifying password",
+            payload.identity
+        );
         let parsed_hash = PasswordHash::new(&user.password_hash).unwrap();
         if Argon2::default()
             .verify_password(payload.password.as_bytes(), &parsed_hash)
             .is_ok()
         {
+            info!(
+                "Password verified successfully for user: {}",
+                payload.identity
+            );
             let claims = Claims {
                 sub: user.id.to_string(),
                 exp: (chrono::Utc::now() + chrono::Duration::hours(24)).timestamp() as usize,
@@ -222,8 +242,17 @@ pub async fn login_post(
                 cookie.set_same_site(SameSite::Lax);
                 cookie.set_path("/");
                 return (jar.add(cookie), Redirect::to("/")).into_response();
+            } else {
+                error!("Failed to encode token for user: {}", payload.identity);
             }
+        } else {
+            warn!(
+                "Password verification failed for user: {}",
+                payload.identity
+            );
         }
+    } else {
+        warn!("User not found for identity: {}", payload.identity);
     }
 
     (
