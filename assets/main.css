@@ -1542,8 +1542,8 @@ video {
   font-size: 11px;
 }
 
-.text-\[8px\] {
-  font-size: 8px;
+.text-\[7px\] {
+  font-size: 7px;
 }
 
 .text-lg {
@@ -1701,10 +1701,6 @@ video {
 
 .opacity-50 {
   opacity: 0.5;
-}
-
-.opacity-80 {
-  opacity: 0.8;
 }
 
 .shadow-2xl {
