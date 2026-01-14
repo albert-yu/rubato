@@ -133,7 +133,6 @@ pub struct AdminCompositionsTemplate {
 pub struct AdminCompositionEditTemplate {
     pub composition: Composition,
     pub movements: Vec<Movement>,
-    pub musicians: Vec<Musician>,
     pub current_user: Option<User>,
     pub active_nav: &'static str,
 }

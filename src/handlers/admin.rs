@@ -254,21 +254,13 @@ pub async fn admin_compositions(
     .into_response()
 }
 
-pub async fn admin_composition_new(
-    auth: AuthUser,
-    State(pool): State<Pool<Postgres>>,
-) -> impl IntoResponse {
+pub async fn admin_composition_new(auth: AuthUser) -> impl IntoResponse {
     if !matches!(auth.0.role, UserRole::Root | UserRole::Admin) {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
-    let musicians = sqlx::query_as::<_, Musician>("SELECT * FROM musicians ORDER BY family_name")
-        .fetch_all(&pool)
-        .await
-        .unwrap_or_default();
     HtmlTemplate(AdminCompositionEditTemplate {
         composition: Composition::default(),
         movements: vec![],
-        musicians,
         current_user: Some(auth.0),
         active_nav: "compositions",
     })
@@ -316,14 +308,9 @@ pub async fn admin_composition_edit(
     .fetch_all(&pool)
     .await
     .unwrap_or_default();
-    let musicians = sqlx::query_as::<_, Musician>("SELECT * FROM musicians ORDER BY family_name")
-        .fetch_all(&pool)
-        .await
-        .unwrap_or_default();
     HtmlTemplate(AdminCompositionEditTemplate {
         composition,
         movements,
-        musicians,
         current_user: Some(auth.0),
         active_nav: "compositions",
     })

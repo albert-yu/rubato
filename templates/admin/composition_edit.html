@@ -35,15 +35,9 @@
                 </div>
 
                 <div class="md:col-span-2">
-                    <label for="composer_id" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Composer</label>
-                    <select name="composer_id" id="composer_id" required class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light appearance-none">
-                        <option value="">Select a composer...</option>
-                        {% for musician in musicians %}
-                        <option value="{{ musician.id }}" {% if musician.id == composition.composer_id %}selected{% endif %}>
-                            {{ musician.given_name }} {{ musician.family_name }} ({{ musician.handle }})
-                        </option>
-                        {% endfor %}
-                    </select>
+                    <label for="composer_id" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Composer Musician ID</label>
+                    <input type="number" name="composer_id" id="composer_id" value="{% if composition.id != 0 %}{{ composition.composer_id }}{% endif %}" required
+                        class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light">
                 </div>
             </div>
 
