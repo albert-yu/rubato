@@ -486,21 +486,9 @@ pub async fn admin_recording_new(
         .fetch_all(&pool)
         .await
         .unwrap_or_default();
-    let compositions =
-        sqlx::query_as::<_, Composition>("SELECT * FROM compositions ORDER BY title")
-            .fetch_all(&pool)
-            .await
-            .unwrap_or_default();
-    let movements =
-        sqlx::query_as::<_, Movement>("SELECT * FROM movements ORDER BY composition_id, index")
-            .fetch_all(&pool)
-            .await
-            .unwrap_or_default();
     HtmlTemplate(AdminRecordingEditTemplate {
         recording: Recording::default(),
         musicians,
-        compositions,
-        movements,
         current_user: Some(auth.0),
         active_nav: "recordings",
     })
@@ -545,21 +533,9 @@ pub async fn admin_recording_edit(
         .fetch_all(&pool)
         .await
         .unwrap_or_default();
-    let compositions =
-        sqlx::query_as::<_, Composition>("SELECT * FROM compositions ORDER BY title")
-            .fetch_all(&pool)
-            .await
-            .unwrap_or_default();
-    let movements =
-        sqlx::query_as::<_, Movement>("SELECT * FROM movements ORDER BY composition_id, index")
-            .fetch_all(&pool)
-            .await
-            .unwrap_or_default();
     HtmlTemplate(AdminRecordingEditTemplate {
         recording,
         musicians,
-        compositions,
-        movements,
         current_user: Some(auth.0),
         active_nav: "recordings",
     })

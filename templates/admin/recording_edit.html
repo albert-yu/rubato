@@ -29,27 +29,16 @@
             </div>
 
             <div>
-                <label for="composition_id" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Composition</label>
-                <select name="composition_id" id="composition_id" required class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light appearance-none">
-                    <option value="">Select a composition...</option>
-                    {% for composition in compositions %}
-                    <option value="{{ composition.id }}" {% if composition.id == recording.composition_id %}selected{% endif %}>
-                        {{ composition.title }}
-                    </option>
-                    {% endfor %}
-                </select>
+                <label for="composition_id" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Composition ID</label>
+                <input type="number" name="composition_id" id="composition_id" value="{% if recording.id != 0 %}{{ recording.composition_id }}{% endif %}" required
+                    class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light">
             </div>
 
             <div>
-                <label for="movement_id" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Movement (Optional)</label>
-                <select name="movement_id" id="movement_id" class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light appearance-none">
-                    <option value="">None</option>
-                    {% for movement in movements %}
-                    <option value="{{ movement.id }}" {% if movement.id == recording.movement_id.unwrap_or(0) %}selected{% endif %}>
-                       {{ movement.title }} (Comp ID: {{ movement.composition_id }})
-                    </option>
-                    {% endfor %}
-                </select>
+                <label for="movement_id" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Movement ID (Optional)</label>
+                <input type="number" name="movement_id" id="movement_id" value="{% if let Some(mid) = recording.movement_id %}{{ mid }}{% endif %}"
+                    class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light">
+                <p class="text-[10px] text-sonata-slate mt-1 italic">Leave blank if there is no specific movement.</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">

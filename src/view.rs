@@ -162,8 +162,6 @@ pub struct AdminImportTemplate {
 pub struct AdminRecordingEditTemplate {
     pub recording: Recording,
     pub musicians: Vec<Musician>,
-    pub compositions: Vec<Composition>,
-    pub movements: Vec<Movement>,
     pub current_user: Option<User>,
     pub active_nav: &'static str,
 }
