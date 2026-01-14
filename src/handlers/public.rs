@@ -736,3 +736,52 @@ pub async fn recording_update(
 
     Redirect::to(&format!("/{}/recordings/{}", handle, slug_id)).into_response()
 }
+
+pub async fn recording_delete(
+    Path((handle, slug_id)): Path<(String, i32)>,
+    auth: AuthUser,
+    State(pool): State<Pool<Postgres>>,
+    State(storage): State<Arc<dyn StorageService>>,
+) -> Response {
+    // 1. Verify existence and ownership
+    let recording = match sqlx::query!(
+        r#"
+        SELECT
+            r.id,
+            m.handle as artist_handle,
+            r.file_key
+        FROM recordings r
+        JOIN musicians m ON r.artist_id = m.id
+        WHERE m.handle = $1 AND r.slug_id = $2
+        "#,
+        handle,
+        slug_id
+    )
+    .fetch_optional(&pool)
+    .await
+    {
+        Ok(Some(r)) => r,
+        Ok(None) => return StatusCode::NOT_FOUND.into_response(),
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+    };
+
+    if auth.0.handle != recording.artist_handle {
+        return StatusCode::FORBIDDEN.into_response();
+    }
+
+    // 2. Delete from storage
+    if let Err(e) = storage.delete("recordings", &recording.file_key).await {
+        tracing::error!("Failed to delete file from storage: {}", e);
+        // We might want to continue anyway to clean up DB, or return error.
+        // Let's continue so the DB record doesn't become an orphan without a file.
+    }
+
+    // 3. Delete from database
+    let _ = sqlx::query("DELETE FROM recordings WHERE id = $1")
+        .bind(recording.id)
+        .execute(&pool)
+        .await
+        .unwrap();
+
+    Redirect::to(&format!("/{}", handle)).into_response()
+}

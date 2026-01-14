@@ -274,7 +274,9 @@ async fn main() -> anyhow::Result<()> {
         )
         .route(
             "/{handle}/recordings/{slug_id}/edit",
-            get(public::recording_edit).post(public::recording_update),
+            get(public::recording_edit)
+                .post(public::recording_update)
+                .delete(public::recording_delete),
         )
         .nest_service(
             "/assets",

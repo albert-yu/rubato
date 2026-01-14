@@ -17,9 +17,19 @@
             <p class="mt-2 text-[10px] text-sonata-slate font-light">Share your thoughts, interpretation details, or technical notes about this recording.</p>
         </div>
 
-        <div class="flex justify-end gap-4">
-            <a href="/{{ recording.artist_handle }}/recordings/{{ recording.slug_id }}" class="sonata-btn-secondary px-6 py-3 text-xs">Cancel</a>
-            <button type="submit" class="sonata-btn px-8 py-3 text-xs">Save Changes</button>
+        <div class="flex justify-between items-center mt-12 border-t border-sonata-charcoal pt-8">
+            <button type="button" 
+                    hx-delete="/{{ recording.artist_handle }}/recordings/{{ recording.slug_id }}/edit" 
+                    hx-confirm="Are you sure you want to delete this recording? This action cannot be undone."
+                    hx-target="body"
+                    hx-push-url="true"
+                    class="text-red-900/70 hover:text-red-500 text-[10px] uppercase tracking-widest transition-colors">
+                Delete Recording
+            </button>
+            <div class="flex gap-4">
+                <a href="/{{ recording.artist_handle }}/recordings/{{ recording.slug_id }}" class="sonata-btn-secondary px-6 py-3 text-xs">Cancel</a>
+                <button type="submit" class="sonata-btn px-8 py-3 text-xs">Save Changes</button>
+            </div>
         </div>
     </form>
 </div>
