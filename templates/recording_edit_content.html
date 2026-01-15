@@ -17,6 +17,8 @@
   <form
     action="/{{ recording.artist_handle }}/recordings/{{ recording.slug_id }}/edit"
     method="post"
+    hx-boost="true"
+    hx-target="#main-content"
     class="space-y-8"
   >
     <div>
