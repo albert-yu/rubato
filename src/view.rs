@@ -8,6 +8,8 @@ use axum::response::IntoResponse;
 pub struct IndexTemplate {
     pub current_user: Option<User>,
     pub recordings: Vec<RecordingFeedItem>,
+    pub page: i64,
+    pub total_pages: i64,
 }
 
 #[derive(Template)]
@@ -15,6 +17,8 @@ pub struct IndexTemplate {
 pub struct IndexContentTemplate {
     pub current_user: Option<User>,
     pub recordings: Vec<RecordingFeedItem>,
+    pub page: i64,
+    pub total_pages: i64,
 }
 
 #[derive(Template)]
@@ -23,6 +27,8 @@ pub struct ProfileTemplate {
     pub current_user: Option<User>,
     pub profile_user: Musician,
     pub recordings: Vec<RecordingFeedItem>,
+    pub page: i64,
+    pub total_pages: i64,
 }
 
 #[derive(Template)]
@@ -31,6 +37,8 @@ pub struct ProfileContentTemplate {
     pub current_user: Option<User>,
     pub profile_user: Musician,
     pub recordings: Vec<RecordingFeedItem>,
+    pub page: i64,
+    pub total_pages: i64,
 }
 
 #[derive(Template)]

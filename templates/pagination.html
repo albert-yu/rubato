@@ -1,0 +1,39 @@
+{% if total_pages > 1 %}
+  <div
+    class="mt-16 flex items-center justify-between border-t border-sonata-border/30 pt-8"
+  >
+    <div>
+      <p
+        class="text-[10px] tracking-widest uppercase font-light text-sonata-slate"
+      >
+        Page <span class="text-sonata-pearl font-normal">{{ page }}</span> of
+        <span class="text-sonata-pearl font-normal">{{ total_pages }}</span>
+      </p>
+    </div>
+    <nav class="flex space-x-4">
+      {% if page > 1 %}
+        <a
+          href="?page={{ page - 1 }}"
+          hx-boost="true"
+          hx-target="#main-content"
+          hx-push-url="true"
+          class="text-[10px] tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors border border-sonata-charcoal px-4 py-2 hover:bg-sonata-black/50"
+        >
+          Previous
+        </a>
+      {% endif %}
+
+      {% if page < total_pages %}
+        <a
+          href="?page={{ page + 1 }}"
+          hx-boost="true"
+          hx-target="#main-content"
+          hx-push-url="true"
+          class="text-[10px] tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors border border-sonata-charcoal px-4 py-2 hover:bg-sonata-black/50"
+        >
+          Next
+        </a>
+      {% endif %}
+    </nav>
+  </div>
+{% endif %}

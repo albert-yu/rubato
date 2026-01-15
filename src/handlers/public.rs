@@ -20,11 +20,28 @@ use crate::view::{
     SettingsContentTemplate, SettingsTemplate, UploadContentTemplate, UploadTemplate,
 };
 
+#[derive(Deserialize)]
+pub struct PaginationParams {
+    pub page: Option<i64>,
+}
+
 pub async fn index(
     auth: OptionalAuthUser,
     htmx: HtmxRequest,
     State(pool): State<Pool<Postgres>>,
+    Query(params): Query<PaginationParams>,
 ) -> Response {
+    let page = params.page.unwrap_or(1).max(1);
+    let limit = 10;
+    let offset = (page - 1) * limit;
+
+    let total_count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM recordings")
+        .fetch_one(&pool)
+        .await
+        .unwrap_or(0);
+
+    let total_pages = (total_count as f64 / limit as f64).ceil() as i64;
+
     let recordings = sqlx::query_as::<_, RecordingFeedItem>(
         r#"
         SELECT 
@@ -44,8 +61,11 @@ pub async fn index(
         JOIN musicians c_mus ON c.composer_id = c_mus.id
         LEFT JOIN movements mv ON r.movement_id = mv.id
         ORDER BY r.created_at DESC
+        LIMIT $1 OFFSET $2
         "#,
     )
+    .bind(limit)
+    .bind(offset)
     .fetch_all(&pool)
     .await
     .unwrap_or_default();
@@ -54,12 +74,16 @@ pub async fn index(
         HtmlTemplate(IndexContentTemplate {
             current_user: auth.0,
             recordings,
+            page,
+            total_pages,
         })
         .into_response()
     } else {
         HtmlTemplate(IndexTemplate {
             current_user: auth.0,
             recordings,
+            page,
+            total_pages,
         })
         .into_response()
     }
@@ -527,6 +551,7 @@ pub async fn profile(
     auth: OptionalAuthUser,
     htmx: HtmxRequest,
     State(pool): State<Pool<Postgres>>,
+    Query(params): Query<PaginationParams>,
 ) -> Response {
     let profile_user =
         match sqlx::query_as::<_, Musician>("SELECT * FROM musicians WHERE handle = $1")
@@ -538,6 +563,20 @@ pub async fn profile(
             Ok(None) => return StatusCode::NOT_FOUND.into_response(),
             Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
         };
+
+    let page = params.page.unwrap_or(1).max(1);
+    let limit = 10;
+    let offset = (page - 1) * limit;
+
+    let total_count: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM recordings r JOIN musicians m ON r.artist_id = m.id WHERE m.id = $1",
+    )
+    .bind(profile_user.id)
+    .fetch_one(&pool)
+    .await
+    .unwrap_or(0);
+
+    let total_pages = (total_count as f64 / limit as f64).ceil() as i64;
 
     let recordings = sqlx::query_as::<_, RecordingFeedItem>(
         r#"
@@ -559,9 +598,12 @@ pub async fn profile(
         LEFT JOIN movements mv ON r.movement_id = mv.id
         WHERE m.id = $1
         ORDER BY r.created_at DESC
+        LIMIT $2 OFFSET $3
         "#,
     )
     .bind(profile_user.id)
+    .bind(limit)
+    .bind(offset)
     .fetch_all(&pool)
     .await
     .unwrap_or_default();
@@ -571,6 +613,8 @@ pub async fn profile(
             current_user: auth.0,
             profile_user,
             recordings,
+            page,
+            total_pages,
         })
         .into_response()
     } else {
@@ -578,6 +622,8 @@ pub async fn profile(
             current_user: auth.0,
             profile_user,
             recordings,
+            page,
+            total_pages,
         })
         .into_response()
     }
