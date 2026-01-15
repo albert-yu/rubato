@@ -21,8 +21,15 @@
         {% endif %}
     </div>
 
-    <div class="mb-12 border-b border-sonata-border pb-6">
+    <div class="flex justify-between items-end mb-12 border-b border-sonata-border pb-6">
         <h2 class="text-xs tracking-[0.3em] uppercase font-light text-sonata-slate">Recordings</h2>
+        {% if let Some(user) = current_user %}
+            {% if user.musician_id == profile_user.id %}
+            <a href="/upload" hx-boost="true" hx-target="#main-content" class="sonata-btn !px-6 !py-2 text-[10px]">
+                Upload
+            </a>
+            {% endif %}
+        {% endif %}
     </div>
 
     {% if recordings.is_empty() %}
