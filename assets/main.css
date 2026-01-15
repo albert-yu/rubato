@@ -613,6 +613,15 @@ video {
   .sonata-card-interactive:hover::before {
     opacity: 0.3;
   }
+
+  .sonata-card-interactive:hover .sonata-play-button {
+    --tw-border-opacity: 1;
+    border-color: rgb(232 232 232 / var(--tw-border-opacity));
+    --tw-bg-opacity: 1;
+    background-color: rgb(232 232 232 / var(--tw-bg-opacity));
+    --tw-text-opacity: 1;
+    color: rgb(10 10 10 / var(--tw-text-opacity));
+  }
 }
 
 .sonata-card-interactive::before {
@@ -1956,16 +1965,6 @@ video {
 .focus\:ring-indigo-500:focus {
   --tw-ring-opacity: 1;
   --tw-ring-color: rgb(99 102 241 / var(--tw-ring-opacity));
-}
-
-.group:hover .group-hover\:bg-sonata-pearl {
-  --tw-bg-opacity: 1;
-  background-color: rgb(232 232 232 / var(--tw-bg-opacity));
-}
-
-.group:hover .group-hover\:text-sonata-black {
-  --tw-text-opacity: 1;
-  color: rgb(10 10 10 / var(--tw-text-opacity));
 }
 
 .group:hover .group-hover\:text-white {
