@@ -246,7 +246,7 @@ pub async fn serve_audio(
     req: Request,
 ) -> Response {
     let recording = match sqlx::query!(
-        "SELECT content_hash FROM recordings WHERE file_key = $1",
+        "SELECT content_hash, mime_type FROM recordings WHERE file_key = $1",
         key
     )
     .fetch_optional(&pool)
@@ -272,9 +272,13 @@ pub async fn serve_audio(
             let mut response = (status, file.body).into_response();
             let headers = response.headers_mut();
 
-            if let Ok(content_type) = file.content_type.parse() {
+            // Use stored MIME type if available, otherwise fallback to inferred
+            if let Ok(content_type) = recording.mime_type.parse() {
+                headers.insert(axum::http::header::CONTENT_TYPE, content_type);
+            } else if let Ok(content_type) = file.content_type.parse() {
                 headers.insert(axum::http::header::CONTENT_TYPE, content_type);
             }
+
             if let Ok(len) = axum::http::HeaderValue::from_str(&file.content_length.to_string()) {
                 headers.insert(axum::http::header::CONTENT_LENGTH, len);
             }
