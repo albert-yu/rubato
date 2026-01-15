@@ -208,14 +208,14 @@ pub async fn admin_compositions(
     let (total_count, compositions) = if let Some(ref query) = q {
         let search_pattern = format!("%{}%", query);
         let count =
-            sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM compositions WHERE title ILIKE $1")
+            sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM compositions c JOIN musicians m ON c.composer_id = m.id WHERE c.title ILIKE $1")
                 .bind(&search_pattern)
                 .fetch_one(&pool)
                 .await
                 .unwrap_or(0);
 
         let comps = sqlx::query_as::<_, Composition>(
-            "SELECT * FROM compositions WHERE title ILIKE $1 ORDER BY id LIMIT $2 OFFSET $3",
+            "SELECT c.id, c.slug, (m.family_name || ': ' || c.title) as title, c.publish_date, c.composer_id FROM compositions c JOIN musicians m ON c.composer_id = m.id WHERE c.title ILIKE $1 ORDER BY c.id LIMIT $2 OFFSET $3",
         )
         .bind(&search_pattern)
         .bind(limit)
@@ -231,7 +231,7 @@ pub async fn admin_compositions(
             .unwrap_or(0);
 
         let comps = sqlx::query_as::<_, Composition>(
-            "SELECT * FROM compositions ORDER BY id LIMIT $1 OFFSET $2",
+            "SELECT c.id, c.slug, (m.family_name || ': ' || c.title) as title, c.publish_date, c.composer_id FROM compositions c JOIN musicians m ON c.composer_id = m.id ORDER BY c.id LIMIT $1 OFFSET $2",
         )
         .bind(limit)
         .bind(offset)

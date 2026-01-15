@@ -31,7 +31,7 @@ pub async fn index(
             r.id,
             r.slug_id,
             m.handle as artist_handle,
-            c.title as composition_title,
+            (c_mus.family_name || ': ' || c.title) as composition_title,
             mv.index as movement_index,
             mv.title as movement_title,
             r.created_at,
@@ -41,6 +41,7 @@ pub async fn index(
         FROM recordings r
         JOIN musicians m ON r.artist_id = m.id
         JOIN compositions c ON r.composition_id = c.id
+        JOIN musicians c_mus ON c.composer_id = c_mus.id
         LEFT JOIN movements mv ON r.movement_id = mv.id
         ORDER BY r.created_at DESC
         "#,
@@ -537,7 +538,7 @@ pub async fn profile(
             r.id,
             r.slug_id,
             m.handle as artist_handle,
-            c.title as composition_title,
+            (c_mus.family_name || ': ' || c.title) as composition_title,
             mv.index as movement_index,
             mv.title as movement_title,
             r.created_at,
@@ -547,6 +548,7 @@ pub async fn profile(
         FROM recordings r
         JOIN musicians m ON r.artist_id = m.id
         JOIN compositions c ON r.composition_id = c.id
+        JOIN musicians c_mus ON c.composer_id = c_mus.id
         LEFT JOIN movements mv ON r.movement_id = mv.id
         WHERE m.id = $1
         ORDER BY r.created_at DESC
@@ -586,7 +588,7 @@ pub async fn recording_detail(
             r.id,
             r.slug_id,
             m.handle as artist_handle,
-            c.title as composition_title,
+            (c_mus.family_name || ': ' || c.title) as composition_title,
             mv.index as movement_index,
             mv.title as movement_title,
             r.created_at,
@@ -596,6 +598,7 @@ pub async fn recording_detail(
         FROM recordings r
         JOIN musicians m ON r.artist_id = m.id
         JOIN compositions c ON r.composition_id = c.id
+        JOIN musicians c_mus ON c.composer_id = c_mus.id
         LEFT JOIN movements mv ON r.movement_id = mv.id
         WHERE m.handle = $1 AND r.slug_id = $2
         "#,
@@ -637,7 +640,7 @@ pub async fn recording_edit(
             r.id,
             r.slug_id,
             m.handle as artist_handle,
-            c.title as composition_title,
+            (c_mus.family_name || ': ' || c.title) as composition_title,
             mv.index as movement_index,
             mv.title as movement_title,
             r.created_at,
@@ -647,6 +650,7 @@ pub async fn recording_edit(
         FROM recordings r
         JOIN musicians m ON r.artist_id = m.id
         JOIN compositions c ON r.composition_id = c.id
+        JOIN musicians c_mus ON c.composer_id = c_mus.id
         LEFT JOIN movements mv ON r.movement_id = mv.id
         WHERE m.handle = $1 AND r.slug_id = $2
         "#,
@@ -687,14 +691,13 @@ pub async fn recording_update(
     State(pool): State<Pool<Postgres>>,
     Form(form): Form<UpdateRecordingNotes>,
 ) -> impl IntoResponse {
-    // 1. Verify existence and ownership
     let recording = match sqlx::query_as::<_, RecordingFeedItem>(
         r#"
         SELECT 
             r.id,
             r.slug_id,
             m.handle as artist_handle,
-            c.title as composition_title,
+            (c_mus.family_name || ': ' || c.title) as composition_title,
             mv.index as movement_index,
             mv.title as movement_title,
             r.created_at,
@@ -704,6 +707,7 @@ pub async fn recording_update(
         FROM recordings r
         JOIN musicians m ON r.artist_id = m.id
         JOIN compositions c ON r.composition_id = c.id
+        JOIN musicians c_mus ON c.composer_id = c_mus.id
         LEFT JOIN movements mv ON r.movement_id = mv.id
         WHERE m.handle = $1 AND r.slug_id = $2
         "#,
