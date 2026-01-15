@@ -19,18 +19,20 @@
         @apply transition-all duration-500 cursor-pointer;
     }
 
-    .sonata-card-interactive:hover {
-        @apply -translate-y-2 border-sonata-border-hover;
+    @media (hover: hover) {
+        .sonata-card-interactive:hover {
+            @apply -translate-y-2 border-sonata-border-hover;
+        }
+
+        .sonata-card-interactive:hover::before {
+            @apply opacity-30;
+        }
     }
 
     .sonata-card-interactive::before {
         content: '';
         @apply absolute top-0 left-0 right-0 h-[1px] opacity-0 transition-opacity duration-500;
         background: linear-gradient(90deg, transparent, #fff, transparent);
-    }
-
-    .sonata-card-interactive:hover::before {
-        @apply opacity-30;
     }
 
     .sonata-btn {
