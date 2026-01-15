@@ -67,8 +67,8 @@ fn parse_range_header(range_header: &str, file_size: u64) -> Option<(u64, u64)> 
         return None;
     }
 
-    let start_str = parts[0];
-    let end_str = parts[1];
+    let start_str = parts[0].trim();
+    let end_str = parts[1].trim();
 
     let start = if start_str.is_empty() {
         None
