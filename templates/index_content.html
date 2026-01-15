@@ -33,24 +33,24 @@
                     {{ title }}
                 </div>
                 {% endif %}
-                
-                <div class="mt-12">
-                    <span class="text-xs tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors">@{{ recording.artist_handle }}</span>
-                </div>
             </a>
 
-            <button 
-                data-composition-title="{{ recording.composition_title }}"
-                {% if let Some(title) = recording.movement_title %}
-                data-movement-title="{{ title }}"
-                {% endif %}
-                data-artist-handle="{{ recording.artist_handle }}"
-                data-file-key="{{ recording.file_key }}"
-                data-mime-type="{{ recording.mime_type }}"
-                onclick="playRecording(this.dataset)"
-                class="absolute bottom-8 right-8 w-10 h-10 flex items-center justify-center rounded-full border border-sonata-border hover:bg-sonata-pearl hover:text-sonata-black transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100">
-                <div class="w-4 h-4">{% include "icons/play.svg" %}</div>
-            </button>
+            <div class="mt-12 flex justify-between items-center">
+                <a href="/{{ recording.artist_handle }}" hx-boost="true" hx-target="#main-content" class="text-xs tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors">@{{ recording.artist_handle }}</a>
+                
+                <button 
+                    data-composition-title="{{ recording.composition_title }}"
+                    {% if let Some(title) = recording.movement_title %}
+                    data-movement-title="{{ title }}"
+                    {% endif %}
+                    data-artist-handle="{{ recording.artist_handle }}"
+                    data-file-key="{{ recording.file_key }}"
+                    data-mime-type="{{ recording.mime_type }}"
+                    onclick="playRecording(this.dataset)"
+                    class="w-10 h-10 flex items-center justify-center rounded-full border border-sonata-border hover:bg-sonata-pearl hover:text-sonata-black transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100">
+                    <div class="w-4 h-4">{% include "icons/play.svg" %}</div>
+                </button>
+            </div>
 
             {% if let Some(notes) = recording.notes %}
             <div class="mt-6 pt-6 border-t border-sonata-border/50 text-[11px] text-sonata-slate font-light leading-relaxed line-clamp-2">
