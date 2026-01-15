@@ -21,9 +21,15 @@
     >
       <span>Uploaded {{ recording.created_at.format("%B %d, %Y") }}</span>
       {% if recording.visibility == Visibility::Unlisted %}
-        <span class="px-2 py-0.5 border border-sonata-charcoal text-sonata-slate rounded-full text-[9px]">Unlisted</span>
+        <span
+          class="px-2 py-0.5 border border-sonata-charcoal text-sonata-slate rounded-full text-[9px]"
+          >Unlisted</span
+        >
       {% else if recording.visibility == Visibility::Private %}
-        <span class="px-2 py-0.5 bg-red-900/10 border border-red-900/30 text-red-400/80 rounded-full text-[9px]">Private</span>
+        <span
+          class="px-2 py-0.5 bg-red-900/10 border border-red-900/30 text-red-400/80 rounded-full text-[9px]"
+          >Private</span
+        >
       {% endif %}
     </div>
   </div>
