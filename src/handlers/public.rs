@@ -896,11 +896,20 @@ pub async fn recording_update(
         .await
         .unwrap();
 
-        HtmlTemplate(RecordingContentTemplate {
+        let mut response = HtmlTemplate(RecordingContentTemplate {
             current_user: Some(auth.0),
             recording: updated_recording,
         })
-        .into_response()
+        .into_response();
+
+        response.headers_mut().insert(
+            "HX-Push-Url",
+            format!("/{}/recordings/{}", handle, slug_id)
+                .parse()
+                .unwrap(),
+        );
+
+        response
     } else {
         Redirect::to(&format!("/{}/recordings/{}", handle, slug_id)).into_response()
     }
