@@ -10,7 +10,7 @@ use sqlx::{Pool, Postgres};
 use std::sync::Arc;
 use uuid::Uuid;
 
-use crate::db::{CreateMusician, Musician, RecordingFeedItem};
+use crate::db::{CreateMusician, Musician, RecordingFeedItem, Visibility};
 use crate::extractors::{AuthUser, HtmxRequest, OptionalAuthUser};
 use crate::storage::StorageService;
 use crate::view::{
@@ -35,10 +35,11 @@ pub async fn index(
     let limit = 10;
     let offset = (page - 1) * limit;
 
-    let total_count: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM recordings")
-        .fetch_one(&pool)
-        .await
-        .unwrap_or(0);
+    let total_count: i64 =
+        sqlx::query_scalar("SELECT COUNT(*) FROM recordings WHERE visibility = 'public'")
+            .fetch_one(&pool)
+            .await
+            .unwrap_or(0);
 
     let total_pages = (total_count as f64 / limit as f64).ceil() as i64;
 
@@ -54,12 +55,14 @@ pub async fn index(
             r.created_at,
             r.file_key,
             r.mime_type,
-            r.notes
+            r.notes,
+            r.visibility
         FROM recordings r
         JOIN musicians m ON r.artist_id = m.id
         JOIN compositions c ON r.composition_id = c.id
         JOIN musicians c_mus ON c.composer_id = c_mus.id
         LEFT JOIN movements mv ON r.movement_id = mv.id
+        WHERE r.visibility = 'public'
         ORDER BY r.created_at DESC
         LIMIT $1 OFFSET $2
         "#,
@@ -173,6 +176,7 @@ pub async fn upload_post(
     let mut composition_id = None;
     let mut movement_id = None;
     let mut notes = None;
+    let mut visibility = Visibility::Public;
     let mut field_mime = None;
 
     while let Ok(Some(field)) = multipart.next_field().await {
@@ -204,6 +208,12 @@ pub async fn upload_post(
                 let txt = txt.trim();
                 if !txt.is_empty() {
                     notes = Some(txt.to_string());
+                }
+            }
+        } else if name == "visibility" {
+            if let Ok(txt) = field.text().await {
+                if let Ok(v) = serde_json::from_str::<Visibility>(&format!("\"{}\"", txt)) {
+                    visibility = v;
                 }
             }
         }
@@ -247,7 +257,7 @@ pub async fn upload_post(
     }
 
     let _ = sqlx::query(
-        "INSERT INTO recordings (artist_id, composition_id, movement_id, content_hash, file_key, mime_type, notes) VALUES ($1, $2, $3, $4, $5, $6, $7)"
+        "INSERT INTO recordings (artist_id, composition_id, movement_id, content_hash, file_key, mime_type, notes, visibility) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
     )
     .bind(auth.0.musician_id)
     .bind(comp_id)
@@ -256,6 +266,7 @@ pub async fn upload_post(
     .bind(file_key)
     .bind(mime_type)
     .bind(notes)
+    .bind(visibility)
     .execute(&pool)
     .await
     .unwrap();
@@ -568,45 +579,92 @@ pub async fn profile(
     let limit = 10;
     let offset = (page - 1) * limit;
 
-    let total_count: i64 = sqlx::query_scalar(
-        "SELECT COUNT(*) FROM recordings r JOIN musicians m ON r.artist_id = m.id WHERE m.id = $1",
-    )
-    .bind(profile_user.id)
+    let is_owner = auth
+        .0
+        .as_ref()
+        .map(|u| u.musician_id == profile_user.id)
+        .unwrap_or(false);
+
+    let total_count: i64 = if is_owner {
+        sqlx::query_scalar(
+            "SELECT COUNT(*) FROM recordings r JOIN musicians m ON r.artist_id = m.id WHERE m.id = $1",
+        )
+        .bind(profile_user.id)
+    } else {
+        sqlx::query_scalar(
+            "SELECT COUNT(*) FROM recordings r JOIN musicians m ON r.artist_id = m.id WHERE m.id = $1 AND r.visibility = 'public'",
+        )
+        .bind(profile_user.id)
+    }
     .fetch_one(&pool)
     .await
     .unwrap_or(0);
 
     let total_pages = (total_count as f64 / limit as f64).ceil() as i64;
 
-    let recordings = sqlx::query_as::<_, RecordingFeedItem>(
-        r#"
-        SELECT 
-            r.id,
-            r.slug_id,
-            m.handle as artist_handle,
-            (c_mus.family_name || ': ' || c.title) as composition_title,
-            mv.index as movement_index,
-            mv.title as movement_title,
-            r.created_at,
-            r.file_key,
-            r.mime_type,
-            r.notes
-        FROM recordings r
-        JOIN musicians m ON r.artist_id = m.id
-        JOIN compositions c ON r.composition_id = c.id
-        JOIN musicians c_mus ON c.composer_id = c_mus.id
-        LEFT JOIN movements mv ON r.movement_id = mv.id
-        WHERE m.id = $1
-        ORDER BY r.created_at DESC
-        LIMIT $2 OFFSET $3
-        "#,
-    )
-    .bind(profile_user.id)
-    .bind(limit)
-    .bind(offset)
-    .fetch_all(&pool)
-    .await
-    .unwrap_or_default();
+    let recordings = if is_owner {
+        sqlx::query_as::<_, RecordingFeedItem>(
+            r#"
+            SELECT 
+                r.id,
+                r.slug_id,
+                m.handle as artist_handle,
+                (c_mus.family_name || ': ' || c.title) as composition_title,
+                mv.index as movement_index,
+                mv.title as movement_title,
+                r.created_at,
+                r.file_key,
+                r.mime_type,
+                r.notes,
+                r.visibility
+            FROM recordings r
+            JOIN musicians m ON r.artist_id = m.id
+            JOIN compositions c ON r.composition_id = c.id
+            JOIN musicians c_mus ON c.composer_id = c_mus.id
+            LEFT JOIN movements mv ON r.movement_id = mv.id
+            WHERE m.id = $1
+            ORDER BY r.created_at DESC
+            LIMIT $2 OFFSET $3
+            "#,
+        )
+        .bind(profile_user.id)
+        .bind(limit)
+        .bind(offset)
+        .fetch_all(&pool)
+        .await
+        .unwrap_or_default()
+    } else {
+        sqlx::query_as::<_, RecordingFeedItem>(
+            r#"
+            SELECT 
+                r.id,
+                r.slug_id,
+                m.handle as artist_handle,
+                (c_mus.family_name || ': ' || c.title) as composition_title,
+                mv.index as movement_index,
+                mv.title as movement_title,
+                r.created_at,
+                r.file_key,
+                r.mime_type,
+                r.notes,
+                r.visibility
+            FROM recordings r
+            JOIN musicians m ON r.artist_id = m.id
+            JOIN compositions c ON r.composition_id = c.id
+            JOIN musicians c_mus ON c.composer_id = c_mus.id
+            LEFT JOIN movements mv ON r.movement_id = mv.id
+            WHERE m.id = $1 AND r.visibility = 'public'
+            ORDER BY r.created_at DESC
+            LIMIT $2 OFFSET $3
+            "#,
+        )
+        .bind(profile_user.id)
+        .bind(limit)
+        .bind(offset)
+        .fetch_all(&pool)
+        .await
+        .unwrap_or_default()
+    };
 
     if htmx.is_hx_boosted {
         HtmlTemplate(ProfileContentTemplate {
@@ -647,7 +705,8 @@ pub async fn recording_detail(
             r.created_at,
             r.file_key,
             r.mime_type,
-            r.notes
+            r.notes,
+            r.visibility
         FROM recordings r
         JOIN musicians m ON r.artist_id = m.id
         JOIN compositions c ON r.composition_id = c.id
@@ -665,6 +724,17 @@ pub async fn recording_detail(
         Ok(None) => return StatusCode::NOT_FOUND.into_response(),
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
+
+    // Check visibility
+    let is_owner = auth
+        .0
+        .as_ref()
+        .map(|u| u.handle == recording.artist_handle)
+        .unwrap_or(false);
+
+    if matches!(recording.visibility, Visibility::Private) && !is_owner {
+        return StatusCode::NOT_FOUND.into_response();
+    }
 
     if htmx.is_hx_boosted {
         HtmlTemplate(RecordingContentTemplate {
@@ -699,7 +769,8 @@ pub async fn recording_edit(
             r.created_at,
             r.file_key,
             r.mime_type,
-            r.notes
+            r.notes,
+            r.visibility
         FROM recordings r
         JOIN musicians m ON r.artist_id = m.id
         JOIN compositions c ON r.composition_id = c.id
@@ -734,15 +805,16 @@ pub async fn recording_edit(
 }
 
 #[derive(Deserialize)]
-pub struct UpdateRecordingNotes {
+pub struct UpdateRecording {
     pub notes: String,
+    pub visibility: Visibility,
 }
 
 pub async fn recording_update(
     Path((handle, slug_id)): Path<(String, i32)>,
     auth: AuthUser,
     State(pool): State<Pool<Postgres>>,
-    Form(form): Form<UpdateRecordingNotes>,
+    Form(form): Form<UpdateRecording>,
 ) -> impl IntoResponse {
     let recording = match sqlx::query_as::<_, RecordingFeedItem>(
         r#"
@@ -756,7 +828,8 @@ pub async fn recording_update(
             r.created_at,
             r.file_key,
             r.mime_type,
-            r.notes
+            r.notes,
+            r.visibility
         FROM recordings r
         JOIN musicians m ON r.artist_id = m.id
         JOIN compositions c ON r.composition_id = c.id
@@ -779,13 +852,14 @@ pub async fn recording_update(
         return StatusCode::FORBIDDEN.into_response();
     }
 
-    // 2. Update notes
-    let _ = sqlx::query("UPDATE recordings SET notes = $1 WHERE id = $2")
+    // 2. Update notes and visibility
+    let _ = sqlx::query("UPDATE recordings SET notes = $1, visibility = $2 WHERE id = $3")
         .bind(if form.notes.trim().is_empty() {
             None
         } else {
             Some(form.notes.trim())
         })
+        .bind(form.visibility)
         .bind(recording.id)
         .execute(&pool)
         .await

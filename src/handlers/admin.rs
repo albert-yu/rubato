@@ -490,13 +490,14 @@ pub async fn admin_recording_create(
     if !matches!(auth.0.role, UserRole::Root) {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
-    let _ = sqlx::query("INSERT INTO recordings (artist_id, composition_id, movement_id, content_hash, file_key, mime_type) VALUES ($1, $2, $3, $4, $5, $6)")
+    let _ = sqlx::query("INSERT INTO recordings (artist_id, composition_id, movement_id, content_hash, file_key, mime_type, visibility) VALUES ($1, $2, $3, $4, $5, $6, $7)")
         .bind(form.artist_id)
         .bind(form.composition_id)
         .bind(form.movement_id)
         .bind(form.content_hash)
         .bind(form.file_key)
         .bind(form.mime_type)
+        .bind(form.visibility)
         .execute(&pool)
         .await
         .unwrap();
@@ -539,7 +540,7 @@ pub async fn admin_recording_update(
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
     let _ = sqlx::query(
-        "UPDATE recordings SET artist_id = $1, composition_id = $2, movement_id = $3, content_hash = $4, file_key = $5, mime_type = $6 WHERE id = $7",
+        "UPDATE recordings SET artist_id = $1, composition_id = $2, movement_id = $3, content_hash = $4, file_key = $5, mime_type = $6, visibility = $7 WHERE id = $8",
     )
     .bind(form.artist_id)
     .bind(form.composition_id)
@@ -547,6 +548,7 @@ pub async fn admin_recording_update(
     .bind(form.content_hash)
     .bind(form.file_key)
     .bind(form.mime_type)
+    .bind(form.visibility)
     .bind(id)
     .execute(&pool)
     .await

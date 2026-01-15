@@ -30,6 +30,31 @@ impl std::fmt::Display for ImportJobStatus {
     }
 }
 
+#[derive(sqlx::Type, serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq)]
+#[sqlx(type_name = "visibility", rename_all = "lowercase")]
+#[serde(rename_all = "lowercase")]
+pub enum Visibility {
+    Public,
+    Unlisted,
+    Private,
+}
+
+impl Default for Visibility {
+    fn default() -> Self {
+        Self::Public
+    }
+}
+
+impl std::fmt::Display for Visibility {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Visibility::Public => write!(f, "Public"),
+            Visibility::Unlisted => write!(f, "Unlisted"),
+            Visibility::Private => write!(f, "Private"),
+        }
+    }
+}
+
 #[derive(sqlx::FromRow, serde::Serialize, Clone, Debug)]
 pub struct ImportJob {
     pub id: i32,
@@ -137,6 +162,7 @@ pub struct Recording {
     pub file_key: String,
     pub mime_type: String,
     pub notes: Option<String>,
+    pub visibility: Visibility,
     pub created_at: chrono::DateTime<chrono::Utc>,
 }
 
@@ -150,6 +176,8 @@ pub struct CreateRecording {
     pub content_hash: String,
     pub file_key: String,
     pub mime_type: String,
+    #[serde(default)]
+    pub visibility: Visibility,
 }
 
 #[derive(sqlx::FromRow, serde::Serialize, Clone, Debug)]
@@ -164,6 +192,7 @@ pub struct RecordingFeedItem {
     pub file_key: String,
     pub mime_type: String,
     pub notes: Option<String>,
+    pub visibility: Visibility,
 }
 
 // Helpers for deserialization

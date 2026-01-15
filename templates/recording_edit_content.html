@@ -39,6 +39,30 @@
       </p>
     </div>
 
+    <div>
+        <label
+          for="visibility"
+          class="block text-xs uppercase tracking-widest font-light text-sonata-slate mb-2"
+          >Visibility</label
+        >
+        <div class="relative">
+            <select
+              name="visibility"
+              id="visibility"
+              class="block w-full appearance-none bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light uppercase tracking-widest cursor-pointer"
+            >
+              <option value="public" {% if recording.visibility == Visibility::Public %}selected{% endif %}>Public</option>
+              <option value="unlisted" {% if recording.visibility == Visibility::Unlisted %}selected{% endif %}>Unlisted</option>
+              <option value="private" {% if recording.visibility == Visibility::Private %}selected{% endif %}>Private</option>
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-sonata-slate">
+                <svg class="h-4 w-4 fill-current" viewBox="0 0 20 20">
+                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                </svg>
+            </div>
+        </div>
+      </div>
+
     <div
       class="flex justify-between items-center mt-12 border-t border-sonata-charcoal pt-8"
     >
