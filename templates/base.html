@@ -98,6 +98,7 @@
                                         <a id="player-artist" href="#" hx-boost="true" hx-target="#main-content" class="hover:text-sonata-pearl transition-colors"></a>
                                     </p>
                                     <span id="player-loading" class="hidden text-[7px] uppercase tracking-widest text-sonata-slate animate-pulse bg-sonata-border px-1 py-0 rounded-sm">Loading</span>
+                                    <span id="player-error" class="hidden text-[7px] uppercase tracking-widest text-red-400 animate-pulse bg-red-900/20 px-1 py-0 rounded-sm">Error</span>
                                 </div>
                             </div>
                         </div>
@@ -161,6 +162,7 @@
                             const muteBtn = document.getElementById('mute-btn');
                             const playerContainer = document.getElementById('player-container');
                             const loadingIndicator = document.getElementById('player-loading');
+                            const errorIndicator = document.getElementById('player-error');
                             
                             let isSeeking = false;
                             let lastVolume = 1;
@@ -188,9 +190,13 @@
 
                                 // Show Player
                                 playerContainer.classList.remove('hidden');
+                                errorIndicator.classList.add('hidden');
 
                                 // Play
-                                audio.play().catch(e => console.error("Playback failed:", e));
+                                audio.play().catch(e => {
+                                    console.error("Playback failed:", e);
+                                    errorIndicator.classList.remove('hidden');
+                                });
 
                                 // Update Media Session
                                 if ('mediaSession' in navigator) {
@@ -350,6 +356,7 @@
                             // Loading State Handlers
                             audio.addEventListener('loadstart', () => {
                                 loadingIndicator.classList.remove('hidden');
+                                errorIndicator.classList.add('hidden');
                             });
 
                             audio.addEventListener('waiting', () => {
@@ -358,14 +365,17 @@
 
                             audio.addEventListener('canplay', () => {
                                 loadingIndicator.classList.add('hidden');
+                                errorIndicator.classList.add('hidden');
                             });
 
                             audio.addEventListener('playing', () => {
                                 loadingIndicator.classList.add('hidden');
+                                errorIndicator.classList.add('hidden');
                             });
 
                             audio.addEventListener('error', () => {
                                 loadingIndicator.classList.add('hidden');
+                                errorIndicator.classList.remove('hidden');
                             });
 
                         })();
