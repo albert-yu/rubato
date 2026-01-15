@@ -1715,6 +1715,14 @@ video {
   text-decoration-line: line-through;
 }
 
+.decoration-sonata-slate {
+  text-decoration-color: #a0a0a0;
+}
+
+.underline-offset-4 {
+  text-underline-offset: 4px;
+}
+
 .opacity-100 {
   opacity: 1;
 }
@@ -1933,6 +1941,16 @@ video {
 .focus\:ring-indigo-500:focus {
   --tw-ring-opacity: 1;
   --tw-ring-color: rgb(99 102 241 / var(--tw-ring-opacity));
+}
+
+.group:hover .group-hover\:bg-sonata-pearl {
+  --tw-bg-opacity: 1;
+  background-color: rgb(232 232 232 / var(--tw-bg-opacity));
+}
+
+.group:hover .group-hover\:text-sonata-black {
+  --tw-text-opacity: 1;
+  color: rgb(10 10 10 / var(--tw-text-opacity));
 }
 
 .group:hover .group-hover\:text-white {
