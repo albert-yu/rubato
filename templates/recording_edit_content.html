@@ -1,35 +1,67 @@
 <div class="max-w-4xl mx-auto py-12">
-    <div class="mb-12">
-        <a href="/{{ recording.artist_handle }}/recordings/{{ recording.slug_id }}" class="text-xs tracking-[0.3em] uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors">
-            &larr; Back to Recording
-        </a>
-        <h1 class="text-4xl font-light tracking-tight text-sonata-pearl mt-4 mb-2">
-            Edit Notes
-        </h1>
-        <p class="text-sonata-slate font-light">{{ recording.composition_title }}</p>
+  <div class="mb-12">
+    <a
+      href="/{{ recording.artist_handle }}/recordings/{{ recording.slug_id }}"
+      class="text-xs tracking-[0.3em] uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors"
+    >
+      &larr; Back to Recording
+    </a>
+    <h1 class="text-4xl font-light tracking-tight text-sonata-pearl mt-4 mb-2">
+      Edit Notes
+    </h1>
+    <p class="text-sonata-slate font-light">
+      {{ recording.composition_title }}
+    </p>
+  </div>
+
+  <form
+    action="/{{ recording.artist_handle }}/recordings/{{ recording.slug_id }}/edit"
+    method="post"
+    class="space-y-8"
+  >
+    <div>
+      <label
+        for="notes"
+        class="block text-xs uppercase tracking-widest font-light text-sonata-slate mb-2"
+        >Notes</label
+      >
+      <textarea
+        id="notes"
+        name="notes"
+        rows="10"
+        class="w-full bg-sonata-black border border-sonata-charcoal text-sonata-pearl p-4 focus:border-sonata-pearl focus:outline-none transition-colors font-light leading-relaxed resize-y"
+      >
+{% if let Some(notes) = recording.notes %}{{ notes }}{% endif %}</textarea
+      >
+      <p class="mt-2 text-[10px] text-sonata-slate font-light">
+        Share your thoughts, interpretation details, or technical notes about
+        this recording.
+      </p>
     </div>
 
-    <form action="/{{ recording.artist_handle }}/recordings/{{ recording.slug_id }}/edit" method="post" class="space-y-8">
-        <div>
-            <label for="notes" class="block text-xs uppercase tracking-widest font-light text-sonata-slate mb-2">Notes</label>
-            <textarea id="notes" name="notes" rows="10" 
-                      class="w-full bg-sonata-black border border-sonata-charcoal text-sonata-pearl p-4 focus:border-sonata-pearl focus:outline-none transition-colors font-light leading-relaxed resize-y">{% if let Some(notes) = recording.notes %}{{ notes }}{% endif %}</textarea>
-            <p class="mt-2 text-[10px] text-sonata-slate font-light">Share your thoughts, interpretation details, or technical notes about this recording.</p>
-        </div>
-
-        <div class="flex justify-between items-center mt-12 border-t border-sonata-charcoal pt-8">
-            <button type="button" 
-                    hx-delete="/{{ recording.artist_handle }}/recordings/{{ recording.slug_id }}/edit" 
-                    hx-confirm="Are you sure you want to delete this recording? This action cannot be undone."
-                    hx-target="body"
-                    hx-push-url="true"
-                    class="text-red-900/70 hover:text-red-500 text-[10px] uppercase tracking-widest transition-colors">
-                Delete Recording
-            </button>
-            <div class="flex gap-4">
-                <a href="/{{ recording.artist_handle }}/recordings/{{ recording.slug_id }}" class="sonata-btn-secondary px-6 py-3 text-xs">Cancel</a>
-                <button type="submit" class="sonata-btn px-8 py-3 text-xs">Save Changes</button>
-            </div>
-        </div>
-    </form>
+    <div
+      class="flex justify-between items-center mt-12 border-t border-sonata-charcoal pt-8"
+    >
+      <button
+        type="button"
+        hx-delete="/{{ recording.artist_handle }}/recordings/{{ recording.slug_id }}/edit"
+        hx-confirm="Are you sure you want to delete this recording? This action cannot be undone."
+        hx-target="body"
+        hx-push-url="true"
+        class="text-red-900/70 hover:text-red-500 text-[10px] uppercase tracking-widest transition-colors"
+      >
+        Delete Recording
+      </button>
+      <div class="flex gap-4">
+        <a
+          href="/{{ recording.artist_handle }}/recordings/{{ recording.slug_id }}"
+          class="sonata-btn-secondary px-6 py-3 text-xs"
+          >Cancel</a
+        >
+        <button type="submit" class="sonata-btn px-8 py-3 text-xs">
+          Save Changes
+        </button>
+      </div>
+    </div>
+  </form>
 </div>

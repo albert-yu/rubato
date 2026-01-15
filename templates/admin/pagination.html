@@ -1,26 +1,37 @@
 {% if total_pages > 1 %}
-<div class="px-8 py-6 bg-sonata-black/20 border-t border-sonata-border/30 flex items-center justify-between">
+  <div
+    class="px-8 py-6 bg-sonata-black/20 border-t border-sonata-border/30 flex items-center justify-between"
+  >
     <div class="flex-1 flex items-center justify-between">
-        <div>
-            <p class="text-[10px] tracking-widest uppercase font-light text-sonata-slate">
-                Page <span class="text-sonata-pearl font-normal">{{ page }}</span> of <span class="text-sonata-pearl font-normal">{{ total_pages }}</span>
-            </p>
-        </div>
-        <div>
-            <nav class="flex space-x-4" aria-label="Pagination">
-                {% if page > 1 %}
-                <a href="?page={{ page - 1 }}{% match q %}{% when Some with (query) %}&q={{ query }}{% when None %}{% endmatch %}" class="text-[10px] tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors border border-sonata-charcoal px-4 py-2 hover:bg-sonata-black">
-                    Previous
-                </a>
-                {% endif %}
-                
-                {% if page < total_pages %}
-                <a href="?page={{ page + 1 }}{% match q %}{% when Some with (query) %}&q={{ query }}{% when None %}{% endmatch %}" class="text-[10px] tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors border border-sonata-charcoal px-4 py-2 hover:bg-sonata-black">
-                    Next
-                </a>
-                {% endif %}
-            </nav>
-        </div>
+      <div>
+        <p
+          class="text-[10px] tracking-widest uppercase font-light text-sonata-slate"
+        >
+          Page <span class="text-sonata-pearl font-normal">{{ page }}</span> of
+          <span class="text-sonata-pearl font-normal">{{ total_pages }}</span>
+        </p>
+      </div>
+      <div>
+        <nav class="flex space-x-4" aria-label="Pagination">
+          {% if page > 1 %}
+            <a
+              href="?page={{ page - 1 }}{% match q %}{% when Some with (query) %}&q={{ query }}{% when None %}{% endmatch %}"
+              class="text-[10px] tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors border border-sonata-charcoal px-4 py-2 hover:bg-sonata-black"
+            >
+              Previous
+            </a>
+          {% endif %}
+
+          {% if page < total_pages %}
+            <a
+              href="?page={{ page + 1 }}{% match q %}{% when Some with (query) %}&q={{ query }}{% when None %}{% endmatch %}"
+              class="text-[10px] tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors border border-sonata-charcoal px-4 py-2 hover:bg-sonata-black"
+            >
+              Next
+            </a>
+          {% endif %}
+        </nav>
+      </div>
     </div>
-</div>
+  </div>
 {% endif %}

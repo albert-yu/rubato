@@ -3,44 +3,95 @@
 {% block body_class %}bg-sonata-black text-sonata-pearl{% endblock %}
 
 {% block nav %}
-    {% if current_user.is_some() %}
-    <nav id="main-nav" class="fixed inset-y-0 left-0 z-50 w-64 bg-sonata-black border-r border-sonata-border flex flex-col p-8 transform -translate-x-full transition-transform duration-300 md:translate-x-0 md:static shadow-2xl md:shadow-none">
-        <!-- Mobile Close Button -->
-        <button onclick="toggleNav()" class="absolute top-6 right-6 md:hidden text-sonata-slate hover:text-sonata-pearl transition-colors">
-            <div class="w-6 h-6 stroke-[1.5]">{% include "icons/close.svg" %}</div>
-        </button>
+  {% if current_user.is_some() %}
+    <nav
+      id="main-nav"
+      class="fixed inset-y-0 left-0 z-50 w-64 bg-sonata-black border-r border-sonata-border flex flex-col p-8 transform -translate-x-full transition-transform duration-300 md:translate-x-0 md:static shadow-2xl md:shadow-none"
+    >
+      <!-- Mobile Close Button -->
+      <button
+        onclick="toggleNav()"
+        class="absolute top-6 right-6 md:hidden text-sonata-slate hover:text-sonata-pearl transition-colors"
+      >
+        <div class="w-6 h-6 stroke-[1.5]">{% include "icons/close.svg" %}</div>
+      </button>
 
-        <div class="mb-12">
-            <h1 class="text-2xl font-light tracking-tighter text-sonata-pearl">Admin</h1>
-            <div class="w-8 h-[1px] bg-sonata-slate mt-4"></div>
-        </div>
-        <ul class="space-y-6 flex-1">
-            <li>
-                <a href="/" class="block text-[10px] tracking-[0.2em] uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors">
-                    ← App
-                </a>
-            </li>
-            <li class="pt-8 border-t border-sonata-border/30">
-                <span class="text-[10px] tracking-[0.3em] font-light text-sonata-slate/50 uppercase">Management</span>
-            </li>
-            <li>
-                <a href="/admin/musicians" class="block text-xs tracking-widest uppercase font-light transition-colors {% if active_nav == "musicians" %}text-sonata-pearl{% else %}text-sonata-slate hover:text-sonata-pearl{% endif %}">Musicians</a>
-            </li>
-            <li>
-                <a href="/admin/compositions" class="block text-xs tracking-widest uppercase font-light transition-colors {% if active_nav == "compositions" %}text-sonata-pearl{% else %}text-sonata-slate hover:text-sonata-pearl{% endif %}">Compositions</a>
-            </li>
-            <li>
-                <a href="/admin/recordings" class="block text-xs tracking-widest uppercase font-light transition-colors {% if active_nav == "recordings" %}text-sonata-pearl{% else %}text-sonata-slate hover:text-sonata-pearl{% endif %}">Recordings</a>
-            </li>
-            <li>
-                <a href="/admin/import" class="block text-xs tracking-widest uppercase font-light transition-colors {% if active_nav == "import" %}text-sonata-pearl{% else %}text-sonata-slate hover:text-sonata-pearl{% endif %}">Import</a>
-            </li>
-        </ul>
-        <div class="mt-auto">
-             <form action="/logout" method="post">
-                <button type="submit" class="w-full text-left text-[10px] tracking-widest uppercase font-light text-red-500/90 hover:text-red-500 transition-colors">Logout</button>
-            </form>
-        </div>
+      <div class="mb-12">
+        <h1 class="text-2xl font-light tracking-tighter text-sonata-pearl">
+          Admin
+        </h1>
+        <div class="w-8 h-[1px] bg-sonata-slate mt-4"></div>
+      </div>
+      <ul class="space-y-6 flex-1">
+        <li>
+          <a
+            href="/"
+            class="block text-[10px] tracking-[0.2em] uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors"
+          >
+            ← App
+          </a>
+        </li>
+        <li class="pt-8 border-t border-sonata-border/30">
+          <span
+            class="text-[10px] tracking-[0.3em] font-light text-sonata-slate/50 uppercase"
+            >Management</span
+          >
+        </li>
+        <li>
+          <a
+            href="/admin/musicians"
+            class="block text-xs tracking-widest uppercase font-light transition-colors {% if active_nav == "musicians" %}
+              text-sonata-pearl
+            {% else %}
+              text-sonata-slate hover:text-sonata-pearl
+            {% endif %}"
+            >Musicians</a
+          >
+        </li>
+        <li>
+          <a
+            href="/admin/compositions"
+            class="block text-xs tracking-widest uppercase font-light transition-colors {% if active_nav == "compositions" %}
+              text-sonata-pearl
+            {% else %}
+              text-sonata-slate hover:text-sonata-pearl
+            {% endif %}"
+            >Compositions</a
+          >
+        </li>
+        <li>
+          <a
+            href="/admin/recordings"
+            class="block text-xs tracking-widest uppercase font-light transition-colors {% if active_nav == "recordings" %}
+              text-sonata-pearl
+            {% else %}
+              text-sonata-slate hover:text-sonata-pearl
+            {% endif %}"
+            >Recordings</a
+          >
+        </li>
+        <li>
+          <a
+            href="/admin/import"
+            class="block text-xs tracking-widest uppercase font-light transition-colors {% if active_nav == "import" %}
+              text-sonata-pearl
+            {% else %}
+              text-sonata-slate hover:text-sonata-pearl
+            {% endif %}"
+            >Import</a
+          >
+        </li>
+      </ul>
+      <div class="mt-auto">
+        <form action="/logout" method="post">
+          <button
+            type="submit"
+            class="w-full text-left text-[10px] tracking-widest uppercase font-light text-red-500/90 hover:text-red-500 transition-colors"
+          >
+            Logout
+          </button>
+        </form>
+      </div>
     </nav>
-    {% endif %}
+  {% endif %}
 {% endblock %}

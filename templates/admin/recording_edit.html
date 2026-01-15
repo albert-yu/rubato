@@ -1,77 +1,162 @@
 {% extends "layout.html" %}
 
-{% block title %}{% if recording.id == 0 %}New Recording{% else %}Edit Recording{% endif %} - Admin{% endblock %}
+{% block title %}
+  {% if recording.id == 0 %}New Recording{% else %}Edit Recording{% endif %} -
+  Admin
+{% endblock %}
 
 {% block content %}
-<div class="max-w-2xl mx-auto py-8">
-    <div class="flex justify-between items-end mb-12 border-b border-sonata-border pb-6">
-        <div>
-            <h1 class="text-2xl font-light tracking-tighter text-sonata-pearl mb-1">
-                {% if recording.id == 0 %}New Recording{% else %}Edit Recording{% endif %}
-            </h1>
-            <a href="/admin/recordings" class="text-[10px] tracking-[0.3em] uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors">← Back to List</a>
-        </div>
+  <div class="max-w-2xl mx-auto py-8">
+    <div
+      class="flex justify-between items-end mb-12 border-b border-sonata-border pb-6"
+    >
+      <div>
+        <h1 class="text-2xl font-light tracking-tighter text-sonata-pearl mb-1">
+          {% if recording.id == 0 %}New Recording{% else %}Edit Recording{% endif %}
+        </h1>
+        <a
+          href="/admin/recordings"
+          class="text-[10px] tracking-[0.3em] uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors"
+          >← Back to List</a
+        >
+      </div>
     </div>
 
     <div class="sonata-card">
-        <form action="{% if recording.id == 0 %}/admin/recordings{% else %}/admin/recording/{{ recording.id }}{% endif %}" method="POST" class="space-y-8">
-            
-            <div>
-                <label for="artist_id" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Artist</label>
-                <select name="artist_id" id="artist_id" required class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light appearance-none">
-                    <option value="">Select an artist...</option>
-                    {% for musician in musicians %}
-                    <option value="{{ musician.id }}" {% if musician.id == recording.artist_id %}selected{% endif %}>
-                        {{ musician.given_name }} {{ musician.family_name }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
+      <form
+        action="{% if recording.id == 0 %}/admin/recordings{% else %}/admin/recording/{{ recording.id }}{% endif %}"
+        method="POST"
+        class="space-y-8"
+      >
+        <div>
+          <label
+            for="artist_id"
+            class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2"
+            >Artist</label
+          >
+          <select
+            name="artist_id"
+            id="artist_id"
+            required
+            class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light appearance-none"
+          >
+            <option value="">Select an artist...</option>
+            {% for musician in musicians %}
+              <option
+                value="{{ musician.id }}"
+                {% if musician.id == recording.artist_id %}selected{% endif %}
+              >
+                {{ musician.given_name }} {{ musician.family_name }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
 
-            <div>
-                <label for="composition_id" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Composition ID</label>
-                <input type="number" name="composition_id" id="composition_id" value="{% if recording.id != 0 %}{{ recording.composition_id }}{% endif %}" required
-                    class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light">
-            </div>
+        <div>
+          <label
+            for="composition_id"
+            class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2"
+            >Composition ID</label
+          >
+          <input
+            type="number"
+            name="composition_id"
+            id="composition_id"
+            value="{% if recording.id != 0 %}{{ recording.composition_id }}{% endif %}"
+            required
+            class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
+          />
+        </div>
 
-            <div>
-                <label for="movement_id" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Movement ID (Optional)</label>
-                <input type="number" name="movement_id" id="movement_id" value="{% if let Some(mid) = recording.movement_id %}{{ mid }}{% endif %}"
-                    class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light">
-                <p class="text-[10px] text-sonata-slate mt-1 italic">Leave blank if there is no specific movement.</p>
-            </div>
+        <div>
+          <label
+            for="movement_id"
+            class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2"
+            >Movement ID (Optional)</label
+          >
+          <input
+            type="number"
+            name="movement_id"
+            id="movement_id"
+            value="{% if let Some(mid) = recording.movement_id %}{{ mid }}{% endif %}"
+            class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
+          />
+          <p class="text-[10px] text-sonata-slate mt-1 italic">
+            Leave blank if there is no specific movement.
+          </p>
+        </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                    <label for="content_hash" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Content Hash</label>
-                    <input type="text" name="content_hash" id="content_hash" value="{{ recording.content_hash }}" required
-                        class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light font-mono">
-                </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <label
+              for="content_hash"
+              class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2"
+              >Content Hash</label
+            >
+            <input
+              type="text"
+              name="content_hash"
+              id="content_hash"
+              value="{{ recording.content_hash }}"
+              required
+              class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light font-mono"
+            />
+          </div>
 
-                <div>
-                    <label for="file_key" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">File Key</label>
-                    <input type="text" name="file_key" id="file_key" value="{{ recording.file_key }}" required
-                        class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light font-mono">
-                </div>
-            </div>
+          <div>
+            <label
+              for="file_key"
+              class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2"
+              >File Key</label
+            >
+            <input
+              type="text"
+              name="file_key"
+              id="file_key"
+              value="{{ recording.file_key }}"
+              required
+              class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light font-mono"
+            />
+          </div>
+        </div>
 
-            <div>
-                <label for="mime_type" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Mime Type</label>
-                <input type="text" name="mime_type" id="mime_type" value="{{ recording.mime_type }}" required
-                    class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light">
-            </div>
+        <div>
+          <label
+            for="mime_type"
+            class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2"
+            >Mime Type</label
+          >
+          <input
+            type="text"
+            name="mime_type"
+            id="mime_type"
+            value="{{ recording.mime_type }}"
+            required
+            class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
+          />
+        </div>
 
-            <div class="pt-8 border-t border-sonata-border/30 flex justify-between items-center">
-                {% if recording.id != 0 %}
-                <button type="button" hx-delete="/admin/recording/{{ recording.id }}" hx-confirm="Are you sure?" hx-target="body" hx-push-url="true"
-                    class="text-red-900/70 hover:text-red-500 text-[10px] uppercase tracking-widest transition-colors">Delete Recording</button>
-                {% else %}
-                <div></div>
-                {% endif %}
-                
-                <button type="submit" class="sonata-btn !px-8">Save Changes</button>
-            </div>
-        </form>
+        <div
+          class="pt-8 border-t border-sonata-border/30 flex justify-between items-center"
+        >
+          {% if recording.id != 0 %}
+            <button
+              type="button"
+              hx-delete="/admin/recording/{{ recording.id }}"
+              hx-confirm="Are you sure?"
+              hx-target="body"
+              hx-push-url="true"
+              class="text-red-900/70 hover:text-red-500 text-[10px] uppercase tracking-widest transition-colors"
+            >
+              Delete Recording
+            </button>
+          {% else %}
+            <div></div>
+          {% endif %}
+
+          <button type="submit" class="sonata-btn !px-8">Save Changes</button>
+        </div>
+      </form>
     </div>
-</div>
+  </div>
 {% endblock %}

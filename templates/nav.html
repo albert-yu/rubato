@@ -1,37 +1,80 @@
-<nav id="main-nav" class="fixed top-0 h-[100dvh] md:h-full left-0 z-50 w-64 bg-sonata-black border-r border-sonata-border flex flex-col pt-8 px-8 pb-[calc(2rem+env(safe-area-inset-bottom))] transform -translate-x-full transition-transform duration-300 md:translate-x-0 md:static shadow-2xl md:shadow-none">
-    <!-- Mobile Close Button -->
-    <button onclick="toggleNav()" class="absolute top-6 right-6 md:hidden text-sonata-slate hover:text-sonata-pearl transition-colors">
-        <div class="w-6 h-6 stroke-[1.5]">{% include "icons/close.svg" %}</div>
-    </button>
+<nav
+  id="main-nav"
+  class="fixed top-0 h-[100dvh] md:h-full left-0 z-50 w-64 bg-sonata-black border-r border-sonata-border flex flex-col pt-8 px-8 pb-[calc(2rem+env(safe-area-inset-bottom))] transform -translate-x-full transition-transform duration-300 md:translate-x-0 md:static shadow-2xl md:shadow-none"
+>
+  <!-- Mobile Close Button -->
+  <button
+    onclick="toggleNav()"
+    class="absolute top-6 right-6 md:hidden text-sonata-slate hover:text-sonata-pearl transition-colors"
+  >
+    <div class="w-6 h-6 stroke-[1.5]">{% include "icons/close.svg" %}</div>
+  </button>
 
-    <div class="mb-12">
-        <h1 class="text-3xl font-light tracking-tighter text-sonata-pearl">rubato<span class="text-sonata-slate">.club</span></h1>
-        <div class="w-10 h-[1px] bg-sonata-slate mt-4"></div>
-    </div>
-    <ul class="space-y-4 flex-1" hx-boost="true" hx-target="#main-content">
-        <li>
-            <a href="/" onclick="toggleNav()" class="block text-sm tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors">Home</a>
-        </li>
-        {% if let Some(user) = current_user %}
-        <li>
-            <a href="/{{ user.handle }}" onclick="toggleNav()" class="block text-sm tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors">Profile</a>
-        </li>
-        <li>
-            <a href="/settings" onclick="toggleNav()" class="block text-sm tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors">Settings</a>
-        </li>
-        {% endif %}
-    </ul>
-    <div class="mt-auto space-y-4">
-        {% if let Some(user) = current_user %}
-            {% if user.is_privileged() %}
-            <a href="/admin" onclick="toggleNav()" class="block text-xs tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors">Admin</a>
-            {% endif %}
-            <form action="/logout" method="post">
-                <button type="submit" class="w-full text-left text-xs tracking-widest uppercase font-light text-red-500/90 hover:text-red-500 transition-colors">Logout</button>
-            </form>
-        {% else %}
-            <a href="/login" onclick="toggleNav()" class="block text-sm tracking-widest uppercase font-light text-sonata-pearl border border-sonata-charcoal px-4 py-2 text-center hover:bg-sonata-pearl hover:text-sonata-black transition-all">Login</a>
-            <a href="/signup" onclick="toggleNav()" class="block text-sm tracking-widest uppercase font-light text-sonata-slate text-center hover:text-sonata-pearl transition-colors">Sign Up</a>
-        {% endif %}
-    </div>
+  <div class="mb-12">
+    <h1 class="text-3xl font-light tracking-tighter text-sonata-pearl">
+      rubato<span class="text-sonata-slate">.club</span>
+    </h1>
+    <div class="w-10 h-[1px] bg-sonata-slate mt-4"></div>
+  </div>
+  <ul class="space-y-4 flex-1" hx-boost="true" hx-target="#main-content">
+    <li>
+      <a
+        href="/"
+        onclick="toggleNav()"
+        class="block text-sm tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors"
+        >Home</a
+      >
+    </li>
+    {% if let Some(user) = current_user %}
+      <li>
+        <a
+          href="/{{ user.handle }}"
+          onclick="toggleNav()"
+          class="block text-sm tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors"
+          >Profile</a
+        >
+      </li>
+      <li>
+        <a
+          href="/settings"
+          onclick="toggleNav()"
+          class="block text-sm tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors"
+          >Settings</a
+        >
+      </li>
+    {% endif %}
+  </ul>
+  <div class="mt-auto space-y-4">
+    {% if let Some(user) = current_user %}
+      {% if user.is_privileged() %}
+        <a
+          href="/admin"
+          onclick="toggleNav()"
+          class="block text-xs tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors"
+          >Admin</a
+        >
+      {% endif %}
+      <form action="/logout" method="post">
+        <button
+          type="submit"
+          class="w-full text-left text-xs tracking-widest uppercase font-light text-red-500/90 hover:text-red-500 transition-colors"
+        >
+          Logout
+        </button>
+      </form>
+    {% else %}
+      <a
+        href="/login"
+        onclick="toggleNav()"
+        class="block text-sm tracking-widest uppercase font-light text-sonata-pearl border border-sonata-charcoal px-4 py-2 text-center hover:bg-sonata-pearl hover:text-sonata-black transition-all"
+        >Login</a
+      >
+      <a
+        href="/signup"
+        onclick="toggleNav()"
+        class="block text-sm tracking-widest uppercase font-light text-sonata-slate text-center hover:text-sonata-pearl transition-colors"
+        >Sign Up</a
+      >
+    {% endif %}
+  </div>
 </nav>

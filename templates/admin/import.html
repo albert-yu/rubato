@@ -1,109 +1,231 @@
-
 {% extends "layout.html" %}
 
 {% block title %}OpenOpus Import{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto py-8">
-    <div class="flex justify-between items-end mb-12 border-b border-sonata-border pb-6">
-        <div>
-            <h1 class="text-2xl font-light tracking-tighter text-sonata-pearl mb-1">OpenOpus Import</h1>
-            <p class="text-[10px] tracking-[0.3em] uppercase font-light text-sonata-slate">Sync External Repertoire</p>
-        </div>
-        <div class="flex items-center space-x-6">
-            {% if let Some(j) = job %}
-                {% if j.status == ImportJobStatus::Processing %}
-                <form action="/admin/import/cancel" method="post" class="inline">
-                    <button type="submit" class="sonata-btn !border-red-900/50 !text-red-400 hover:!bg-red-900/20 !px-6 !py-2 text-[10px]">
-                        Cancel Import
-                    </button>
-                </form>
-                {% else %}
-                <form action="/admin/import" method="post" enctype="multipart/form-data" class="flex items-center gap-6">
-                    <input type="file" name="file" accept=".json" required class="text-[10px] text-sonata-slate uppercase tracking-widest file:mr-4 file:py-1 file:px-4 file:border file:border-sonata-charcoal file:bg-transparent file:text-[10px] file:text-sonata-pearl hover:file:bg-sonata-pearl hover:file:text-sonata-black transition-all">
-                    <label class="inline-flex items-center cursor-pointer">
-                        <input type="checkbox" name="replace_existing" value="true" class="form-checkbox h-4 w-4 bg-sonata-black border-sonata-charcoal text-sonata-pearl focus:ring-0 rounded-sm">
-                        <span class="ml-2 text-[10px] uppercase tracking-widest font-light text-sonata-slate">Replace</span>
-                    </label>
-                    <button type="submit" class="sonata-btn !px-6 !py-2 text-[10px]">
-                        Start New
-                    </button>
-                </form>
-                {% endif %}
-            {% else %}
-            <form action="/admin/import" method="post" enctype="multipart/form-data" class="flex items-center gap-6">
-                <input type="file" name="file" accept=".json" required class="text-[10px] text-sonata-slate uppercase tracking-widest file:mr-4 file:py-1 file:px-4 file:border file:border-sonata-charcoal file:bg-transparent file:text-[10px] file:text-sonata-pearl hover:file:bg-sonata-pearl hover:file:text-sonata-black transition-all">
-                <label class="inline-flex items-center cursor-pointer">
-                    <input type="checkbox" name="replace_existing" value="true" class="form-checkbox h-4 w-4 bg-sonata-black border-sonata-charcoal text-sonata-pearl focus:ring-0 rounded-sm">
-                    <span class="ml-2 text-[10px] uppercase tracking-widest font-light text-sonata-slate">Replace</span>
-                </label>
-                <button type="submit" class="sonata-btn !px-6 !py-2 text-[10px]">
-                    Start Import
-                </button>
+  <div class="max-w-4xl mx-auto py-8">
+    <div
+      class="flex justify-between items-end mb-12 border-b border-sonata-border pb-6"
+    >
+      <div>
+        <h1 class="text-2xl font-light tracking-tighter text-sonata-pearl mb-1">
+          OpenOpus Import
+        </h1>
+        <p
+          class="text-[10px] tracking-[0.3em] uppercase font-light text-sonata-slate"
+        >
+          Sync External Repertoire
+        </p>
+      </div>
+      <div class="flex items-center space-x-6">
+        {% if let Some(j) = job %}
+          {% if j.status == ImportJobStatus::Processing %}
+            <form action="/admin/import/cancel" method="post" class="inline">
+              <button
+                type="submit"
+                class="sonata-btn !border-red-900/50 !text-red-400 hover:!bg-red-900/20 !px-6 !py-2 text-[10px]"
+              >
+                Cancel Import
+              </button>
             </form>
-            {% endif %}
-        </div>
+          {% else %}
+            <form
+              action="/admin/import"
+              method="post"
+              enctype="multipart/form-data"
+              class="flex items-center gap-6"
+            >
+              <input
+                type="file"
+                name="file"
+                accept=".json"
+                required
+                class="text-[10px] text-sonata-slate uppercase tracking-widest file:mr-4 file:py-1 file:px-4 file:border file:border-sonata-charcoal file:bg-transparent file:text-[10px] file:text-sonata-pearl hover:file:bg-sonata-pearl hover:file:text-sonata-black transition-all"
+              />
+              <label class="inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  name="replace_existing"
+                  value="true"
+                  class="form-checkbox h-4 w-4 bg-sonata-black border-sonata-charcoal text-sonata-pearl focus:ring-0 rounded-sm"
+                />
+                <span
+                  class="ml-2 text-[10px] uppercase tracking-widest font-light text-sonata-slate"
+                  >Replace</span
+                >
+              </label>
+              <button type="submit" class="sonata-btn !px-6 !py-2 text-[10px]">
+                Start New
+              </button>
+            </form>
+          {% endif %}
+        {% else %}
+          <form
+            action="/admin/import"
+            method="post"
+            enctype="multipart/form-data"
+            class="flex items-center gap-6"
+          >
+            <input
+              type="file"
+              name="file"
+              accept=".json"
+              required
+              class="text-[10px] text-sonata-slate uppercase tracking-widest file:mr-4 file:py-1 file:px-4 file:border file:border-sonata-charcoal file:bg-transparent file:text-[10px] file:text-sonata-pearl hover:file:bg-sonata-pearl hover:file:text-sonata-black transition-all"
+            />
+            <label class="inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                name="replace_existing"
+                value="true"
+                class="form-checkbox h-4 w-4 bg-sonata-black border-sonata-charcoal text-sonata-pearl focus:ring-0 rounded-sm"
+              />
+              <span
+                class="ml-2 text-[10px] uppercase tracking-widest font-light text-sonata-slate"
+                >Replace</span
+              >
+            </label>
+            <button type="submit" class="sonata-btn !px-6 !py-2 text-[10px]">
+              Start Import
+            </button>
+          </form>
+        {% endif %}
+      </div>
     </div>
 
     {% if let Some(j) = job %}
-    <div class="sonata-card !p-0 overflow-hidden mb-12" 
-         {% if j.status == ImportJobStatus::Processing %} hx-get="/admin/import" hx-trigger="every 2s" hx-select="#job-status" hx-target="#job-status" hx-swap="outerHTML" {% endif %}
-         id="job-status">
-        <div class="px-8 py-6 border-b border-sonata-border/30 bg-sonata-black/30">
-            <h3 class="text-xs font-light tracking-widest text-sonata-slate uppercase">Last Job Status: <span class="text-sonata-pearl font-normal">{{ j.status }}</span></h3>
-            <p class="mt-2 text-[10px] tracking-widest text-sonata-slate/50 uppercase">Started: {{ j.created_at }}</p>
+      <div
+        class="sonata-card !p-0 overflow-hidden mb-12"
+        {% if j.status == ImportJobStatus::Processing %}
+          hx-get="/admin/import" hx-trigger="every 2s" hx-select="#job-status"
+          hx-target="#job-status" hx-swap="outerHTML"
+        {% endif %}
+        id="job-status"
+      >
+        <div
+          class="px-8 py-6 border-b border-sonata-border/30 bg-sonata-black/30"
+        >
+          <h3
+            class="text-xs font-light tracking-widest text-sonata-slate uppercase"
+          >
+            Last Job Status:
+            <span class="text-sonata-pearl font-normal">{{ j.status }}</span>
+          </h3>
+          <p
+            class="mt-2 text-[10px] tracking-widest text-sonata-slate/50 uppercase"
+          >
+            Started: {{ j.created_at }}
+          </p>
         </div>
         <div class="px-8 py-8">
-            <dl class="grid grid-cols-2 md:grid-cols-4 gap-8">
-                <div class="space-y-1">
-                    <dt class="text-[10px] font-light text-sonata-slate uppercase tracking-widest">Success</dt>
-                    <dd class="text-xl font-light text-green-500/80">{{ j.success_count }}</dd>
-                </div>
-                <div class="space-y-1">
-                    <dt class="text-[10px] font-light text-sonata-slate uppercase tracking-widest">Skipped</dt>
-                    <dd class="text-xl font-light text-yellow-500/80">{{ j.skip_count }}</dd>
-                </div>
-                <div class="space-y-1">
-                    <dt class="text-[10px] font-light text-sonata-slate uppercase tracking-widest">Failed</dt>
-                    <dd class="text-xl font-light text-red-500/80">{{ j.failure_count }}</dd>
-                </div>
-                <div class="space-y-1">
-                    <dt class="text-[10px] font-light text-sonata-slate uppercase tracking-widest">Updated</dt>
-                    <dd class="text-[10px] font-light text-sonata-pearl uppercase tracking-tighter">{{ j.updated_at }}</dd>
-                </div>
-            </dl>
+          <dl class="grid grid-cols-2 md:grid-cols-4 gap-8">
+            <div class="space-y-1">
+              <dt
+                class="text-[10px] font-light text-sonata-slate uppercase tracking-widest"
+              >
+                Success
+              </dt>
+              <dd class="text-xl font-light text-green-500/80">
+                {{ j.success_count }}
+              </dd>
+            </div>
+            <div class="space-y-1">
+              <dt
+                class="text-[10px] font-light text-sonata-slate uppercase tracking-widest"
+              >
+                Skipped
+              </dt>
+              <dd class="text-xl font-light text-yellow-500/80">
+                {{ j.skip_count }}
+              </dd>
+            </div>
+            <div class="space-y-1">
+              <dt
+                class="text-[10px] font-light text-sonata-slate uppercase tracking-widest"
+              >
+                Failed
+              </dt>
+              <dd class="text-xl font-light text-red-500/80">
+                {{ j.failure_count }}
+              </dd>
+            </div>
+            <div class="space-y-1">
+              <dt
+                class="text-[10px] font-light text-sonata-slate uppercase tracking-widest"
+              >
+                Updated
+              </dt>
+              <dd
+                class="text-[10px] font-light text-sonata-pearl uppercase tracking-tighter"
+              >
+                {{ j.updated_at }}
+              </dd>
+            </div>
+          </dl>
         </div>
-    </div>
+      </div>
     {% else %}
-    <div class="border border-sonata-border/30 bg-sonata-black/20 p-8 rounded-sm mb-12">
+      <div
+        class="border border-sonata-border/30 bg-sonata-black/20 p-8 rounded-sm mb-12"
+      >
         <div class="flex items-center space-x-4">
-            <div class="h-5 w-5 text-sonata-slate stroke-1">{% include "icons/info_circle.svg" %}</div>
-            <p class="text-xs tracking-widest font-light text-sonata-slate uppercase">
-                No import jobs recorded.
-            </p>
+          <div class="h-5 w-5 text-sonata-slate stroke-1">
+            {% include "icons/info_circle.svg" %}
+          </div>
+          <p
+            class="text-xs tracking-widest font-light text-sonata-slate uppercase"
+          >
+            No import jobs recorded.
+          </p>
         </div>
-    </div>
+      </div>
     {% endif %}
 
-    <div class="border border-sonata-border/30 p-8 rounded-sm bg-sonata-black/10">
-        <h2 class="text-xs font-light tracking-widest text-sonata-pearl uppercase mb-6">Import Details</h2>
-        <ul class="space-y-4">
-            <li class="flex items-start">
-                <span class="w-1.5 h-1.5 bg-sonata-charcoal rounded-full mt-1.5 mr-4 flex-shrink-0"></span>
-                <p class="text-[11px] leading-relaxed text-sonata-slate font-light tracking-wide">
-                    Reads data from uploaded 
-                    <a href="https://github.com/openopus-org/openopus_api/blob/master/ALLDATA.md" class="text-sonata-pearl hover:underline">dump.json</a>.
-                </p>
-            </li>
-            <li class="flex items-start">
-                <span class="w-1.5 h-1.5 bg-sonata-charcoal rounded-full mt-1.5 mr-4 flex-shrink-0"></span>
-                <p class="text-[11px] leading-relaxed text-sonata-slate font-light tracking-wide">Slugifies names for clean URL-friendly identifiers.</p>
-            </li>
-            <li class="flex items-start">
-                <span class="w-1.5 h-1.5 bg-sonata-charcoal rounded-full mt-1.5 mr-4 flex-shrink-0"></span>
-                <p class="text-[11px] leading-relaxed text-sonata-slate font-light tracking-wide">Links compositions to their respective composers.</p>
-            </li>
-        </ul>
+    <div
+      class="border border-sonata-border/30 p-8 rounded-sm bg-sonata-black/10"
+    >
+      <h2
+        class="text-xs font-light tracking-widest text-sonata-pearl uppercase mb-6"
+      >
+        Import Details
+      </h2>
+      <ul class="space-y-4">
+        <li class="flex items-start">
+          <span
+            class="w-1.5 h-1.5 bg-sonata-charcoal rounded-full mt-1.5 mr-4 flex-shrink-0"
+          ></span>
+          <p
+            class="text-[11px] leading-relaxed text-sonata-slate font-light tracking-wide"
+          >
+            Reads data from uploaded
+            <a
+              href="https://github.com/openopus-org/openopus_api/blob/master/ALLDATA.md"
+              class="text-sonata-pearl hover:underline"
+              >dump.json</a
+            >.
+          </p>
+        </li>
+        <li class="flex items-start">
+          <span
+            class="w-1.5 h-1.5 bg-sonata-charcoal rounded-full mt-1.5 mr-4 flex-shrink-0"
+          ></span>
+          <p
+            class="text-[11px] leading-relaxed text-sonata-slate font-light tracking-wide"
+          >
+            Slugifies names for clean URL-friendly identifiers.
+          </p>
+        </li>
+        <li class="flex items-start">
+          <span
+            class="w-1.5 h-1.5 bg-sonata-charcoal rounded-full mt-1.5 mr-4 flex-shrink-0"
+          ></span>
+          <p
+            class="text-[11px] leading-relaxed text-sonata-slate font-light tracking-wide"
+          >
+            Links compositions to their respective composers.
+          </p>
+        </li>
+      </ul>
     </div>
-</div>
+  </div>
 {% endblock %}

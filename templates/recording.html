@@ -1,11 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}{{ recording.composition_title }} - {{ recording.artist_handle }}{% endblock %}
+{% block title %}
+  {{ recording.composition_title }} - {{ recording.artist_handle }}
+{% endblock %}
 
 {% block nav %}
-    {% include "nav.html" %}
+  {% include "nav.html" %}
 {% endblock %}
 
 {% block content %}
-    {% include "recording_content.html" %}
+  {% include "recording_content.html" %}
 {% endblock %}

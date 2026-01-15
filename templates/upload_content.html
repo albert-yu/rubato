@@ -1,44 +1,76 @@
 <div class="max-w-2xl mx-auto py-12 relative">
-    <button onclick="window.history.back()" class="absolute top-12 right-0 text-sonata-slate hover:text-sonata-pearl transition-colors" title="Go back">
-        <div class="w-6 h-6 stroke-[1.5]">{% include "icons/close.svg" %}</div>
-    </button>
+  <button
+    onclick="window.history.back()"
+    class="absolute top-12 right-0 text-sonata-slate hover:text-sonata-pearl transition-colors"
+    title="Go back"
+  >
+    <div class="w-6 h-6 stroke-[1.5]">{% include "icons/close.svg" %}</div>
+  </button>
 
-    <div class="mb-12">
-        <h1 class="text-3xl font-light tracking-tighter text-sonata-pearl mb-2">Upload Recording</h1>
-        <div class="w-12 h-[1px] bg-sonata-charcoal"></div>
-    </div>
+  <div class="mb-12">
+    <h1 class="text-3xl font-light tracking-tighter text-sonata-pearl mb-2">
+      Upload Recording
+    </h1>
+    <div class="w-12 h-[1px] bg-sonata-charcoal"></div>
+  </div>
 
-    <div class="sonata-card">
-        {% if let Some(err) = error %}
-        <div class="bg-red-900/20 border border-red-900/50 text-red-400 px-4 py-3 rounded-sm mb-6 text-xs tracking-wide">
-            {{ err }}
-        </div>
-        {% endif %}
-        <form action="/upload" method="post" enctype="multipart/form-data" class="space-y-8">
-            {% include "composition_picker.html" %}
-            
-            <div>
-                <label for="file" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-4">Audio File</label>
-                <input type="file" name="file" id="file" accept="audio/*" required class="block w-full text-[10px] text-sonata-slate uppercase tracking-widest
+  <div class="sonata-card">
+    {% if let Some(err) = error %}
+      <div
+        class="bg-red-900/20 border border-red-900/50 text-red-400 px-4 py-3 rounded-sm mb-6 text-xs tracking-wide"
+      >
+        {{ err }}
+      </div>
+    {% endif %}
+    <form
+      action="/upload"
+      method="post"
+      enctype="multipart/form-data"
+      class="space-y-8"
+    >
+      {% include "composition_picker.html" %}
+
+      <div>
+        <label
+          for="file"
+          class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-4"
+          >Audio File</label
+        >
+        <input
+          type="file"
+          name="file"
+          id="file"
+          accept="audio/*"
+          required
+          class="block w-full text-[10px] text-sonata-slate uppercase tracking-widest
                   file:mr-8 file:py-2 file:px-6
                   file:border file:border-sonata-charcoal file:bg-transparent
                   file:text-[10px] file:uppercase file:tracking-widest file:font-light
                   file:text-sonata-pearl
                   hover:file:bg-sonata-pearl hover:file:text-sonata-black
                   transition-all cursor-pointer
-                ">
-            </div>
+                "
+        />
+      </div>
 
-            <div>
-                <label for="notes" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Notes</label>
-                <textarea name="notes" id="notes" rows="4" class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light" placeholder="Optional notes..."></textarea>
-            </div>
+      <div>
+        <label
+          for="notes"
+          class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2"
+          >Notes</label
+        >
+        <textarea
+          name="notes"
+          id="notes"
+          rows="4"
+          class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
+          placeholder="Optional notes..."
+        ></textarea>
+      </div>
 
-            <div class="pt-6">
-                <button type="submit" class="sonata-btn w-full">
-                    Publish
-                </button>
-            </div>
-        </form>
-    </div>
+      <div class="pt-6">
+        <button type="submit" class="sonata-btn w-full">Publish</button>
+      </div>
+    </form>
+  </div>
 </div>

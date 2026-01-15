@@ -3,75 +3,133 @@
 {% block title %}Compositions - Admin{% endblock %}
 
 {% block content %}
-<div id="compositions-container" class="max-w-6xl mx-auto py-8">
-    <div class="flex justify-between items-end mb-12 border-b border-sonata-border pb-6">
-        <div>
-            <h1 class="text-2xl font-light tracking-tighter text-sonata-pearl mb-1">Compositions</h1>
-            <p class="text-[10px] tracking-[0.3em] uppercase font-light text-sonata-slate">Manage Repertoire</p>
+  <div id="compositions-container" class="max-w-6xl mx-auto py-8">
+    <div
+      class="flex justify-between items-end mb-12 border-b border-sonata-border pb-6"
+    >
+      <div>
+        <h1 class="text-2xl font-light tracking-tighter text-sonata-pearl mb-1">
+          Compositions
+        </h1>
+        <p
+          class="text-[10px] tracking-[0.3em] uppercase font-light text-sonata-slate"
+        >
+          Manage Repertoire
+        </p>
+      </div>
+      <div class="flex items-center space-x-6">
+        <div class="relative">
+          <input
+            type="text"
+            name="q"
+            placeholder="Search..."
+            value="{% match q %}{% when Some with (query) %}{{ query }}{% when None %}{% endmatch %}"
+            class="bg-sonata-black border border-sonata-charcoal rounded-sm px-4 py-2 text-xs font-light text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors w-64"
+            hx-get="/admin/compositions"
+            hx-trigger="keyup[key=='Enter'], search"
+            hx-target="#compositions-container"
+            hx-select="#compositions-container"
+            hx-swap="outerHTML"
+            hx-push-url="true"
+          />
+          {% match q %}
+            {% when Some with (query) %}
+            <button
+              hx-get="/admin/compositions"
+              hx-target="#compositions-container"
+              hx-select="#compositions-container"
+              hx-swap="outerHTML"
+              hx-push-url="true"
+              class="absolute right-2 top-1/2 transform -translate-y-1/2 text-sonata-slate hover:text-sonata-pearl"
+            >
+              <div class="h-4 w-4 stroke-1">
+                {% include "icons/close.svg" %}
+              </div>
+            </button>
+            {% when None %}
+          {% endmatch %}
         </div>
-        <div class="flex items-center space-x-6">
-            <div class="relative">
-                <input type="text" 
-                       name="q" 
-                       placeholder="Search..." 
-                       value="{% match q %}{% when Some with (query) %}{{ query }}{% when None %}{% endmatch %}"
-                       class="bg-sonata-black border border-sonata-charcoal rounded-sm px-4 py-2 text-xs font-light text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors w-64"
-                       hx-get="/admin/compositions"
-                       hx-trigger="keyup[key=='Enter'], search"
-                       hx-target="#compositions-container"
-                       hx-select="#compositions-container"
-                       hx-swap="outerHTML"
-                       hx-push-url="true">
-                {% match q %}
-                    {% when Some with (query) %}
-                    <button hx-get="/admin/compositions" 
-                            hx-target="#compositions-container" 
-                            hx-select="#compositions-container" 
-                            hx-swap="outerHTML"
-                            hx-push-url="true"
-                            class="absolute right-2 top-1/2 transform -translate-y-1/2 text-sonata-slate hover:text-sonata-pearl">
-                        <div class="h-4 w-4 stroke-1">{% include "icons/close.svg" %}</div>
-                    </button>
-                    {% when None %}
-                {% endmatch %}
-            </div>
-            <a href="/admin/composition/new" class="sonata-btn !px-6 !py-2 text-[10px]">Add Composition</a>
-        </div>
+        <a
+          href="/admin/composition/new"
+          class="sonata-btn !px-6 !py-2 text-[10px]"
+          >Add Composition</a
+        >
+      </div>
     </div>
 
     <div class="sonata-card !p-0 overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-sonata-border/30">
-            <thead class="bg-sonata-black/50">
-                <tr>
-                    <th class="px-8 py-4 text-left text-[10px] font-light text-sonata-slate uppercase tracking-[0.2em]">ID</th>
-                    <th class="px-8 py-4 text-left text-[10px] font-light text-sonata-slate uppercase tracking-[0.2em]">Title</th>
-                    <th class="px-8 py-4 text-left text-[10px] font-light text-sonata-slate uppercase tracking-[0.2em]">Slug</th>
-                    <th class="px-8 py-4 text-left text-[10px] font-light text-sonata-slate uppercase tracking-[0.2em]">Publish Date</th>
-                    <th class="px-8 py-4 text-right text-[10px] font-light text-sonata-slate uppercase tracking-[0.2em]">Actions</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-sonata-border/20">
-                {% for composition in compositions %}
-                <tr class="hover:bg-sonata-black/30 transition-colors">
-                    <td class="px-8 py-5 whitespace-nowrap text-xs font-light text-sonata-slate">#{{ composition.id }}</td>
-                    <td class="px-8 py-5 whitespace-nowrap text-xs font-light text-sonata-pearl">{{ composition.title }}</td>
-                    <td class="px-8 py-5 whitespace-nowrap text-xs font-light text-sonata-slate">{{ composition.slug }}</td>
-                    <td class="px-8 py-5 whitespace-nowrap text-xs font-light text-sonata-slate">
-                        {% match composition.publish_date %}
-                            {% when Some with (date) %}{{ date }}
-                            {% when None %}-
-                        {% endmatch %}
-                    </td>
-                    <td class="px-8 py-5 whitespace-nowrap text-right text-xs font-light">
-                        <a href="/admin/composition/{{ composition.id }}" class="text-sonata-slate hover:text-sonata-pearl transition-colors uppercase tracking-widest text-[10px]">Edit</a>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-            </table>
-        </div>
-        {% include "pagination.html" %}
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-sonata-border/30">
+          <thead class="bg-sonata-black/50">
+            <tr>
+              <th
+                class="px-8 py-4 text-left text-[10px] font-light text-sonata-slate uppercase tracking-[0.2em]"
+              >
+                ID
+              </th>
+              <th
+                class="px-8 py-4 text-left text-[10px] font-light text-sonata-slate uppercase tracking-[0.2em]"
+              >
+                Title
+              </th>
+              <th
+                class="px-8 py-4 text-left text-[10px] font-light text-sonata-slate uppercase tracking-[0.2em]"
+              >
+                Slug
+              </th>
+              <th
+                class="px-8 py-4 text-left text-[10px] font-light text-sonata-slate uppercase tracking-[0.2em]"
+              >
+                Publish Date
+              </th>
+              <th
+                class="px-8 py-4 text-right text-[10px] font-light text-sonata-slate uppercase tracking-[0.2em]"
+              >
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-sonata-border/20">
+            {% for composition in compositions %}
+              <tr class="hover:bg-sonata-black/30 transition-colors">
+                <td
+                  class="px-8 py-5 whitespace-nowrap text-xs font-light text-sonata-slate"
+                >
+                  #{{ composition.id }}
+                </td>
+                <td
+                  class="px-8 py-5 whitespace-nowrap text-xs font-light text-sonata-pearl"
+                >
+                  {{ composition.title }}
+                </td>
+                <td
+                  class="px-8 py-5 whitespace-nowrap text-xs font-light text-sonata-slate"
+                >
+                  {{ composition.slug }}
+                </td>
+                <td
+                  class="px-8 py-5 whitespace-nowrap text-xs font-light text-sonata-slate"
+                >
+                  {% match composition.publish_date %}
+                    {% when Some with (date) %}{{ date }}
+                    {% when None %}-
+                  {% endmatch %}
+                </td>
+                <td
+                  class="px-8 py-5 whitespace-nowrap text-right text-xs font-light"
+                >
+                  <a
+                    href="/admin/composition/{{ composition.id }}"
+                    class="text-sonata-slate hover:text-sonata-pearl transition-colors uppercase tracking-widest text-[10px]"
+                    >Edit</a
+                  >
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% include "pagination.html" %}
     </div>
-</div>
+  </div>
 {% endblock %}

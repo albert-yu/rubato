@@ -1,46 +1,88 @@
 {% extends "base.html" %}
 
 {% block nav %}
-    {% include "nav.html" %}
+  {% include "nav.html" %}
 {% endblock %}
 
 {% block content %}
-<div class="max-w-md mx-auto mt-8 md:mt-24">
+  <div class="max-w-md mx-auto mt-8 md:mt-24">
     <div class="text-center mb-12">
-        <h1 class="text-3xl font-light tracking-tighter text-sonata-pearl mb-2">Join rubato<span class="text-sonata-slate">.club</span></h1>
-        <div class="w-12 h-[1px] bg-sonata-charcoal mx-auto"></div>
+      <h1 class="text-3xl font-light tracking-tighter text-sonata-pearl mb-2">
+        Join rubato<span class="text-sonata-slate">.club</span>
+      </h1>
+      <div class="w-12 h-[1px] bg-sonata-charcoal mx-auto"></div>
     </div>
     {% if let Some(error) = error %}
-        <div class="bg-red-900/20 border border-red-900/50 text-red-400 px-4 py-3 rounded-sm mb-6 text-xs tracking-wide">
-            {{ error }}
-        </div>
+      <div
+        class="bg-red-900/20 border border-red-900/50 text-red-400 px-4 py-3 rounded-sm mb-6 text-xs tracking-wide"
+      >
+        {{ error }}
+      </div>
     {% endif %}
     <form action="/signup" method="post" class="space-y-6">
+      <div>
+        <label
+          for="handle"
+          class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2"
+          >Username</label
+        >
+        <input
+          type="text"
+          name="handle"
+          id="handle"
+          required
+          autocomplete="username"
+          class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
+        />
+        <p class="mt-2 text-[10px] text-sonata-slate font-light italic">
+          Alphanumeric characters and hyphens only.
+        </p>
+      </div>
+      <div class="grid grid-cols-1 gap-6">
         <div>
-            <label for="handle" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Username</label>
-            <input type="text" name="handle" id="handle" required autocomplete="username" class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light">
-            <p class="mt-2 text-[10px] text-sonata-slate font-light italic">Alphanumeric characters and hyphens only.</p>
+          <label
+            for="email"
+            class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2"
+            >Email Address</label
+          >
+          <input
+            type="email"
+            name="email"
+            id="email"
+            required
+            autocomplete="email"
+            class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
+          />
         </div>
-        <div class="grid grid-cols-1 gap-6">
-            <div>
-                <label for="email" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Email Address</label>
-                <input type="email" name="email" id="email" required autocomplete="email" class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light">
-            </div>
-            <div>
-                <label for="password" class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2">Password</label>
-                <input type="password" name="password" id="password" required autocomplete="new-password" class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light">
-            </div>
+        <div>
+          <label
+            for="password"
+            class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2"
+            >Password</label
+          >
+          <input
+            type="password"
+            name="password"
+            id="password"
+            required
+            autocomplete="new-password"
+            class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
+          />
         </div>
-        <div class="pt-4">
-            <button type="submit" class="sonata-btn w-full">
-                Create Account
-            </button>
-        </div>
+      </div>
+      <div class="pt-4">
+        <button type="submit" class="sonata-btn w-full">Create Account</button>
+      </div>
     </form>
     <div class="mt-12 text-center">
-        <p class="text-xs tracking-widest font-light text-sonata-slate uppercase">
-            Already a member? <a href="/login" class="text-sonata-pearl hover:underline transition-all">Log In</a>
-        </p>
+      <p class="text-xs tracking-widest font-light text-sonata-slate uppercase">
+        Already a member?
+        <a
+          href="/login"
+          class="text-sonata-pearl hover:underline transition-all"
+          >Log In</a
+        >
+      </p>
     </div>
-</div>
+  </div>
 {% endblock %}
