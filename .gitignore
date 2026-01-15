@@ -4,3 +4,4 @@ node_modules/
 uploads/
 imslp/
 openopus/
+.DS_Store
