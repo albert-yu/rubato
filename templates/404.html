@@ -1,21 +1,27 @@
 {% extends "base.html" %}
 
+{% block title %}404 - Not Found{% endblock %}
+
 {% block content %}
-  <div
-    class="min-h-screen flex items-center justify-center bg-gray-100 py-12 px-4 sm:px-6 lg:px-8"
-  >
-    <div class="max-w-md w-full space-y-8 text-center">
-      <div>
-        <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          404 - Page Not Found
+  <div class="flex flex-col items-center justify-center py-20">
+    <div class="max-w-md w-full space-y-6 text-center">
+      <h1 class="text-6xl font-extralight tracking-tighter text-sonata-pearl">
+        404
+      </h1>
+      <div class="space-y-2">
+        <h2 class="text-xl font-light tracking-tight text-sonata-pearl">
+          Page Not Found
         </h2>
-        <p class="mt-2 text-center text-sm text-gray-600">
+        <p class="text-sm text-sonata-slate font-light">
           The page you are looking for does not exist.
         </p>
       </div>
-      <div class="mt-5">
-        <a href="/" class="font-medium text-indigo-600 hover:text-indigo-500">
-          Go back home
+      <div class="pt-8">
+        <a
+          href="/"
+          class="sonata-btn"
+        >
+          Go Back Home
         </a>
       </div>
     </div>
