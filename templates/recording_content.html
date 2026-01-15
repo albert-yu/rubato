@@ -31,14 +31,17 @@
                 data-file-key="{{ recording.file_key }}"
                 data-mime-type="{{ recording.mime_type }}"
                 onclick="playRecording(this.dataset)"
-                class="sonata-btn !px-12 !py-4 flex items-center space-x-3">
+                class="sonata-btn px-6 py-4 flex items-center text-left space-x-3">
             <div class="w-5 h-5 text-sonata-slate">{% include "icons/play.svg" %}</div>
             <span class="text-xs uppercase tracking-widest">Play Recording</span>
         </button>
 
         {% if let Some(user) = current_user %}
             {% if user.handle == recording.artist_handle %}
-            <a hx-boost="true" hx-target="#main-content" href="/{{ recording.artist_handle }}/recordings/{{ recording.slug_id }}/edit" class="text-[10px] uppercase tracking-widest text-sonata-slate border border-sonata-border px-6 py-4 hover:bg-sonata-pearl hover:text-sonata-black hover:border-sonata-pearl transition-all">
+            <a hx-boost="true"
+               hx-target="#main-content"
+               href="/{{ recording.artist_handle }}/recordings/{{ recording.slug_id }}/edit"
+               class="text-xs uppercase tracking-widest text-sonata-slate border border-sonata-border px-6 py-4 hover:bg-sonata-pearl hover:text-sonata-black hover:border-sonata-pearl transition-all">
                 Edit Recording
             </a>
             {% endif %}

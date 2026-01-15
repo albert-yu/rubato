@@ -1356,11 +1356,6 @@ video {
   padding: 2rem;
 }
 
-.\!px-12 {
-  padding-left: 3rem !important;
-  padding-right: 3rem !important;
-}
-
 .\!px-6 {
   padding-left: 1.5rem !important;
   padding-right: 1.5rem !important;
@@ -1374,11 +1369,6 @@ video {
 .\!py-2 {
   padding-top: 0.5rem !important;
   padding-bottom: 0.5rem !important;
-}
-
-.\!py-4 {
-  padding-top: 1rem !important;
-  padding-bottom: 1rem !important;
 }
 
 .px-1 {
