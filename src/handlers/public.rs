@@ -15,7 +15,7 @@ use crate::extractors::{AuthUser, HtmxRequest, OptionalAuthUser};
 use crate::storage::StorageService;
 use crate::view::{
     CompositionPickerTemplate, HtmlTemplate, IndexContentTemplate, IndexTemplate,
-    ProfileContentTemplate, ProfileTemplate, RecordingContentTemplate,
+    NotFoundTemplate, ProfileContentTemplate, ProfileTemplate, RecordingContentTemplate,
     RecordingEditContentTemplate, RecordingEditTemplate, RecordingTemplate,
     SettingsContentTemplate, SettingsTemplate, UploadContentTemplate, UploadTemplate,
 };
@@ -288,7 +288,7 @@ pub async fn serve_audio(
     .await
     {
         Ok(Some(r)) => r,
-        _ => return StatusCode::NOT_FOUND.into_response(),
+        _ => return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response(),
     };
 
     let range = req
@@ -346,7 +346,7 @@ pub async fn serve_audio(
         Err(e) => {
             tracing::error!("Error serving audio for key {}: {}", key, e);
             // If it was a range error from S3, it might manifest as a 416, but we'll return 404 for simplicity unless we want more complex mapping
-            StatusCode::NOT_FOUND.into_response()
+            (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response()
         }
     }
 }
@@ -571,7 +571,7 @@ pub async fn profile(
             .await
         {
             Ok(Some(m)) => m,
-            Ok(None) => return StatusCode::NOT_FOUND.into_response(),
+            Ok(None) => return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response(),
             Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
         };
 
@@ -721,7 +721,7 @@ pub async fn recording_detail(
     .await
     {
         Ok(Some(r)) => r,
-        Ok(None) => return StatusCode::NOT_FOUND.into_response(),
+        Ok(None) => return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response(),
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
 
@@ -733,7 +733,7 @@ pub async fn recording_detail(
         .unwrap_or(false);
 
     if matches!(recording.visibility, Visibility::Private) && !is_owner {
-        return StatusCode::NOT_FOUND.into_response();
+        return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
 
     if htmx.is_hx_boosted {
@@ -785,7 +785,7 @@ pub async fn recording_edit(
     .await
     {
         Ok(Some(r)) => r,
-        Ok(None) => return StatusCode::NOT_FOUND.into_response(),
+        Ok(None) => return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response(),
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
 
@@ -844,7 +844,7 @@ pub async fn recording_update(
     .await
     {
         Ok(Some(r)) => r,
-        Ok(None) => return StatusCode::NOT_FOUND.into_response(),
+        Ok(None) => return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response(),
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
 
@@ -892,7 +892,7 @@ pub async fn recording_delete(
     .await
     {
         Ok(Some(r)) => r,
-        Ok(None) => return StatusCode::NOT_FOUND.into_response(),
+        Ok(None) => return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response(),
         Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
     };
 
