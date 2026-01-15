@@ -1985,8 +1985,16 @@ video {
     display: none;
   }
 
+  .md\:h-4 {
+    height: 1rem;
+  }
+
   .md\:h-full {
     height: 100%;
+  }
+
+  .md\:w-4 {
+    width: 1rem;
   }
 
   .md\:translate-x-0 {
