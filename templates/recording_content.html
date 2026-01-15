@@ -13,10 +13,7 @@
     </h1>
 
     {% if let Some(title) = recording.movement_title %}
-      <div class="text-xl font-light text-sonata-slate italic">
-        {% if let Some(idx) = recording.movement_index %}
-          {{ idx + 1 }}.
-        {% endif %}
+      <div class="text-xl font-light text-sonata-slate">
         {{ title }}
       </div>
     {% endif %}
