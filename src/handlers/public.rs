@@ -272,10 +272,13 @@ pub async fn serve_audio(
             let mut response = (status, file.body).into_response();
             let headers = response.headers_mut();
 
-            // Use stored MIME type if available, otherwise fallback to inferred
-            if let Ok(content_type) = recording.mime_type.parse() {
-                headers.insert(axum::http::header::CONTENT_TYPE, content_type);
-            } else if let Ok(content_type) = file.content_type.parse() {
+            let mut mime_type = recording.mime_type.as_str();
+            // Map m4a to mp4 for Safari compat
+            if mime_type == "audio/m4a" {
+                mime_type = "audio/mp4";
+            }
+
+            if let Ok(content_type) = mime_type.parse() {
                 headers.insert(axum::http::header::CONTENT_TYPE, content_type);
             }
 
