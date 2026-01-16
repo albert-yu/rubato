@@ -1,6 +1,11 @@
 <div
   id="player-container"
   class="w-full z-40 border-t border-sonata-border/30 bg-sonata-charcoal pb-[env(safe-area-inset-bottom)]"
+  data-composition-title="{{ recording.composition_title }}"
+  {% if let Some(title) = recording.movement_title %}
+    data-movement-title="{{ title }}"
+  {% endif %}
+  data-artist-handle="{{ recording.artist_handle }}"
 >
   <div
     class="bg-sonata-charcoal border-t border-sonata-border p-4 lg:p-6 flex flex-col lg:flex-row items-center justify-between shadow-2xl"
@@ -223,14 +228,14 @@
         let lastVolume = 1;
 
         window.closePlayer = function () {
-            if (audio) {
-                audio.pause();
-                audio.currentTime = 0;
-            }
-            const container = document.getElementById("player-container");
-            if (container) {
-                container.outerHTML = '<div id="player-container"></div>';
-            }
+          if (audio) {
+            audio.pause();
+            audio.currentTime = 0;
+          }
+          const container = document.getElementById("player-container");
+          if (container) {
+            container.outerHTML = '<div id="player-container"></div>';
+          }
         };
 
         const formatTime = (secs) => {
@@ -245,8 +250,7 @@
           const min = parseFloat(slider.min) || 0;
           const max = parseFloat(slider.max) || 100;
           const val = parseFloat(slider.value);
-          const percentage =
-            max > min ? ((val - min) * 100) / (max - min) : 0;
+          const percentage = max > min ? ((val - min) * 100) / (max - min) : 0;
           slider.style.backgroundSize = `${percentage}% 100%`;
         };
 
@@ -345,34 +349,24 @@
 
         // Media Session Action Handlers
         if ("mediaSession" in navigator) {
-          let title = "{{ recording.composition_title }}";
-          let artist = "{{ recording.artist_handle }}";
-          {% if let Some(m_title) = recording.movement_title %}
-            title += " - {{ m_title }}";
-          {% endif %}
+          const ds = playerContainer.dataset;
+          let title = ds.compositionTitle;
+          if (ds.movementTitle) {
+            title += " - " + ds.movementTitle;
+          }
 
           navigator.mediaSession.metadata = new MediaMetadata({
             title: title,
-            artist: artist,
+            artist: ds.artistHandle,
           });
 
-          navigator.mediaSession.setActionHandler("play", () =>
-            audio.play(),
-          );
-          navigator.mediaSession.setActionHandler("pause", () =>
-            audio.pause(),
-          );
-          navigator.mediaSession.setActionHandler(
-            "seekto",
-            (details) => {
-              if (
-                details.seekTime !== undefined &&
-                !isNaN(details.seekTime)
-              ) {
-                audio.currentTime = details.seekTime;
-              }
-            },
-          );
+          navigator.mediaSession.setActionHandler("play", () => audio.play());
+          navigator.mediaSession.setActionHandler("pause", () => audio.pause());
+          navigator.mediaSession.setActionHandler("seekto", (details) => {
+            if (details.seekTime !== undefined && !isNaN(details.seekTime)) {
+              audio.currentTime = details.seekTime;
+            }
+          });
         }
 
         const updatePositionState = () => {
