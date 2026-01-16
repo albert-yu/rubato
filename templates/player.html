@@ -1,6 +1,7 @@
 <div
   id="player-container"
   class="w-full z-40 border-t border-sonata-border/30 bg-sonata-charcoal pb-[env(safe-area-inset-bottom)]"
+  data-composer-family-name="{{ recording.composer_family_name }}"
   data-composition-title="{{ recording.composition_title }}"
   {% if let Some(title) = recording.movement_title %}
     data-movement-title="{{ title }}"
@@ -71,6 +72,11 @@
     >
       <div class="flex items-center space-x-6 overflow-hidden">
         <div class="overflow-hidden">
+          <div
+            class="text-[9px] uppercase tracking-widest text-sonata-slate mb-0.5"
+          >
+            {{ recording.composer_family_name }}
+          </div>
           <h3
             id="player-composition"
             class="text-sm font-light tracking-wide text-sonata-pearl line-clamp-1"
@@ -350,7 +356,7 @@
         // Media Session Action Handlers
         if ("mediaSession" in navigator) {
           const ds = playerContainer.dataset;
-          let title = ds.compositionTitle;
+          let title = ds.composerFamilyName + ": " + ds.compositionTitle;
           if (ds.movementTitle) {
             title += " - " + ds.movementTitle;
           }

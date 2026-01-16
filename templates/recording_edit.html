@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
-{% block title %}Edit Recording - {{ recording.composition_title }}{% endblock %}
+{% block title %}Edit Recording - {{ recording.composer_family_name }}:
+{{ recording.composition_title }}{% endblock %}
 
 {% block nav %}
   {% include "nav.html" %}

@@ -185,6 +185,7 @@ pub struct RecordingFeedItem {
     pub id: i32,
     pub slug_id: i32,
     pub artist_handle: String,
+    pub composer_family_name: String,
     pub composition_title: String,
     pub movement_index: Option<i32>,
     pub movement_title: Option<String>,
