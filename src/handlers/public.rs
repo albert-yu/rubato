@@ -228,10 +228,7 @@ pub async fn upload_post(
                             };
                         }
                     }
-                    _ => {
-                        // Consume the field to prevent hanging
-                        let _ = field.bytes().await;
-                    }
+                    _ => {}
                 }
             }
             Ok(None) => break,
