@@ -15,7 +15,7 @@ use crate::extractors::{AuthUser, HtmxRequest, OptionalAuthUser};
 use crate::storage::StorageService;
 use crate::view::{
     CompositionPickerTemplate, HtmlTemplate, IndexContentTemplate, IndexTemplate, NotFoundTemplate,
-    ProfileContentTemplate, ProfileTemplate, RecordingContentTemplate,
+    PlayerTemplate, ProfileContentTemplate, ProfileTemplate, RecordingContentTemplate,
     RecordingEditContentTemplate, RecordingEditTemplate, RecordingTemplate,
     SettingsContentTemplate, SettingsTemplate, UploadContentTemplate, UploadTemplate,
 };
@@ -962,4 +962,43 @@ pub async fn recording_delete(
         .unwrap();
 
     Redirect::to(&format!("/{}", handle)).into_response()
+}
+
+pub async fn player(
+    Path((handle, slug_id)): Path<(String, i32)>,
+    State(pool): State<Pool<Postgres>>,
+) -> impl IntoResponse {
+    let recording = match sqlx::query_as::<_, RecordingFeedItem>(
+        r#"
+        SELECT 
+            r.id,
+            r.slug_id,
+            m.handle as artist_handle,
+            (c_mus.family_name || ': ' || c.title) as composition_title,
+            mv.index as movement_index,
+            mv.title as movement_title,
+            r.created_at,
+            r.file_key,
+            r.mime_type,
+            r.notes,
+            r.visibility
+        FROM recordings r
+        JOIN musicians m ON r.artist_id = m.id
+        JOIN compositions c ON r.composition_id = c.id
+        JOIN musicians c_mus ON c.composer_id = c_mus.id
+        LEFT JOIN movements mv ON r.movement_id = mv.id
+        WHERE m.handle = $1 AND r.slug_id = $2
+        "#,
+    )
+    .bind(&handle)
+    .bind(slug_id)
+    .fetch_optional(&pool)
+    .await
+    {
+        Ok(Some(r)) => r,
+        Ok(None) => return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response(),
+        Err(_) => return StatusCode::INTERNAL_SERVER_ERROR.into_response(),
+    };
+
+    HtmlTemplate(PlayerTemplate { recording }).into_response()
 }

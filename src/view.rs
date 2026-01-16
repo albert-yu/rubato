@@ -191,6 +191,12 @@ pub struct SignupTemplate {
 #[template(path = "404.html")]
 pub struct NotFoundTemplate;
 
+#[derive(Template)]
+#[template(path = "player.html")]
+pub struct PlayerTemplate {
+    pub recording: RecordingFeedItem,
+}
+
 pub struct HtmlTemplate<T>(pub T);
 
 impl<T> IntoResponse for HtmlTemplate<T>
