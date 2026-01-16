@@ -179,62 +179,42 @@ pub async fn upload_post(
     let mut visibility = Visibility::Public;
     let mut field_mime = None;
 
-    loop {
-        match multipart.next_field().await {
-            Ok(Some(field)) => {
-                let name = field.name().unwrap_or_default().to_string();
-                tracing::info!("Received field: {}", name);
-                match name.as_str() {
-                    "file" => {
-                        field_mime = field.content_type().map(|s| s.to_string());
-                        match field.bytes().await {
-                            Ok(bytes) => {
-                                tracing::info!("Received file bytes: {} bytes", bytes.len());
-                                file_data = Some(bytes);
-                            }
-                            Err(e) => {
-                                tracing::error!("Failed to read file bytes: {}", e);
-                                return render_error("Failed to read uploaded file.".to_string());
-                            }
-                        }
-                    }
-                    "composition_id" => {
-                        if let Ok(txt) = field.text().await {
-                            tracing::info!("Received composition_id: {}", txt);
-                            composition_id = txt.parse::<i32>().ok();
-                        }
-                    }
-                    "movement_id" => {
-                        if let Ok(txt) = field.text().await {
-                            tracing::info!("Received movement_id: {}", txt);
-                            movement_id = txt.parse::<i32>().ok();
-                        }
-                    }
-                    "notes" => {
-                        if let Ok(txt) = field.text().await {
-                            let txt = txt.trim();
-                            if !txt.is_empty() {
-                                notes = Some(txt.to_string());
-                            }
-                        }
-                    }
-                    "visibility" => {
-                        if let Ok(txt) = field.text().await {
-                            visibility = match txt.to_lowercase().as_str() {
-                                "public" => Visibility::Public,
-                                "unlisted" => Visibility::Unlisted,
-                                "private" => Visibility::Private,
-                                _ => Visibility::Public,
-                            };
-                        }
-                    }
-                    _ => {}
+    while let Ok(Some(field)) = multipart.next_field().await {
+        let name = field.name().unwrap_or_default().to_string();
+        tracing::info!("Received field: {}", name);
+        if name == "file" {
+            field_mime = field.content_type().map(|s| s.to_string());
+            match field.bytes().await {
+                Ok(bytes) => {
+                    tracing::info!("Received file bytes: {} bytes", bytes.len());
+                    file_data = Some(bytes);
+                }
+                Err(e) => {
+                    tracing::error!("Failed to read file bytes: {}", e);
                 }
             }
-            Ok(None) => break,
-            Err(e) => {
-                tracing::error!("Multipart error: {}", e);
-                return render_error("Error processing upload form.".to_string());
+        } else if name == "composition_id" {
+            if let Ok(txt) = field.text().await {
+                tracing::info!("Received composition_id: {}", txt);
+                composition_id = txt.parse::<i32>().ok();
+            }
+        } else if name == "movement_id" {
+            if let Ok(txt) = field.text().await {
+                tracing::info!("Received movement_id: {}", txt);
+                movement_id = txt.parse::<i32>().ok();
+            }
+        } else if name == "notes" {
+            if let Ok(txt) = field.text().await {
+                let txt = txt.trim();
+                if !txt.is_empty() {
+                    notes = Some(txt.to_string());
+                }
+            }
+        } else if name == "visibility" {
+            if let Ok(txt) = field.text().await {
+                if let Ok(v) = serde_json::from_str::<Visibility>(&format!("\"{}\"", txt)) {
+                    visibility = v;
+                }
             }
         }
     }
