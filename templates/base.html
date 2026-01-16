@@ -286,9 +286,12 @@
                   artistLink.textContent = data.artistHandle;
                   artistLink.href = "/" + data.artistHandle;
 
-                  // Update Audio
+                  audio.pause();
+
+                  // Update Audio src
                   audio.src = "/audio/" + data.fileKey;
                   audio.type = data.mimeType;
+                  audio.load();
 
                   // Show Player
                   playerContainer.classList.remove("hidden");
