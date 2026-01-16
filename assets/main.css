@@ -614,7 +614,7 @@ video {
     opacity: 0.3;
   }
 
-  .sonata-card-interactive:hover .sonata-play-button {
+  .sonata-play-button:hover {
     --tw-border-opacity: 1;
     border-color: rgb(232 232 232 / var(--tw-border-opacity));
     --tw-bg-opacity: 1;

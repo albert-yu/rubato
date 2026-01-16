@@ -28,7 +28,7 @@
             @apply opacity-30;
         }
 
-        .sonata-card-interactive:hover .sonata-play-button {
+        .sonata-play-button:hover {
             @apply bg-sonata-pearl text-sonata-black border-sonata-pearl;
         }
     }
