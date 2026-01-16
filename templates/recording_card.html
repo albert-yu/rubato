@@ -1,12 +1,5 @@
 <div
   class="sonata-card sonata-card-interactive group relative cursor-pointer"
-  data-composition-title="{{ recording.composition_title }}"
-  {% if let Some(title) = recording.movement_title %}
-    data-movement-title="{{ title }}"
-  {% endif %}
-  data-artist-handle="{{ recording.artist_handle }}"
-  data-file-key="{{ recording.file_key }}"
-  data-mime-type="{{ recording.mime_type }}"
   onclick="if (!event.target.closest('a')) this.querySelector('h3 a').click()"
 >
   <div
@@ -54,7 +47,10 @@
 
     <button
       class="sonata-play-button w-10 h-10 flex items-center justify-center rounded-full border border-sonata-border transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
-      onclick="playRecording(this.closest('.sonata-card').dataset); event.stopPropagation();"
+      hx-get="/player/{{ recording.artist_handle }}/{{ recording.slug_id }}"
+      hx-target="#player-container"
+      hx-swap="outerHTML"
+      onclick="event.stopPropagation();"
     >
       <span class="w-4 h-4 ml-0.5">{% include "icons/play.svg" %}</span>
     </button>

@@ -278,6 +278,7 @@ async fn main() -> anyhow::Result<()> {
                 .post(public::recording_update)
                 .delete(public::recording_delete),
         )
+        .route("/player/{handle}/{slug_id}", get(public::player))
         .nest_service(
             "/assets",
             ServiceBuilder::new()
