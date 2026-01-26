@@ -957,12 +957,11 @@ async fn run_import(
 
                     // Delete extras
                     if existing_movements.len() > new_movements_data.len() {
-                        for existing in &existing_movements[new_movements_data.len()..] {
-                            let _ = sqlx::query("DELETE FROM movements WHERE id = $1")
-                                .bind(existing.id)
-                                .execute(&pool)
-                                .await;
-                        }
+                        tracing::warn!(
+                            "Import: Composition {} has {} extra movements that were not deleted.",
+                            comp.slug,
+                            existing_movements.len() - new_movements_data.len()
+                        );
                     }
                     success_count += 1;
                 }
