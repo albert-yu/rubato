@@ -913,24 +913,53 @@ async fn run_import(
                     .execute(&pool)
                     .await?;
 
-                    let _ = sqlx::query("DELETE FROM movements WHERE composition_id = $1")
-                        .bind(comp.id)
-                        .execute(&pool)
-                        .await?;
+                    let existing_movements = sqlx::query_as::<_, Movement>(
+                        "SELECT * FROM movements WHERE composition_id = $1 ORDER BY index",
+                    )
+                    .bind(comp.id)
+                    .fetch_all(&pool)
+                    .await?;
 
-                    if let Some(movements) = work.movements {
-                        for (i, mv_title) in movements.iter().enumerate() {
-                            let mv_slug = slugify(&format!(
-                                "{} {} {} {}",
-                                composer.complete_name, title, i, mv_title
-                            ));
-                            let _ = sqlx::query(
-                                    "INSERT INTO movements (slug, title, index, composition_id) VALUES ($1, $2, $3, $4)",
+                    let new_movements_data =
+                        work.movements.as_ref().map(|v| v.as_slice()).unwrap_or(&[]);
+
+                    // Update or Insert
+                    for (i, mv_title) in new_movements_data.iter().enumerate() {
+                        let mv_slug = slugify(&format!(
+                            "{} {} {} {}",
+                            composer.complete_name, title, i, mv_title
+                        ));
+
+                        if i < existing_movements.len() {
+                            let existing = &existing_movements[i];
+                            if existing.title != *mv_title || existing.slug != mv_slug {
+                                let _ = sqlx::query(
+                                    "UPDATE movements SET title = $1, slug = $2 WHERE id = $3",
                                 )
-                                .bind(mv_slug)
                                 .bind(mv_title)
-                                .bind(i as i32)
-                                .bind(comp.id)
+                                .bind(mv_slug)
+                                .bind(existing.id)
+                                .execute(&pool)
+                                .await;
+                            }
+                        } else {
+                            let _ = sqlx::query(
+                                "INSERT INTO movements (slug, title, index, composition_id) VALUES ($1, $2, $3, $4)",
+                            )
+                            .bind(mv_slug)
+                            .bind(mv_title)
+                            .bind(i as i32)
+                            .bind(comp.id)
+                            .execute(&pool)
+                            .await;
+                        }
+                    }
+
+                    // Delete extras
+                    if existing_movements.len() > new_movements_data.len() {
+                        for existing in &existing_movements[new_movements_data.len()..] {
+                            let _ = sqlx::query("DELETE FROM movements WHERE id = $1")
+                                .bind(existing.id)
                                 .execute(&pool)
                                 .await;
                         }
