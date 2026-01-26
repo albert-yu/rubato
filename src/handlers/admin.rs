@@ -647,7 +647,6 @@ pub async fn admin_import_start(
     }
 
     let mut file_content = None;
-    let mut replace_existing = false;
 
     while let Ok(Some(field)) = multipart.next_field().await {
         let name = field.name().unwrap_or_default().to_string();
@@ -664,11 +663,6 @@ pub async fn admin_import_start(
                     }
                 }
                 Err(e) => tracing::error!("Import: Failed to read file bytes: {}", e),
-            }
-        } else if name == "replace_existing" {
-            if let Ok(text) = field.text().await {
-                tracing::info!("Import: replace_existing = {}", text);
-                replace_existing = text == "true";
             }
         }
     }
@@ -697,7 +691,7 @@ pub async fn admin_import_start(
     let cancel_token_mutex_clone = cancel_token_mutex.clone();
 
     tokio::spawn(async move {
-        let result = run_import(pool_clone, cancel_token, job_id, replace_existing, content).await;
+        let result = run_import(pool_clone, cancel_token, job_id, content).await;
 
         let mut lock = cancel_token_mutex_clone.lock().await;
         *lock = None;
@@ -730,7 +724,6 @@ async fn run_import(
     pool: Pool<Postgres>,
     cancel_token: CancellationToken,
     job_id: i32,
-    replace_existing: bool,
     content: String,
 ) -> anyhow::Result<()> {
     let dump: OpenOpusDump = serde_json::from_str(&content)?;
@@ -811,8 +804,6 @@ async fn run_import(
 
                 if !needs_update {
                     success_count += 1;
-                    m.id
-                } else if !replace_existing {
                     m.id
                 } else {
                     let _ = sqlx::query(
@@ -900,8 +891,6 @@ async fn run_import(
                 }
 
                 if !content_changed {
-                    skip_count += 1;
-                } else if !replace_existing {
                     skip_count += 1;
                 } else {
                     let _ = sqlx::query(
