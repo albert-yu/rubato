@@ -60,6 +60,95 @@
           backdrop.classList.toggle("hidden");
         }
       }
+
+      window.handlePlayButtonClick = function (event, button) {
+        event.stopPropagation();
+        const slugId = button.dataset.slugId;
+        const artistHandle = button.dataset.artistHandle;
+        const playerContainer = document.getElementById("player-container");
+        const audio = document.getElementById("audio-player");
+
+        // Check if this track is currently loaded
+        const currentSlugId = playerContainer?.dataset.slugId;
+        const currentArtistHandle = playerContainer?.dataset.artistHandle;
+
+        if (
+          currentSlugId === slugId &&
+          currentArtistHandle === artistHandle &&
+          audio
+        ) {
+          // It is the current track
+          event.preventDefault(); // Prevent default behavior
+          event.stopImmediatePropagation(); // Prevent HTMX from triggering
+          if (audio.paused) {
+            audio.play();
+          } else {
+            audio.pause();
+          }
+        }
+        // Else: let HTMX load the new player
+      };
+
+      window.updatePlayButtonsState = function () {
+        const playerContainer = document.getElementById("player-container");
+        const audio = document.getElementById("audio-player");
+        const buttons = document.querySelectorAll(".sonata-play-button");
+
+        const currentSlugId = playerContainer?.dataset.slugId;
+        const currentArtistHandle = playerContainer?.dataset.artistHandle;
+        const isPlaying = audio && !audio.paused;
+
+        buttons.forEach((btn) => {
+          const btnSlugId = btn.dataset.slugId;
+          const btnArtistHandle = btn.dataset.artistHandle;
+
+          const playIcon = btn.querySelector(".icon-play");
+          const pauseIcon = btn.querySelector(".icon-pause");
+          const playText = btn.querySelector(".text-play");
+          const pauseText = btn.querySelector(".text-pause");
+
+          if (
+            btnSlugId === currentSlugId &&
+            btnArtistHandle === currentArtistHandle
+          ) {
+            // This is the current track
+            if (isPlaying) {
+              playIcon?.classList.add("hidden");
+              pauseIcon?.classList.remove("hidden");
+              playText?.classList.add("hidden");
+              pauseText?.classList.remove("hidden");
+            } else {
+              playIcon?.classList.remove("hidden");
+              pauseIcon?.classList.add("hidden");
+              playText?.classList.remove("hidden");
+              pauseText?.classList.add("hidden");
+            }
+            // Active state style for card buttons
+            if (!btn.classList.contains("sonata-btn")) {
+              btn.classList.remove("md:opacity-0");
+              btn.classList.add("border-sonata-pearl");
+              btn.classList.add("bg-sonata-charcoal");
+            }
+          } else {
+            // Not current track
+            playIcon?.classList.remove("hidden");
+            pauseIcon?.classList.add("hidden");
+            playText?.classList.remove("hidden");
+            pauseText?.classList.add("hidden");
+
+            // Reset active state style for card buttons
+            if (btn.dataset.slugId && !btn.classList.contains("sonata-btn")) {
+               btn.classList.add("md:opacity-0");
+               btn.classList.remove("border-sonata-pearl");
+               btn.classList.remove("bg-sonata-charcoal");
+            }
+          }
+        });
+      };
+
+      document.body.addEventListener("htmx:load", () => {
+        window.updatePlayButtonsState();
+      });
     </script>
   </body>
 </html>
