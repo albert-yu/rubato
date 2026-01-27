@@ -30,10 +30,7 @@ The app will be running at `http://localhost:3000`.
 
 ## Importing composition metadata
 
-Download the full JSON dump from
-[OpenOpus](https://github.com/openopus-org/openopus_api/blob/master/ALLDATA.md).
+Download dump.json from
+[albert-yu/openopus](https://github.com/albert-yu/openopus).
 
 Then, go to /admin/import to import the data via the UI.
-
-NOTE: I have added movements to some pieces ad-hoc. This file is available
-elsewhere.

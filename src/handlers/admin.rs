@@ -647,7 +647,6 @@ pub async fn admin_import_start(
     }
 
     let mut file_content = None;
-    let mut replace_existing = false;
 
     while let Ok(Some(field)) = multipart.next_field().await {
         let name = field.name().unwrap_or_default().to_string();
@@ -664,11 +663,6 @@ pub async fn admin_import_start(
                     }
                 }
                 Err(e) => tracing::error!("Import: Failed to read file bytes: {}", e),
-            }
-        } else if name == "replace_existing" {
-            if let Ok(text) = field.text().await {
-                tracing::info!("Import: replace_existing = {}", text);
-                replace_existing = text == "true";
             }
         }
     }
@@ -697,7 +691,7 @@ pub async fn admin_import_start(
     let cancel_token_mutex_clone = cancel_token_mutex.clone();
 
     tokio::spawn(async move {
-        let result = run_import(pool_clone, cancel_token, job_id, replace_existing, content).await;
+        let result = run_import(pool_clone, cancel_token, job_id, content).await;
 
         let mut lock = cancel_token_mutex_clone.lock().await;
         *lock = None;
@@ -730,7 +724,6 @@ async fn run_import(
     pool: Pool<Postgres>,
     cancel_token: CancellationToken,
     job_id: i32,
-    replace_existing: bool,
     content: String,
 ) -> anyhow::Result<()> {
     let dump: OpenOpusDump = serde_json::from_str(&content)?;
@@ -797,32 +790,38 @@ async fn run_import(
         let death_date = parse_date(composer.death.as_ref());
 
         let musician_id = {
-            let exists = sqlx::query_scalar::<_, bool>(
-                "SELECT EXISTS(SELECT 1 FROM musicians WHERE handle = $1)",
-            )
-            .bind(&handle)
-            .fetch_one(&pool)
-            .await?;
-
-            if exists && !replace_existing {
-                // Fetch existing ID
-                sqlx::query_scalar::<_, i32>("SELECT id FROM musicians WHERE handle = $1")
+            let existing =
+                sqlx::query_as::<_, Musician>("SELECT * FROM musicians WHERE handle = $1")
                     .bind(&handle)
-                    .fetch_one(&pool)
-                    .await?
+                    .fetch_optional(&pool)
+                    .await?;
+
+            if let Some(m) = existing {
+                let needs_update = m.given_name != given_name
+                    || m.family_name != family_name
+                    || m.birth_date != birth_date
+                    || m.death_date != death_date;
+
+                if !needs_update {
+                    success_count += 1;
+                    m.id
+                } else {
+                    let _ = sqlx::query(
+                        "UPDATE musicians SET given_name = $1, family_name = $2, birth_date = $3, death_date = $4 WHERE id = $5",
+                    )
+                    .bind(&given_name)
+                    .bind(&family_name)
+                    .bind(birth_date)
+                    .bind(death_date)
+                    .bind(m.id)
+                    .execute(&pool)
+                    .await?;
+                    success_count += 1;
+                    m.id
+                }
             } else {
-                // Upsert
                 let res = sqlx::query_scalar::<_, i32>(
-                    r#"
-                    INSERT INTO musicians (handle, given_name, family_name, birth_date, death_date) 
-                    VALUES ($1, $2, $3, $4, $5)
-                    ON CONFLICT (handle) DO UPDATE SET
-                        given_name = EXCLUDED.given_name,
-                        family_name = EXCLUDED.family_name,
-                        birth_date = EXCLUDED.birth_date,
-                        death_date = EXCLUDED.death_date
-                    RETURNING id
-                    "#,
+                    "INSERT INTO musicians (handle, given_name, family_name, birth_date, death_date) VALUES ($1, $2, $3, $4, $5) RETURNING id",
                 )
                 .bind(&handle)
                 .bind(&given_name)
@@ -834,17 +833,12 @@ async fn run_import(
 
                 match res {
                     Ok(id) => {
-                        // We count musician success here, or maybe per work?
-                        // Let's count per work item as success to be granular,
-                        // or just count composer as 1 success.
-                        // The previous logic counted items.
-                        // Let's count 1 for composer.
                         success_count += 1;
                         id
                     }
                     Err(_) => {
                         failure_count += 1;
-                        continue; // Skip works if musician failed
+                        continue;
                     }
                 }
             }
@@ -862,25 +856,107 @@ async fn run_import(
             let slug_base = format!("{} {}", composer.complete_name, title);
             let slug = slugify(&slug_base);
 
-            let exists = sqlx::query_scalar::<_, bool>(
-                "SELECT EXISTS(SELECT 1 FROM compositions WHERE slug = $1)",
-            )
-            .bind(&slug)
-            .fetch_one(&pool)
-            .await?;
+            let existing_comp =
+                sqlx::query_as::<_, Composition>("SELECT * FROM compositions WHERE slug = $1")
+                    .bind(&slug)
+                    .fetch_optional(&pool)
+                    .await?;
 
-            if exists && !replace_existing {
-                skip_count += 1;
+            if let Some(comp) = existing_comp {
+                let mut content_changed = comp.title != title || comp.composer_id != musician_id;
+
+                if !content_changed {
+                    let existing_movements = sqlx::query_as::<_, Movement>(
+                        "SELECT * FROM movements WHERE composition_id = $1 ORDER BY index",
+                    )
+                    .bind(comp.id)
+                    .fetch_all(&pool)
+                    .await?;
+
+                    let new_movements =
+                        work.movements.as_ref().map(|v| v.as_slice()).unwrap_or(&[]);
+
+                    if existing_movements.len() != new_movements.len() {
+                        content_changed = true;
+                    } else {
+                        for (i, mv_title) in new_movements.iter().enumerate() {
+                            if existing_movements[i].title != *mv_title
+                                || existing_movements[i].index != i as i32
+                            {
+                                content_changed = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if !content_changed {
+                    skip_count += 1;
+                } else {
+                    let _ = sqlx::query(
+                        "UPDATE compositions SET title = $1, composer_id = $2 WHERE id = $3",
+                    )
+                    .bind(&title)
+                    .bind(musician_id)
+                    .bind(comp.id)
+                    .execute(&pool)
+                    .await?;
+
+                    let existing_movements = sqlx::query_as::<_, Movement>(
+                        "SELECT * FROM movements WHERE composition_id = $1 ORDER BY index",
+                    )
+                    .bind(comp.id)
+                    .fetch_all(&pool)
+                    .await?;
+
+                    let new_movements_data =
+                        work.movements.as_ref().map(|v| v.as_slice()).unwrap_or(&[]);
+
+                    // Update or Insert
+                    for (i, mv_title) in new_movements_data.iter().enumerate() {
+                        let mv_slug = slugify(&format!(
+                            "{} {} {} {}",
+                            composer.complete_name, title, i, mv_title
+                        ));
+
+                        if i < existing_movements.len() {
+                            let existing = &existing_movements[i];
+                            if existing.title != *mv_title || existing.slug != mv_slug {
+                                let _ = sqlx::query(
+                                    "UPDATE movements SET title = $1, slug = $2 WHERE id = $3",
+                                )
+                                .bind(mv_title)
+                                .bind(mv_slug)
+                                .bind(existing.id)
+                                .execute(&pool)
+                                .await;
+                            }
+                        } else {
+                            let _ = sqlx::query(
+                                "INSERT INTO movements (slug, title, index, composition_id) VALUES ($1, $2, $3, $4)",
+                            )
+                            .bind(mv_slug)
+                            .bind(mv_title)
+                            .bind(i as i32)
+                            .bind(comp.id)
+                            .execute(&pool)
+                            .await;
+                        }
+                    }
+
+                    // Delete extras
+                    if existing_movements.len() > new_movements_data.len() {
+                        tracing::warn!(
+                            "Import: Composition {} has {} extra movements that were not deleted.",
+                            comp.slug,
+                            existing_movements.len() - new_movements_data.len()
+                        );
+                    }
+                    success_count += 1;
+                }
             } else {
                 let res = sqlx::query_scalar::<_, i32>(
-                    r#"
-                    INSERT INTO compositions (slug, title, composer_id) 
-                    VALUES ($1, $2, $3)
-                    ON CONFLICT (slug) DO UPDATE SET
-                        title = EXCLUDED.title,
-                        composer_id = EXCLUDED.composer_id
-                    RETURNING id
-                    "#,
+                    "INSERT INTO compositions (slug, title, composer_id) VALUES ($1, $2, $3) RETURNING id",
                 )
                 .bind(&slug)
                 .bind(&title)
@@ -892,11 +968,6 @@ async fn run_import(
                     Ok(composition_id) => {
                         success_count += 1;
                         if let Some(movements) = work.movements {
-                            let _ = sqlx::query("DELETE FROM movements WHERE composition_id = $1")
-                                .bind(composition_id)
-                                .execute(&pool)
-                                .await;
-
                             for (i, mv_title) in movements.iter().enumerate() {
                                 let mv_slug = slugify(&format!(
                                     "{} {} {} {}",
