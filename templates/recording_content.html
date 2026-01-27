@@ -1,3 +1,7 @@
+<title>
+  {{ recording.composition_title }} - {{ recording.artist_handle }} |
+  rubato.club
+</title>
 <div class="max-w-4xl mx-auto py-12">
   <div class="mb-12">
     <a
@@ -49,10 +53,18 @@
       data-slug-id="{{ recording.slug_id }}"
       onclick="window.handlePlayButtonClick(event, this)"
     >
-      <span class="icon-play h-8 w-8 md:h-4 md:w-4">{% include "icons/play.svg" %}</span>
-      <span class="icon-pause h-8 w-8 md:h-4 md:w-4 hidden">{% include "icons/pause.svg" %}</span>
-      <span class="text-play text-xs uppercase tracking-widest">Play Recording</span>
-      <span class="text-pause text-xs uppercase tracking-widest hidden">Pause Recording</span>
+      <span class="icon-play h-8 w-8 md:h-4 md:w-4"
+        >{% include "icons/play.svg" %}</span
+      >
+      <span class="icon-pause h-8 w-8 md:h-4 md:w-4 hidden"
+        >{% include "icons/pause.svg" %}</span
+      >
+      <span class="text-play text-xs uppercase tracking-widest"
+        >Play Recording</span
+      >
+      <span class="text-pause text-xs uppercase tracking-widest hidden"
+        >Pause Recording</span
+      >
     </button>
 
     {% if let Some(user) = current_user %}
