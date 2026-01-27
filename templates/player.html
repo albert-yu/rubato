@@ -7,6 +7,7 @@
     data-movement-title="{{ title }}"
   {% endif %}
   data-artist-handle="{{ recording.artist_handle }}"
+  data-slug-id="{{ recording.slug_id }}"
 >
   <div
     class="bg-sonata-charcoal border-t border-sonata-border p-4 lg:p-6 flex flex-col lg:flex-row items-center justify-between shadow-2xl"
@@ -418,6 +419,15 @@
           loadingIndicator.classList.add("hidden");
           errorIndicator.classList.remove("hidden");
         });
+
+        const updateExternal = () => {
+            if (window.updatePlayButtonsState) window.updatePlayButtonsState();
+        };
+        audio.addEventListener('play', updateExternal);
+        audio.addEventListener('pause', updateExternal);
+        audio.addEventListener('ended', updateExternal);
+        audio.addEventListener('loadedmetadata', updateExternal);
+        updateExternal();
       })();
     </script>
   </div>
