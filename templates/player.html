@@ -421,12 +421,12 @@
         });
 
         const updateExternal = () => {
-            if (window.updatePlayButtonsState) window.updatePlayButtonsState();
+          if (window.updatePlayButtonsState) window.updatePlayButtonsState();
         };
-        audio.addEventListener('play', updateExternal);
-        audio.addEventListener('pause', updateExternal);
-        audio.addEventListener('ended', updateExternal);
-        audio.addEventListener('loadedmetadata', updateExternal);
+        audio.addEventListener("play", updateExternal);
+        audio.addEventListener("pause", updateExternal);
+        audio.addEventListener("ended", updateExternal);
+        audio.addEventListener("loadedmetadata", updateExternal);
         updateExternal();
       })();
     </script>
