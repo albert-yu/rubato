@@ -2080,8 +2080,16 @@ video {
     box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
   }
 
+  .md\:disabled\:opacity-0:disabled {
+    opacity: 0;
+  }
+
   .group:hover .md\:group-hover\:opacity-100 {
     opacity: 1;
+  }
+
+  .group:hover .md\:group-hover\:disabled\:opacity-20:disabled {
+    opacity: 0.2;
   }
 }
 

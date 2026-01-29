@@ -76,7 +76,7 @@
 
     <div class="flex gap-2">
       <button
-        class="w-10 h-10 flex items-center justify-center rounded-full border border-sonata-border transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-sonata-charcoal md:bg-transparent hover:bg-sonata-pearl hover:text-sonata-black hover:border-sonata-pearl disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-inherit disabled:hover:border-sonata-border"
+        class="w-10 h-10 flex items-center justify-center rounded-full border border-sonata-border transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-sonata-charcoal md:bg-transparent hover:bg-sonata-pearl hover:text-sonata-black hover:border-sonata-pearl disabled:opacity-20 md:disabled:opacity-0 md:group-hover:disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-inherit disabled:hover:border-sonata-border"
         {% if recording.visibility == Visibility::Private %}
           disabled title="Private recordings cannot be shared"
         {% else %}
