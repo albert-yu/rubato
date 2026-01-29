@@ -171,6 +171,7 @@ pub struct AdminRecordingEditTemplate {
     pub musicians: Vec<Musician>,
     pub current_user: Option<User>,
     pub active_nav: &'static str,
+    pub composition_display: Option<String>,
 }
 
 #[derive(Template)]

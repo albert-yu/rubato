@@ -478,6 +478,7 @@ pub async fn admin_recording_new(
         musicians,
         current_user: Some(auth.0),
         active_nav: "recordings",
+        composition_display: None,
     })
     .into_response()
 }
@@ -521,11 +522,79 @@ pub async fn admin_recording_edit(
         .fetch_all(&pool)
         .await
         .unwrap_or_default();
+
+    let composition_display = if recording.composition_id != 0 {
+        if let Some(movement_id) = recording.movement_id {
+            let row = sqlx::query(
+                r#"
+                SELECT 
+                    c.title,
+                    m.title,
+                    m.index,
+                    mus.given_name || ' ' || mus.family_name
+                FROM compositions c
+                JOIN musicians mus ON c.composer_id = mus.id
+                JOIN movements m ON m.id = $2
+                WHERE c.id = $1
+                "#,
+            )
+            .bind(recording.composition_id)
+            .bind(movement_id)
+            .fetch_optional(&pool)
+            .await
+            .unwrap_or(None);
+
+            if let Some(row) = row {
+                use sqlx::Row;
+                let c_title: String = row.get(0);
+                let m_title: String = row.get(1);
+                let m_index: i32 = row.get(2);
+                let composer: String = row.get(3);
+                Some(format!(
+                    "{}: {} {}. {}",
+                    composer,
+                    c_title,
+                    m_index + 1,
+                    m_title
+                ))
+            } else {
+                None
+            }
+        } else {
+            let row = sqlx::query(
+                r#"
+                SELECT 
+                    c.title,
+                    mus.given_name || ' ' || mus.family_name
+                FROM compositions c
+                JOIN musicians mus ON c.composer_id = mus.id
+                WHERE c.id = $1
+                "#,
+            )
+            .bind(recording.composition_id)
+            .fetch_optional(&pool)
+            .await
+            .unwrap_or(None);
+
+            if let Some(row) = row {
+                use sqlx::Row;
+                let c_title: String = row.get(0);
+                let composer: String = row.get(1);
+                Some(format!("{}: {}", composer, c_title))
+            } else {
+                None
+            }
+        }
+    } else {
+        None
+    };
+
     HtmlTemplate(AdminRecordingEditTemplate {
         recording,
         musicians,
         current_user: Some(auth.0),
         active_nav: "recordings",
+        composition_display,
     })
     .into_response()
 }

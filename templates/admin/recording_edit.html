@@ -53,37 +53,53 @@
         </div>
 
         <div>
-          <label
-            for="composition_id"
-            class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2"
-            >Composition ID</label
-          >
-          <input
-            type="number"
-            name="composition_id"
-            id="composition_id"
-            value="{% if recording.id != 0 %}{{ recording.composition_id }}{% endif %}"
-            required
-            class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
-          />
-        </div>
-
-        <div>
-          <label
-            for="movement_id"
-            class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2"
-            >Movement ID (Optional)</label
-          >
-          <input
-            type="number"
-            name="movement_id"
-            id="movement_id"
-            value="{% if let Some(mid) = recording.movement_id %}{{ mid }}{% endif %}"
-            class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
-          />
-          <p class="text-[10px] text-sonata-slate mt-1 italic">
-            Leave blank if there is no specific movement.
-          </p>
+          {% if let Some(display) = composition_display %}
+            <div id="composition-picker" class="relative">
+              <label
+                class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2"
+                >Selected Repertoire</label
+              >
+              <input
+                type="hidden"
+                name="composition_id"
+                value="{{ recording.composition_id }}"
+                required
+              />
+              {% if let Some(mid) = recording.movement_id %}
+                <input type="hidden" name="movement_id" value="{{ mid }}" />
+              {% endif %}
+              <div
+                class="flex items-center justify-between p-4 border border-sonata-charcoal rounded-sm bg-sonata-black"
+              >
+                <span class="text-xs font-light text-sonata-pearl"
+                  >{{ display }}</span
+                >
+                <button
+                  type="button"
+                  hx-get="/upload/reset-composition"
+                  hx-target="#composition-picker"
+                  hx-swap="outerHTML"
+                  class="text-sonata-slate hover:text-sonata-pearl transition-colors"
+                >
+                  <svg
+                    class="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="1"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          {% else %}
+            {% include "composition_picker.html" %}
+          {% endif %}
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
