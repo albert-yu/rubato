@@ -91,12 +91,14 @@ pub struct RecordingContentTemplate {
 pub struct RecordingEditTemplate {
     pub current_user: Option<User>,
     pub recording: RecordingFeedItem,
+    pub composition_display: Option<String>,
 }
 
 #[derive(Template)]
 #[template(path = "recording_edit_content.html")]
 pub struct RecordingEditContentTemplate {
     pub recording: RecordingFeedItem,
+    pub composition_display: Option<String>,
 }
 
 #[derive(Template)]

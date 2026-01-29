@@ -8,11 +8,8 @@
       &larr; Back to Recording
     </a>
     <h1 class="text-4xl font-light tracking-tight text-sonata-pearl mt-4 mb-2">
-      Edit Notes
+      Edit Recording
     </h1>
-    <p class="text-sonata-slate font-light">
-      {{ recording.composer_family_name }}: {{ recording.composition_title }}
-    </p>
   </div>
 
   <form
@@ -22,6 +19,54 @@
     hx-target="#main-content"
     class="space-y-8"
   >
+    <div>
+      {% if let Some(display) = composition_display %}
+        <div id="composition-picker" class="relative">
+          <label
+            class="block text-xs uppercase tracking-widest font-light text-sonata-slate mb-2"
+            >Selected Repertoire</label
+          >
+          <input
+            type="hidden"
+            name="composition_id"
+            value="{{ recording.composition_id }}"
+            required
+          />
+          {% if let Some(mid) = recording.movement_id %}
+            <input type="hidden" name="movement_id" value="{{ mid }}" />
+          {% endif %}
+          <div
+            class="flex items-center justify-between p-4 border border-sonata-charcoal rounded-sm bg-sonata-black"
+          >
+            <span class="text-xs font-light text-sonata-pearl">{{ display }}</span>
+            <button
+              type="button"
+              hx-get="/upload/reset-composition"
+              hx-target="#composition-picker"
+              hx-swap="outerHTML"
+              class="text-sonata-slate hover:text-sonata-pearl transition-colors"
+            >
+              <svg
+                class="h-4 w-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="1"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      {% else %}
+        {% include "composition_picker.html" %}
+      {% endif %}
+    </div>
+
     <div>
       <label
         for="notes"

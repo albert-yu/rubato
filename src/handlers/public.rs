@@ -10,7 +10,9 @@ use sqlx::{Pool, Postgres};
 use std::sync::Arc;
 use uuid::Uuid;
 
-use crate::db::{CreateMusician, Musician, RecordingFeedItem, Visibility};
+use crate::db::{
+    CreateMusician, Musician, RecordingFeedItem, Visibility, empty_string_as_none_i32,
+};
 use crate::extractors::{AuthUser, HtmxRequest, OptionalAuthUser};
 use crate::storage::StorageService;
 use crate::view::{
@@ -50,7 +52,9 @@ pub async fn index(
             r.slug_id,
             m.handle as artist_handle,
             c_mus.family_name as composer_family_name,
+            c.id as composition_id,
             c.title as composition_title,
+            mv.id as movement_id,
             mv.index as movement_index,
             mv.title as movement_title,
             r.created_at,
@@ -613,7 +617,9 @@ pub async fn profile(
                 r.slug_id,
                 m.handle as artist_handle,
                 c_mus.family_name as composer_family_name,
-            c.title as composition_title,
+                c.id as composition_id,
+                c.title as composition_title,
+                mv.id as movement_id,
                 mv.index as movement_index,
                 mv.title as movement_title,
                 r.created_at,
@@ -645,7 +651,9 @@ pub async fn profile(
                 r.slug_id,
                 m.handle as artist_handle,
                 c_mus.family_name as composer_family_name,
-            c.title as composition_title,
+                c.id as composition_id,
+                c.title as composition_title,
+                mv.id as movement_id,
                 mv.index as movement_index,
                 mv.title as movement_title,
                 r.created_at,
@@ -705,7 +713,9 @@ pub async fn recording_detail(
             r.slug_id,
             m.handle as artist_handle,
             c_mus.family_name as composer_family_name,
+            c.id as composition_id,
             c.title as composition_title,
+            mv.id as movement_id,
             mv.index as movement_index,
             mv.title as movement_title,
             r.created_at,
@@ -770,7 +780,9 @@ pub async fn recording_edit(
             r.slug_id,
             m.handle as artist_handle,
             c_mus.family_name as composer_family_name,
+            c.id as composition_id,
             c.title as composition_title,
+            mv.id as movement_id,
             mv.index as movement_index,
             mv.title as movement_title,
             r.created_at,
@@ -800,12 +812,34 @@ pub async fn recording_edit(
         return StatusCode::FORBIDDEN.into_response();
     }
 
+    let composition_display = if let Some(mov_title) = &recording.movement_title
+        && let Some(mov_idx) = recording.movement_index
+    {
+        Some(format!(
+            "{}: {} {}. {}",
+            recording.composer_family_name,
+            recording.composition_title,
+            mov_idx + 1,
+            mov_title
+        ))
+    } else {
+        Some(format!(
+            "{}: {}",
+            recording.composer_family_name, recording.composition_title
+        ))
+    };
+
     if htmx.is_hx_boosted {
-        HtmlTemplate(RecordingEditContentTemplate { recording }).into_response()
+        HtmlTemplate(RecordingEditContentTemplate {
+            recording,
+            composition_display,
+        })
+        .into_response()
     } else {
         HtmlTemplate(RecordingEditTemplate {
             current_user: Some(auth.0),
             recording,
+            composition_display,
         })
         .into_response()
     }
@@ -815,6 +849,10 @@ pub async fn recording_edit(
 pub struct UpdateRecording {
     pub notes: String,
     pub visibility: Visibility,
+    pub composition_id: i32,
+    #[serde(default)]
+    #[serde(deserialize_with = "empty_string_as_none_i32")]
+    pub movement_id: Option<i32>,
 }
 
 pub async fn recording_update(
@@ -831,7 +869,9 @@ pub async fn recording_update(
             r.slug_id,
             m.handle as artist_handle,
             c_mus.family_name as composer_family_name,
+            c.id as composition_id,
             c.title as composition_title,
+            mv.id as movement_id,
             mv.index as movement_index,
             mv.title as movement_title,
             r.created_at,
@@ -862,13 +902,15 @@ pub async fn recording_update(
     }
 
     // 2. Update notes and visibility
-    let _ = sqlx::query("UPDATE recordings SET notes = $1, visibility = $2 WHERE id = $3")
+    let _ = sqlx::query("UPDATE recordings SET notes = $1, visibility = $2, composition_id = $3, movement_id = $4 WHERE id = $5")
         .bind(if form.notes.trim().is_empty() {
             None
         } else {
             Some(form.notes.trim())
         })
         .bind(form.visibility)
+        .bind(form.composition_id)
+        .bind(form.movement_id)
         .bind(recording.id)
         .execute(&pool)
         .await
@@ -882,7 +924,9 @@ pub async fn recording_update(
                 r.slug_id,
                 m.handle as artist_handle,
                 c_mus.family_name as composer_family_name,
-            c.title as composition_title,
+                c.id as composition_id,
+                c.title as composition_title,
+                mv.id as movement_id,
                 mv.index as movement_index,
                 mv.title as movement_title,
                 r.created_at,
@@ -982,7 +1026,9 @@ pub async fn player(
             r.slug_id,
             m.handle as artist_handle,
             c_mus.family_name as composer_family_name,
+            c.id as composition_id,
             c.title as composition_title,
+            mv.id as movement_id,
             mv.index as movement_index,
             mv.title as movement_title,
             r.created_at,

@@ -186,7 +186,9 @@ pub struct RecordingFeedItem {
     pub slug_id: i32,
     pub artist_handle: String,
     pub composer_family_name: String,
+    pub composition_id: i32,
     pub composition_title: String,
+    pub movement_id: Option<i32>,
     pub movement_index: Option<i32>,
     pub movement_title: Option<String>,
     pub created_at: chrono::DateTime<chrono::Utc>,
@@ -197,7 +199,7 @@ pub struct RecordingFeedItem {
 }
 
 // Helpers for deserialization
-fn empty_string_as_none<'de, D, T>(de: D) -> Result<Option<T>, D::Error>
+pub fn empty_string_as_none<'de, D, T>(de: D) -> Result<Option<T>, D::Error>
 where
     D: serde::Deserializer<'de>,
     T: serde::Deserialize<'de>,
@@ -209,7 +211,7 @@ where
     }
 }
 
-fn empty_string_as_none_i32<'de, D>(de: D) -> Result<Option<i32>, D::Error>
+pub fn empty_string_as_none_i32<'de, D>(de: D) -> Result<Option<i32>, D::Error>
 where
     D: serde::Deserializer<'de>,
 {
