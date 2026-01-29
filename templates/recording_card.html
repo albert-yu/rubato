@@ -1,72 +1,81 @@
 <div
-  class="sonata-card sonata-card-interactive group relative cursor-pointer"
-  onclick="if (!event.target.closest('a')) this.querySelector('h3 a').click()"
+  class="sonata-card sonata-card-interactive group relative cursor-pointer flex flex-col"
+  onclick="if (!event.target.closest('a') && !event.target.closest('button')) this.querySelector('h3 a').click()"
 >
-  <div
-    class="mb-6 flex justify-between items-start text-[10px] tracking-widest text-sonata-slate uppercase font-light"
-  >
-    <span>{{ recording.created_at.format("%m.%d.%Y") }}</span>
-    {% if recording.visibility == Visibility::Unlisted %}
-      <span
-        class="px-2 py-0.5 border border-sonata-charcoal text-sonata-slate rounded-full text-[9px]"
-        >Unlisted</span
+  <div>
+    <div class="mb-4 flex justify-between items-start">
+      <div
+        class="text-xs tracking-widest uppercase font-light text-sonata-slate"
       >
-    {% else if recording.visibility == Visibility::Private %}
-      <span
-        class="px-2 py-0.5 bg-red-900/10 border border-red-900/30 text-red-400/80 rounded-full text-[9px]"
-        >Private</span
-      >
-    {% endif %}
-  </div>
-
-  <div
-    class="text-xs tracking-widest uppercase font-light text-sonata-slate mb-1"
-  >
-    {{ recording.composer_family_name }}
-  </div>
-
-  {% if let Some(title) = recording.movement_title %}
-    <div class="text-sm font-light text-sonata-slate mb-1">
-      {{ recording.composition_title }}
+        {{ recording.composer_family_name }}
+      </div>
+      <div class="flex gap-2">
+        {% if recording.visibility == Visibility::Unlisted %}
+          <span
+            class="px-2 py-0.5 border border-sonata-charcoal text-sonata-slate rounded-full text-[9px] uppercase tracking-wider"
+            >Unlisted</span
+          >
+        {% else if recording.visibility == Visibility::Private %}
+          <span
+            class="px-2 py-0.5 bg-red-900/10 border border-red-900/30 text-red-400/80 rounded-full text-[9px] uppercase tracking-wider"
+            >Private</span
+          >
+        {% endif %}
+      </div>
     </div>
-    <h3
-      class="text-xl font-light tracking-tight text-sonata-pearl mb-2 group-hover:text-white transition-colors"
-    >
-      <a
-        href="/{{ recording.artist_handle }}/recordings/{{ recording.slug_id }}"
-        hx-boost="true"
-        hx-target="#main-content"
-        class="decoration-sonata-slate"
-      >
-        {{ title }}
-      </a>
-    </h3>
-  {% else %}
-    <h3
-      class="text-xl font-light tracking-tight text-sonata-pearl mb-2 group-hover:text-white transition-colors"
-    >
-      <a
-        href="/{{ recording.artist_handle }}/recordings/{{ recording.slug_id }}"
-        hx-boost="true"
-        hx-target="#main-content"
-        class="decoration-sonata-slate"
-      >
-        {{ recording.composition_title }}
-      </a>
-    </h3>
-  {% endif %}
 
-  <div class="mt-6 flex justify-between items-center">
-    <a
-      href="/{{ recording.artist_handle }}"
-      hx-boost="true"
-      hx-target="#main-content"
-      class="text-xs tracking-widest uppercase font-light text-sonata-slate hover:text-sonata-pearl transition-colors relative z-10"
-      >@{{ recording.artist_handle }}</a
-    >
+    <div class="mb-6">
+      {% if let Some(title) = recording.movement_title %}
+        <div class="text-sm font-light text-sonata-slate mb-1">
+          {{ recording.composition_title }}
+        </div>
+        <h3
+          class="text-xl font-light tracking-tight text-sonata-pearl group-hover:text-white transition-colors"
+        >
+          <a
+            href="/{{ recording.artist_handle }}/recordings/{{ recording.slug_id }}"
+            hx-boost="true"
+            hx-target="#main-content"
+            class="decoration-sonata-slate block"
+          >
+            {{ title }}
+          </a>
+        </h3>
+      {% else %}
+        <h3
+          class="text-xl font-light tracking-tight text-sonata-pearl group-hover:text-white transition-colors"
+        >
+          <a
+            href="/{{ recording.artist_handle }}/recordings/{{ recording.slug_id }}"
+            hx-boost="true"
+            hx-target="#main-content"
+            class="decoration-sonata-slate block"
+          >
+            {{ recording.composition_title }}
+          </a>
+        </h3>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="flex justify-between items-end mt-auto">
+    <div class="flex flex-col gap-1">
+      <a
+        href="/{{ recording.artist_handle }}"
+        hx-boost="true"
+        hx-target="#main-content"
+        class="text-xs tracking-widest uppercase font-light text-sonata-pearl hover:text-white transition-colors relative z-10"
+        >@{{ recording.artist_handle }}</a
+      >
+      <span
+        class="text-[10px] tracking-widest uppercase text-sonata-slate/60 font-light"
+      >
+        {{ recording.created_at.format("%m.%d.%Y") }}
+      </span>
+    </div>
 
     <button
-      class="sonata-play-button w-10 h-10 flex items-center justify-center rounded-full border border-sonata-border transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100"
+      class="sonata-play-button w-10 h-10 flex items-center justify-center rounded-full border border-sonata-border transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-sonata-charcoal md:bg-transparent"
       hx-get="/player/{{ recording.artist_handle }}/{{ recording.slug_id }}"
       hx-target="#player-container"
       hx-swap="outerHTML"
