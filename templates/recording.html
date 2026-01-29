@@ -1,7 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}{{ recording.composition_title }} -
-{{ recording.artist_handle }} | rubato.club{% endblock %}
+{% block title %}
+  {% if let Some(title) = recording.movement_title %}
+    {{ title }}
+    ({{ recording.composition_title }})
+  {% else %}
+    {{ recording.composition_title }}
+  {% endif %}
+  - {{ recording.artist_handle }} | rubato.club
+{% endblock %}
 
 {% block nav %}
   {% include "nav.html" %}

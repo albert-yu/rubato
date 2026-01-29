@@ -1,6 +1,11 @@
 <title>
-  {{ recording.composition_title }} - {{ recording.artist_handle }} |
-  rubato.club
+  {% if let Some(title) = recording.movement_title %}
+    {{ title }}
+    ({{ recording.composition_title }})
+  {% else %}
+    {{ recording.composition_title }}
+  {% endif %}
+  - {{ recording.artist_handle }} | rubato.club
 </title>
 <div class="max-w-4xl mx-auto py-12">
   <div class="mb-12">
@@ -17,12 +22,20 @@
     >
       {{ recording.composer_family_name }}
     </div>
-    <h1 class="text-3xl font-light tracking-tight text-sonata-pearl mt-4 mb-2">
-      {{ recording.composition_title }}
-    </h1>
 
     {% if let Some(title) = recording.movement_title %}
-      <div class="text-xl font-light text-sonata-slate">{{ title }}</div>
+      <div class="text-lg font-light text-sonata-slate mt-4 mb-1">
+        {{ recording.composition_title }}
+      </div>
+      <h1 class="text-3xl font-light tracking-tight text-sonata-pearl mb-2">
+        {{ title }}
+      </h1>
+    {% else %}
+      <h1
+        class="text-3xl font-light tracking-tight text-sonata-pearl mt-4 mb-2"
+      >
+        {{ recording.composition_title }}
+      </h1>
     {% endif %}
 
     <div
