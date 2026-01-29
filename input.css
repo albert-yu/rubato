@@ -21,7 +21,7 @@
 
     @media (hover: hover) {
         .sonata-card-interactive:hover {
-            @apply -translate-y-2 border-sonata-border-hover;
+            @apply border-sonata-border-hover;
         }
 
         .sonata-card-interactive:hover::before {
