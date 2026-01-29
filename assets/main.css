@@ -893,13 +893,6 @@ video {
   -webkit-line-clamp: 1;
 }
 
-.line-clamp-2 {
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
 .block {
   display: block;
 }
@@ -1326,10 +1319,6 @@ video {
 
 .border-sonata-border\/30 {
   border-color: rgb(42 42 42 / 0.3);
-}
-
-.border-sonata-border\/50 {
-  border-color: rgb(42 42 42 / 0.5);
 }
 
 .border-sonata-charcoal {
