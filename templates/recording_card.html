@@ -3,7 +3,7 @@
   onclick="if (!event.target.closest('a')) this.querySelector('h3 a').click()"
 >
   <div
-    class="mb-8 flex justify-between items-start text-[10px] tracking-widest text-sonata-slate uppercase font-light"
+    class="mb-6 flex justify-between items-start text-[10px] tracking-widest text-sonata-slate uppercase font-light"
   >
     <span>{{ recording.created_at.format("%m.%d.%Y") }}</span>
     {% if recording.visibility == Visibility::Unlisted %}
@@ -30,7 +30,7 @@
       {{ recording.composition_title }}
     </div>
     <h3
-      class="text-xl font-light tracking-tight text-sonata-pearl mb-4 group-hover:text-white transition-colors"
+      class="text-xl font-light tracking-tight text-sonata-pearl mb-2 group-hover:text-white transition-colors"
     >
       <a
         href="/{{ recording.artist_handle }}/recordings/{{ recording.slug_id }}"
@@ -56,7 +56,7 @@
     </h3>
   {% endif %}
 
-  <div class="mt-12 flex justify-between items-center">
+  <div class="mt-6 flex justify-between items-center">
     <a
       href="/{{ recording.artist_handle }}"
       hx-boost="true"
@@ -85,7 +85,7 @@
 
   {% if let Some(notes) = recording.notes %}
     <div
-      class="mt-6 pt-6 border-t border-sonata-border/50 text-[11px] text-sonata-slate font-light leading-relaxed line-clamp-2"
+      class="mt-4 pt-4 border-t border-sonata-border/50 text-[11px] text-sonata-slate font-light leading-relaxed line-clamp-2"
     >
       {{ notes }}
     </div>

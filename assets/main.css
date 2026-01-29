@@ -589,12 +589,6 @@ video {
   padding: 1.5rem;
 }
 
-@media (min-width: 768px) {
-  .sonata-card {
-    padding: 2.5rem;
-  }
-}
-
 .sonata-card-interactive {
   cursor: pointer;
   transition-property: all;

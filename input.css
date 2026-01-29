@@ -12,7 +12,7 @@
     }
 
     .sonata-card {
-        @apply bg-card-gradient border border-sonata-border rounded-sm p-6 md:p-10 relative overflow-hidden;
+        @apply bg-card-gradient border border-sonata-border rounded-sm p-6 relative overflow-hidden;
     }
 
     .sonata-card-interactive {
