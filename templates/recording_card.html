@@ -74,21 +74,37 @@
       </span>
     </div>
 
-    <button
-      class="sonata-play-button w-10 h-10 flex items-center justify-center rounded-full border border-sonata-border transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-sonata-charcoal md:bg-transparent"
-      hx-get="/player/{{ recording.artist_handle }}/{{ recording.slug_id }}"
-      hx-target="#player-container"
-      hx-swap="outerHTML"
-      data-artist-handle="{{ recording.artist_handle }}"
-      data-slug-id="{{ recording.slug_id }}"
-      onclick="window.handlePlayButtonClick(event, this)"
-    >
-      <span class="icon-play w-4 h-4 ml-0.5"
-        >{% include "icons/play.svg" %}</span
+    <div class="flex gap-2">
+      <button
+        class="w-10 h-10 flex items-center justify-center rounded-full border border-sonata-border transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-sonata-charcoal md:bg-transparent hover:bg-sonata-pearl hover:text-sonata-black hover:border-sonata-pearl disabled:opacity-20 md:disabled:opacity-0 md:group-hover:disabled:opacity-20 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-inherit disabled:hover:border-sonata-border"
+        {% if recording.visibility == Visibility::Private %}
+          disabled title="Private recordings cannot be shared"
+        {% else %}
+          onclick="event.stopPropagation();
+          navigator.clipboard.writeText(window.location.origin +
+          '/{{ recording.artist_handle }}/recordings/{{ recording.slug_id }}');"
+          title="Copy link"
+        {% endif %}
       >
-      <span class="icon-pause w-4 h-4 hidden"
-        >{% include "icons/pause.svg" %}</span
+        <span class="w-4 h-4">{% include "icons/share.svg" %}</span>
+      </button>
+
+      <button
+        class="sonata-play-button w-10 h-10 flex items-center justify-center rounded-full border border-sonata-border transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-sonata-charcoal md:bg-transparent"
+        hx-get="/player/{{ recording.artist_handle }}/{{ recording.slug_id }}"
+        hx-target="#player-container"
+        hx-swap="outerHTML"
+        data-artist-handle="{{ recording.artist_handle }}"
+        data-slug-id="{{ recording.slug_id }}"
+        onclick="window.handlePlayButtonClick(event, this)"
       >
-    </button>
+        <span class="icon-play w-4 h-4 ml-0.5"
+          >{% include "icons/play.svg" %}</span
+        >
+        <span class="icon-pause w-4 h-4 hidden"
+          >{% include "icons/pause.svg" %}</span
+        >
+      </button>
+    </div>
   </div>
 </div>
