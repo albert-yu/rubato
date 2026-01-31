@@ -10,7 +10,7 @@
     "build:css": "tailwindcss -i ./input.css -o ./assets/main.css",
     "dev": "cargo run",
     "db:nuke": "docker compose down -v && docker compose up -d",
-    "format": "prettier --write \"templates/**/*.html\""
+    "format": "cargo fmt && prettier --write \"templates/**/*.html\""
   },
   "type": "commonjs",
   "devDependencies": {
