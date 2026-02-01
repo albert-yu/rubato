@@ -1016,15 +1016,17 @@ async fn run_import(
                     // Delete extras
                     if existing_movements.len() > new_movements_data.len() {
                         tracing::info!(
-                            "Import: Deleting {} extra movements for composition {}.",
+                            "Import: Deleting {} extra movement(s) for composition {}.",
                             existing_movements.len() - new_movements_data.len(),
                             comp.slug
                         );
                         for movement in existing_movements.iter().skip(new_movements_data.len()) {
-                            let _ = sqlx::query("UPDATE recordings SET movement_id = NULL WHERE movement_id = $1")
-                                .bind(movement.id)
-                                .execute(&pool)
-                                .await;
+                            let _ = sqlx::query(
+                                "UPDATE recordings SET movement_id = NULL WHERE movement_id = $1",
+                            )
+                            .bind(movement.id)
+                            .execute(&pool)
+                            .await;
                             let _ = sqlx::query("DELETE FROM movements WHERE id = $1")
                                 .bind(movement.id)
                                 .execute(&pool)
