@@ -5,3 +5,4 @@ uploads/
 imslp/
 openopus/
 .DS_Store
+*.log
