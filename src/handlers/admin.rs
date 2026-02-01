@@ -645,7 +645,6 @@ pub struct OpenOpusComposer {
 #[derive(Deserialize)]
 pub struct OpenOpusWork {
     pub title: String,
-    pub genre: Option<String>,
     pub movements: Option<Vec<String>>,
 }
 
@@ -904,34 +903,6 @@ async fn run_import(
             if cancel_token.is_cancelled() {
                 update_job!(ImportJobStatus::Cancelled);
                 return Ok(());
-            }
-
-            if work.genre.as_deref() == Some("Stage") {
-                let slug_base = format!("{} {}", composer.complete_name, work.title);
-                let slug = slugify(&slug_base);
-
-                let existing =
-                    sqlx::query_scalar::<_, i32>("SELECT id FROM compositions WHERE slug = $1")
-                        .bind(&slug)
-                        .fetch_optional(&pool)
-                        .await?;
-
-                if let Some(comp_id) = existing {
-                    let _ = sqlx::query("DELETE FROM recordings WHERE composition_id = $1")
-                        .bind(comp_id)
-                        .execute(&pool)
-                        .await;
-                    let _ = sqlx::query("DELETE FROM movements WHERE composition_id = $1")
-                        .bind(comp_id)
-                        .execute(&pool)
-                        .await;
-                    let _ = sqlx::query("DELETE FROM compositions WHERE id = $1")
-                        .bind(comp_id)
-                        .execute(&pool)
-                        .await;
-                    tracing::info!("Import: Deleted Stage work {}", slug);
-                }
-                continue;
             }
 
             let title = work.title;
