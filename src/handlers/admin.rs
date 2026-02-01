@@ -784,9 +784,11 @@ async fn run_import(
     let _ = sqlx::query("DELETE FROM movements WHERE composition_id IN (SELECT id FROM compositions WHERE id NOT IN (SELECT composition_id FROM recordings))")
         .execute(&pool)
         .await;
-    let _ = sqlx::query("DELETE FROM compositions WHERE id NOT IN (SELECT composition_id FROM recordings)")
-        .execute(&pool)
-        .await;
+    let _ = sqlx::query(
+        "DELETE FROM compositions WHERE id NOT IN (SELECT composition_id FROM recordings)",
+    )
+    .execute(&pool)
+    .await;
 
     let dump: OpenOpusDump = serde_json::from_str(&content)?;
 
