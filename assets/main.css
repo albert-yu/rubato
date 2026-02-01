@@ -802,10 +802,6 @@ video {
   margin-bottom: 0px;
 }
 
-.mb-0\.5 {
-  margin-bottom: 0.125rem;
-}
-
 .mb-1 {
   margin-bottom: 0.25rem;
 }
@@ -1331,6 +1327,10 @@ video {
   border-color: rgb(232 232 232 / var(--tw-border-opacity));
 }
 
+.border-sonata-pearl\/20 {
+  border-color: rgb(232 232 232 / 0.2);
+}
+
 .bg-black\/80 {
   background-color: rgb(0 0 0 / 0.8);
 }
@@ -1639,6 +1639,14 @@ video {
   line-height: 1.625;
 }
 
+.tracking-\[0\.15em\] {
+  letter-spacing: 0.15em;
+}
+
+.tracking-\[0\.1em\] {
+  letter-spacing: 0.1em;
+}
+
 .tracking-\[0\.2em\] {
   letter-spacing: 0.2em;
 }
@@ -1878,6 +1886,10 @@ video {
   display: none;
 }
 
+.hover\:border-sonata-pearl\/50:hover {
+  border-color: rgb(232 232 232 / 0.5);
+}
+
 .hover\:\!bg-red-900\/20:hover {
   background-color: rgb(127 29 29 / 0.2) !important;
 }
@@ -1972,12 +1984,6 @@ video {
   display: none;
 }
 
-@media (min-width: 640px) {
-  .sm\:flex {
-    display: flex;
-  }
-}
-
 @media (min-width: 768px) {
   .md\:static {
     position: static;
@@ -2060,45 +2066,36 @@ video {
 }
 
 @media (min-width: 1024px) {
-  .lg\:mx-8 {
-    margin-left: 2rem;
-    margin-right: 2rem;
-  }
-
   .lg\:mb-0 {
     margin-bottom: 0px;
   }
 
-  .lg\:block {
-    display: block;
+  .lg\:flex {
+    display: flex;
   }
 
   .lg\:hidden {
     display: none;
   }
 
+  .lg\:w-1\/4 {
+    width: 25%;
+  }
+
   .lg\:w-10 {
     width: 2.5rem;
+  }
+
+  .lg\:w-2\/4 {
+    width: 50%;
   }
 
   .lg\:w-20 {
     width: 5rem;
   }
 
-  .lg\:w-auto {
-    width: auto;
-  }
-
-  .lg\:min-w-\[200px\] {
-    min-width: 200px;
-  }
-
-  .lg\:max-w-3xl {
-    max-width: 48rem;
-  }
-
-  .lg\:flex-1 {
-    flex: 1 1 0%;
+  .lg\:max-w-2xl {
+    max-width: 42rem;
   }
 
   .lg\:flex-row {
@@ -2109,22 +2106,27 @@ video {
     justify-content: flex-start;
   }
 
-  .lg\:gap-8 {
-    gap: 2rem;
+  .lg\:gap-6 {
+    gap: 1.5rem;
   }
 
-  .lg\:space-x-6 > :not([hidden]) ~ :not([hidden]) {
-    --tw-space-x-reverse: 0;
-    margin-right: calc(1.5rem * var(--tw-space-x-reverse));
-    margin-left: calc(1.5rem * calc(1 - var(--tw-space-x-reverse)));
+  .lg\:px-6 {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
   }
 
-  .lg\:p-6 {
-    padding: 1.5rem;
+  .lg\:px-8 {
+    padding-left: 2rem;
+    padding-right: 2rem;
   }
 
-  .lg\:text-xs {
-    font-size: 0.75rem;
-    line-height: 1rem;
+  .lg\:py-3 {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .lg\:text-sm {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
   }
 }

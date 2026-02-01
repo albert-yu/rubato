@@ -9,206 +9,206 @@
   data-artist-handle="{{ recording.artist_handle }}"
   data-slug-id="{{ recording.slug_id }}"
 >
-  <div
-    class="bg-sonata-charcoal border-t border-sonata-border p-4 lg:p-6 flex flex-col lg:flex-row items-center justify-between shadow-2xl"
-  >
-    <style>
-      /* Custom Range Slider Styling */
-      input[type="range"] {
-        -webkit-appearance: none;
-        width: 100%;
-        background: transparent;
-        border-radius: 2px;
-      }
-
-      input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        height: 16px;
-        width: 16px;
-        border-radius: 50%;
-        background: #e8e8e8;
-        margin-top: -6px;
-        cursor: pointer;
-        box-shadow: 0 0 0 0 rgba(232, 232, 232, 0);
-        transition: box-shadow 0.2s ease;
-      }
-
-      input[type="range"]:hover::-webkit-slider-thumb {
-        box-shadow: 0 0 0 6px rgba(232, 232, 232, 0.15);
-      }
-
-      input[type="range"]::-webkit-slider-runnable-track {
-        width: 100%;
-        height: 4px;
-        cursor: pointer;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 2px;
-      }
-
-      /* Firefox */
-      input[type="range"]::-moz-range-thumb {
-        height: 16px;
-        width: 16px;
-        border: none;
-        border-radius: 50%;
-        background: #e8e8e8;
-        cursor: pointer;
-        box-shadow: 0 0 0 0 rgba(232, 232, 232, 0);
-        transition: box-shadow 0.2s ease;
-      }
-      input[type="range"]:hover::-moz-range-thumb {
-        box-shadow: 0 0 0 6px rgba(232, 232, 232, 0.15);
-      }
-
-      input[type="range"]::-moz-range-track {
-        width: 100%;
-        height: 4px;
-        cursor: pointer;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 2px;
-      }
-    </style>
-
     <div
-      class="w-full lg:w-auto flex justify-between lg:justify-start items-center mb-4 lg:mb-0 lg:space-x-6 lg:min-w-[200px]"
+      class="bg-sonata-charcoal border-t border-sonata-border py-2 px-4 lg:py-3 lg:px-6 flex flex-col lg:flex-row items-center justify-between shadow-2xl"
     >
-      <div class="flex items-center space-x-6 overflow-hidden">
-        <div class="overflow-hidden">
-          <div
-            class="text-[9px] uppercase tracking-widest text-sonata-slate mb-0.5"
-          >
-            {{ recording.composer_family_name }}
-          </div>
-          <h3
-            id="player-composition"
-            class="text-sm font-light tracking-wide text-sonata-pearl line-clamp-1"
-          >
-            {{ recording.composition_title }}
-          </h3>
-          <div class="flex items-center gap-2 mt-1">
-            <p
-              class="text-[10px] uppercase tracking-widest text-sonata-slate line-clamp-1"
-            >
-              <span
-                id="player-movement-container"
-                class="{% if recording.movement_title.is_none() %}hidden{% endif %}"
-              >
-                <span id="player-movement">
-                  {% if let Some(title) = recording.movement_title %}{{ title }}{% endif %}
-                </span>
-                —
-              </span>
-              <a
-                id="player-artist"
-                href="/{{ recording.artist_handle }}"
-                hx-boost="true"
-                hx-target="#main-content"
-                class="hover:text-sonata-pearl transition-colors"
-              >
-                {{ recording.artist_handle }}
-              </a>
-            </p>
-            <span
-              id="player-loading"
-              class="hidden text-[7px] uppercase tracking-widest text-sonata-slate animate-pulse bg-sonata-border px-1 py-0 rounded-sm"
-              >Loading</span
-            >
-            <span
-              id="player-error"
-              class="hidden text-[7px] uppercase tracking-widest text-red-400 animate-pulse bg-red-900/20 px-1 py-0 rounded-sm"
-              >Error</span
-            >
-          </div>
-        </div>
-      </div>
-
-      <!-- Mobile Close Button -->
-      <button
-        onclick="closePlayer()"
-        class="lg:hidden text-sonata-slate hover:text-sonata-pearl transition-colors ml-4 flex-shrink-0"
+      <style>
+        /* Custom Range Slider Styling */
+        input[type="range"] {
+          -webkit-appearance: none;
+          width: 100%;
+          background: transparent;
+          border-radius: 2px;
+        }
+  
+        input[type="range"]::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          height: 14px;
+          width: 14px;
+          border-radius: 50%;
+          background: #e8e8e8;
+          margin-top: -5px;
+          cursor: pointer;
+          box-shadow: 0 0 0 0 rgba(232, 232, 232, 0);
+          transition: box-shadow 0.2s ease;
+        }
+  
+        input[type="range"]:hover::-webkit-slider-thumb {
+          box-shadow: 0 0 0 6px rgba(232, 232, 232, 0.15);
+        }
+  
+        input[type="range"]::-webkit-slider-runnable-track {
+          width: 100%;
+          height: 4px;
+          cursor: pointer;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 2px;
+        }
+  
+        /* Firefox */
+        input[type="range"]::-moz-range-thumb {
+          height: 14px;
+          width: 14px;
+          border: none;
+          border-radius: 50%;
+          background: #e8e8e8;
+          cursor: pointer;
+          box-shadow: 0 0 0 0 rgba(232, 232, 232, 0);
+          transition: box-shadow 0.2s ease;
+        }
+        input[type="range"]:hover::-moz-range-thumb {
+          box-shadow: 0 0 0 6px rgba(232, 232, 232, 0.15);
+        }
+  
+        input[type="range"]::-moz-range-track {
+          width: 100%;
+          height: 4px;
+          cursor: pointer;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 2px;
+        }
+      </style>
+  
+      <div
+        class="w-full lg:w-1/4 flex justify-between lg:justify-start items-center mb-2 lg:mb-0 min-w-0"
       >
-        <div class="w-5 h-5 stroke-1">{% include "icons/close.svg" %}</div>
-      </button>
-    </div>
-
-    <div
-      class="w-full lg:flex-1 lg:max-w-3xl lg:mx-8 flex flex-col justify-center"
-    >
-      <audio
-        id="audio-player"
-        src="/audio/{{ recording.file_key }}"
-        type="{{ recording.mime_type }}"
-        preload="auto"
-        autoplay
-      ></audio>
-
-      <div class="flex items-center gap-4 lg:gap-8">
-        <!-- Play/Pause -->
-        <button
-          id="play-pause-btn"
-          class="text-sonata-pearl hover:text-white transition-colors focus:outline-none flex-shrink-0"
-        >
-          <div id="icon-play" class="w-10 h-10 hidden">
-            {% include "icons/play.svg" %}
+        <div class="flex items-center space-x-4 overflow-hidden">
+          <div class="overflow-hidden">
+            <div
+              class="text-[9px] uppercase tracking-[0.15em] text-sonata-slate mb-0"
+            >
+              {{ recording.composer_family_name }}
+            </div>
+            <h3
+              id="player-composition"
+              class="text-xs lg:text-sm font-light tracking-wide text-sonata-pearl line-clamp-1"
+            >
+              {{ recording.composition_title }}
+            </h3>
+            <div class="flex items-center gap-2">
+              <p
+                class="text-[10px] uppercase tracking-[0.1em] text-sonata-slate line-clamp-1"
+              >
+                <span
+                  id="player-movement-container"
+                  class="{% if recording.movement_title.is_none() %}hidden{% endif %}"
+                >
+                  <span id="player-movement">
+                    {% if let Some(title) = recording.movement_title %}{{ title }}{% endif %}
+                  </span>
+                  —
+                </span>
+                <a
+                  id="player-artist"
+                  href="/{{ recording.artist_handle }}"
+                  hx-boost="true"
+                  hx-target="#main-content"
+                  class="hover:text-sonata-pearl transition-colors"
+                >
+                  {{ recording.artist_handle }}
+                </a>
+              </p>
+              <span
+                id="player-loading"
+                class="hidden text-[7px] uppercase tracking-widest text-sonata-slate animate-pulse bg-sonata-border px-1 py-0 rounded-sm"
+                >Loading</span
+              >
+              <span
+                id="player-error"
+                class="hidden text-[7px] uppercase tracking-widest text-red-400 animate-pulse bg-red-900/20 px-1 py-0 rounded-sm"
+                >Error</span
+              >
+            </div>
           </div>
-          <div id="icon-pause" class="w-10 h-10">
-            {% include "icons/pause.svg" %}
-          </div>
-        </button>
-
-        <!-- Time & Progress -->
-        <div class="flex-1 flex items-center gap-3 min-w-0">
-          <span
-            id="current-time"
-            class="text-[10px] lg:text-xs text-sonata-slate font-mono w-8 lg:w-10 text-right flex-shrink-0"
-            >0:00</span
-          >
-
-          <div class="relative flex-1 h-8 flex items-center group">
-            <input
-              type="range"
-              id="seek-slider"
-              class="w-full h-1 appearance-none focus:outline-none z-10 cursor-pointer"
-              style="background-image: linear-gradient(#e8e8e8, #e8e8e8); background-size: 0% 100%; background-repeat: no-repeat;"
-              min="0"
-              value="0"
-              step="0.1"
-            />
-          </div>
-
-          <span
-            id="duration"
-            class="text-[10px] lg:text-xs text-sonata-slate font-mono w-8 lg:w-10 flex-shrink-0"
-            >--:--</span
-          >
         </div>
-
-        <!-- Volume (Desktop) -->
-        <div class="hidden sm:flex items-center gap-2 group flex-shrink-0">
+  
+        <!-- Mobile Close Button -->
+        <button
+          onclick="closePlayer()"
+          class="lg:hidden text-sonata-slate hover:text-sonata-pearl transition-colors ml-4 flex-shrink-0"
+        >
+          <div class="w-5 h-5 stroke-1">{% include "icons/close.svg" %}</div>
+        </button>
+      </div>
+  
+      <div
+        class="w-full lg:w-2/4 lg:max-w-2xl flex flex-col justify-center px-4 lg:px-8"
+      >
+        <audio
+          id="audio-player"
+          src="/audio/{{ recording.file_key }}"
+          type="{{ recording.mime_type }}"
+          preload="auto"
+          autoplay
+        ></audio>
+  
+        <div class="flex items-center gap-4 lg:gap-6">
+          <!-- Play/Pause -->
           <button
-            id="mute-btn"
-            class="text-sonata-slate hover:text-sonata-pearl transition-colors"
+            id="play-pause-btn"
+            class="text-sonata-pearl hover:text-white transition-all focus:outline-none flex-shrink-0 border border-sonata-pearl/20 rounded-full p-2 hover:border-sonata-pearl/50"
           >
-            <div class="w-5 h-5">{% include "icons/volume.svg" %}</div>
+            <div id="icon-play" class="w-5 h-5 hidden">
+              {% include "icons/play.svg" %}
+            </div>
+            <div id="icon-pause" class="w-5 h-5">
+              {% include "icons/pause.svg" %}
+            </div>
           </button>
-          <div class="w-16 lg:w-20 flex items-center h-8">
-            <input
-              type="range"
-              id="volume-slider"
-              class="w-full h-1 appearance-none focus:outline-none cursor-pointer"
-              style="background-image: linear-gradient(#e8e8e8, #e8e8e8); background-size: 100% 100%; background-repeat: no-repeat;"
-              min="0"
-              max="1"
-              step="0.05"
-              value="1"
-            />
+  
+          <!-- Time & Progress -->
+          <div class="flex-1 flex items-center gap-3 min-w-0">
+            <span
+              id="current-time"
+              class="text-[10px] text-sonata-slate font-mono w-8 lg:w-10 text-right flex-shrink-0"
+              >0:00</span
+            >
+  
+            <div class="relative flex-1 h-6 flex items-center group">
+              <input
+                type="range"
+                id="seek-slider"
+                class="w-full h-1 appearance-none focus:outline-none z-10 cursor-pointer"
+                style="background-image: linear-gradient(#e8e8e8, #e8e8e8); background-size: 0% 100%; background-repeat: no-repeat;"
+                min="0"
+                value="0"
+                step="0.1"
+              />
+            </div>
+  
+            <span
+              id="duration"
+              class="text-[10px] text-sonata-slate font-mono w-8 lg:w-10 flex-shrink-0"
+              >--:--</span
+            >
           </div>
         </div>
       </div>
-    </div>
+    <!-- Extra: Volume + Desktop Close -->
+    <div class="hidden lg:flex lg:w-1/4 items-center justify-end gap-6">
+      <!-- Volume -->
+      <div class="flex items-center gap-2 group flex-shrink-0">
+        <button
+          id="mute-btn"
+          class="text-sonata-slate hover:text-sonata-pearl transition-colors"
+        >
+          <div class="w-5 h-5">{% include "icons/volume.svg" %}</div>
+        </button>
+        <div class="w-16 lg:w-20 flex items-center h-6">
+          <input
+            type="range"
+            id="volume-slider"
+            class="w-full h-1 appearance-none focus:outline-none cursor-pointer"
+            style="background-image: linear-gradient(#e8e8e8, #e8e8e8); background-size: 100% 100%; background-repeat: no-repeat;"
+            min="0"
+            max="1"
+            step="0.05"
+            value="1"
+          />
+        </div>
+      </div>
 
-    <!-- Desktop Close Button -->
-    <div class="hidden lg:block">
+      <!-- Desktop Close Button -->
       <button
         onclick="closePlayer()"
         class="text-sonata-slate hover:text-sonata-pearl transition-colors"
