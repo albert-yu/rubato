@@ -11,7 +11,8 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::db::{
-    CreateMusician, Musician, RecordingFeedItem, Visibility, empty_string_as_none_i32,
+    CreateMusician, Musician, RecordingFeedItem, SearchResult, Visibility,
+    empty_string_as_none_i32, search_compositions_public,
 };
 use crate::extractors::{AuthUser, HtmxRequest, OptionalAuthUser};
 use crate::storage::StorageService;
@@ -361,16 +362,6 @@ pub struct SearchParams {
     q: String,
 }
 
-#[derive(sqlx::FromRow)]
-pub struct SearchResult {
-    composition_id: i32,
-    composition_title: String,
-    movement_id: Option<i32>,
-    movement_index: Option<i32>,
-    movement_title: Option<String>,
-    composer_name: String,
-}
-
 pub async fn search_compositions(
     State(pool): State<Pool<Postgres>>,
     Query(params): Query<SearchParams>,
@@ -379,35 +370,9 @@ pub async fn search_compositions(
         return axum::response::Html("".to_string()).into_response();
     }
 
-    let search_words: Vec<String> = params
-        .q
-        .split_whitespace()
-        .map(|s| format!("%{}%", s))
-        .collect();
-
-    let results = sqlx::query_as::<_, SearchResult>(
-        r#"
-        SELECT 
-            c.id as composition_id,
-            c.title as composition_title,
-            m.id as movement_id,
-            m.index as movement_index,
-            m.title as movement_title,
-            mus.given_name || ' ' || mus.family_name as composer_name
-        FROM compositions c
-        JOIN musicians mus ON c.composer_id = mus.id
-        LEFT JOIN movements m ON c.id = m.composition_id
-        WHERE 
-          unaccent(concat_ws(' ', c.title, m.title, mus.handle, mus.given_name, mus.family_name)) 
-          ILIKE ALL(SELECT unaccent(x) FROM unnest($1::text[]) x)
-        ORDER BY c.title, m.index
-        LIMIT 50
-        "#,
-    )
-    .bind(search_words)
-    .fetch_all(&pool)
-    .await
-    .unwrap_or_default();
+    let results = search_compositions_public(&pool, &params.q)
+        .await
+        .unwrap_or_default();
 
     if results.is_empty() {
         return axum::response::Html(

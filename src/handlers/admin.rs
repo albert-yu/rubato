@@ -206,24 +206,9 @@ pub async fn admin_compositions(
     let q = params.q.filter(|s| !s.trim().is_empty());
 
     let (total_count, compositions) = if let Some(ref query) = q {
-        let search_pattern = format!("%{}%", query);
-        let count =
-            sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM compositions c JOIN musicians m ON c.composer_id = m.id WHERE c.title ILIKE $1")
-                .bind(&search_pattern)
-                .fetch_one(&pool)
-                .await
-                .unwrap_or(0);
-
-        let comps = sqlx::query_as::<_, Composition>(
-            "SELECT c.id, c.slug, (m.family_name || ': ' || c.title) as title, c.publish_date, c.composer_id FROM compositions c JOIN musicians m ON c.composer_id = m.id WHERE c.title ILIKE $1 ORDER BY c.id LIMIT $2 OFFSET $3",
-        )
-        .bind(&search_pattern)
-        .bind(limit)
-        .bind(offset)
-        .fetch_all(&pool)
-        .await
-        .unwrap_or_default();
-        (count, comps)
+        search_compositions_admin(&pool, query, limit, offset)
+            .await
+            .unwrap_or_default()
     } else {
         let count = sqlx::query_scalar::<_, i64>("SELECT COUNT(*) FROM compositions")
             .fetch_one(&pool)

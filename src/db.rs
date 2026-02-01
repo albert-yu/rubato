@@ -1,4 +1,5 @@
 use serde::Deserialize;
+use sqlx::{Pool, Postgres};
 
 #[derive(sqlx::Type, serde::Serialize, Clone, Debug, PartialEq)]
 #[sqlx(type_name = "user_role", rename_all = "lowercase")]
@@ -196,6 +197,101 @@ pub struct RecordingFeedItem {
     pub mime_type: String,
     pub notes: Option<String>,
     pub visibility: Visibility,
+}
+
+#[derive(sqlx::FromRow, serde::Serialize, Clone, Debug)]
+pub struct SearchResult {
+    pub composition_id: i32,
+    pub composition_title: String,
+    pub movement_id: Option<i32>,
+    pub movement_index: Option<i32>,
+    pub movement_title: Option<String>,
+    pub composer_name: String,
+}
+
+pub fn prepare_search_terms(q: &str) -> Vec<String> {
+    q.split_whitespace().map(|s| format!("%{}%", s)).collect()
+}
+
+pub async fn search_compositions_public(
+    pool: &Pool<Postgres>,
+    q: &str,
+) -> Result<Vec<SearchResult>, sqlx::Error> {
+    let search_words = prepare_search_terms(q);
+    sqlx::query_as::<_, SearchResult>(
+        r#"
+        SELECT 
+            c.id as composition_id,
+            c.title as composition_title,
+            m.id as movement_id,
+            m.index as movement_index,
+            m.title as movement_title,
+            mus.given_name || ' ' || mus.family_name as composer_name
+        FROM compositions c
+        JOIN musicians mus ON c.composer_id = mus.id
+        LEFT JOIN movements m ON c.id = m.composition_id
+        WHERE 
+          unaccent(concat_ws(' ', c.title, m.title, mus.handle, mus.given_name, mus.family_name)) 
+          ILIKE ALL(SELECT unaccent(x) FROM unnest($1::text[]) x)
+        ORDER BY c.title, m.index
+        LIMIT 50
+        "#,
+    )
+    .bind(search_words)
+    .fetch_all(pool)
+    .await
+}
+
+pub async fn search_compositions_admin(
+    pool: &Pool<Postgres>,
+    q: &str,
+    limit: i64,
+    offset: i64,
+) -> Result<(i64, Vec<Composition>), sqlx::Error> {
+    let search_words = prepare_search_terms(q);
+
+    // Count
+    let count = sqlx::query_scalar::<_, i64>(
+        r#"
+        SELECT COUNT(DISTINCT c.id)
+        FROM compositions c
+        JOIN musicians mus ON c.composer_id = mus.id
+        LEFT JOIN movements m ON c.id = m.composition_id
+        WHERE 
+          unaccent(concat_ws(' ', c.title, m.title, mus.handle, mus.given_name, mus.family_name)) 
+          ILIKE ALL(SELECT unaccent(x) FROM unnest($1::text[]) x)
+        "#,
+    )
+    .bind(&search_words)
+    .fetch_one(pool)
+    .await?;
+
+    // Items
+    let compositions = sqlx::query_as::<_, Composition>(
+        r#"
+        SELECT DISTINCT ON (c.id)
+            c.id, 
+            c.slug, 
+            (mus.family_name || ': ' || c.title) as title, 
+            c.publish_date, 
+            c.composer_id
+        FROM compositions c
+        JOIN musicians mus ON c.composer_id = mus.id
+        LEFT JOIN movements m ON c.id = m.composition_id
+        WHERE 
+          unaccent(concat_ws(' ', c.title, m.title, mus.handle, mus.given_name, mus.family_name)) 
+          ILIKE ALL(SELECT unaccent(x) FROM unnest($1::text[]) x)
+        ORDER BY c.id
+        LIMIT $2 OFFSET $3
+        "#,
+    )
+    .bind(&search_words)
+    .bind(limit)
+    .bind(offset)
+    .fetch_all(pool)
+    .await?;
+
+    Ok((count, compositions))
 }
 
 // Helpers for deserialization
