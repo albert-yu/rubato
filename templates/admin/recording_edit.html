@@ -159,14 +159,26 @@
               class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2"
               >Content Length (bytes)</label
             >
-            <input
-              type="number"
-              name="content_length"
-              id="content_length"
-              value="{{ recording.content_length }}"
-              required
-              class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
-            />
+            <div class="flex gap-2">
+              <input
+                type="number"
+                name="content_length"
+                id="content_length"
+                value="{{ recording.content_length }}"
+                required
+                class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
+              />
+              <button
+                type="button"
+                hx-get="/admin/recordings/fetch-metadata"
+                hx-include="#file_key"
+                hx-target="#content_length"
+                hx-swap="outerHTML"
+                class="sonata-btn-outline !py-0 !px-4 text-[10px] uppercase tracking-widest whitespace-nowrap"
+              >
+                Fetch Size
+              </button>
+            </div>
           </div>
         </div>
 

@@ -12,6 +12,7 @@ use tokio_util::sync::CancellationToken;
 
 use crate::db::*;
 use crate::extractors::AuthUser;
+use crate::storage::StorageService;
 use crate::view::*;
 
 #[derive(Deserialize)]
@@ -626,6 +627,35 @@ pub async fn admin_recording_delete(
         .await
         .unwrap();
     Redirect::to("/admin/recordings").into_response()
+}
+
+#[derive(Deserialize)]
+pub struct FetchMetadataParams {
+    pub file_key: String,
+}
+
+pub async fn admin_recording_fetch_metadata(
+    auth: AuthUser,
+    State(storage): State<Arc<dyn StorageService>>,
+    Query(params): Query<FetchMetadataParams>,
+) -> impl IntoResponse {
+    if !matches!(auth.0.role, UserRole::Root | UserRole::Admin) {
+        return StatusCode::FORBIDDEN.into_response();
+    }
+
+    match storage.get_content("recordings", &params.file_key, None).await {
+        Ok(res) => {
+            let html = format!(
+                r#"<input type="number" name="content_length" id="content_length" value="{}" required class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light">"#,
+                res.content_length
+            );
+            axum::response::Html(html).into_response()
+        }
+        Err(e) => {
+            tracing::error!("Failed to fetch metadata for {}: {}", params.file_key, e);
+            StatusCode::NOT_FOUND.into_response()
+        }
+    }
 }
 
 // --- Import Logic ---
