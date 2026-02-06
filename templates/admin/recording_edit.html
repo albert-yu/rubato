@@ -136,20 +136,38 @@
           </div>
         </div>
 
-        <div>
-          <label
-            for="mime_type"
-            class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2"
-            >Mime Type</label
-          >
-          <input
-            type="text"
-            name="mime_type"
-            id="mime_type"
-            value="{{ recording.mime_type }}"
-            required
-            class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
-          />
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <label
+              for="mime_type"
+              class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2"
+              >Mime Type</label
+            >
+            <input
+              type="text"
+              name="mime_type"
+              id="mime_type"
+              value="{{ recording.mime_type }}"
+              required
+              class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
+            />
+          </div>
+
+          <div>
+            <label
+              for="content_length"
+              class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2"
+              >Content Length (bytes)</label
+            >
+            <input
+              type="number"
+              name="content_length"
+              id="content_length"
+              value="{{ recording.content_length }}"
+              required
+              class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
+            />
+          </div>
         </div>
 
         <div

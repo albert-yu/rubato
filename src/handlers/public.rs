@@ -61,6 +61,7 @@ pub async fn index(
             r.created_at,
             r.file_key,
             r.mime_type,
+            r.content_length,
             r.notes,
             r.visibility
         FROM recordings r
@@ -263,7 +264,7 @@ pub async fn upload_post(
     }
 
     let _ = sqlx::query(
-        "INSERT INTO recordings (artist_id, composition_id, movement_id, content_hash, file_key, mime_type, notes, visibility) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)"
+        "INSERT INTO recordings (artist_id, composition_id, movement_id, content_hash, file_key, mime_type, content_length, notes, visibility) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)"
     )
     .bind(auth.0.musician_id)
     .bind(comp_id)
@@ -271,6 +272,7 @@ pub async fn upload_post(
     .bind(content_hash)
     .bind(file_key)
     .bind(mime_type)
+    .bind(data.len() as i64)
     .bind(notes)
     .bind(visibility)
     .execute(&pool)
@@ -590,6 +592,7 @@ pub async fn profile(
                 r.created_at,
                 r.file_key,
                 r.mime_type,
+                r.content_length,
                 r.notes,
                 r.visibility
             FROM recordings r
@@ -624,6 +627,7 @@ pub async fn profile(
                 r.created_at,
                 r.file_key,
                 r.mime_type,
+                r.content_length,
                 r.notes,
                 r.visibility
             FROM recordings r
@@ -686,6 +690,7 @@ pub async fn recording_detail(
             r.created_at,
             r.file_key,
             r.mime_type,
+            r.content_length,
             r.notes,
             r.visibility
         FROM recordings r
@@ -753,6 +758,7 @@ pub async fn recording_edit(
             r.created_at,
             r.file_key,
             r.mime_type,
+            r.content_length,
             r.notes,
             r.visibility
         FROM recordings r
@@ -842,6 +848,7 @@ pub async fn recording_update(
             r.created_at,
             r.file_key,
             r.mime_type,
+            r.content_length,
             r.notes,
             r.visibility
         FROM recordings r
@@ -897,6 +904,7 @@ pub async fn recording_update(
                 r.created_at,
                 r.file_key,
                 r.mime_type,
+                r.content_length,
                 r.notes,
                 r.visibility
             FROM recordings r
@@ -999,6 +1007,7 @@ pub async fn player(
             r.created_at,
             r.file_key,
             r.mime_type,
+            r.content_length,
             r.notes,
             r.visibility
         FROM recordings r

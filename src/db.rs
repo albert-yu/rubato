@@ -162,6 +162,7 @@ pub struct Recording {
     pub content_hash: String,
     pub file_key: String,
     pub mime_type: String,
+    pub content_length: i64,
     pub notes: Option<String>,
     pub visibility: Visibility,
     pub created_at: chrono::DateTime<chrono::Utc>,
@@ -177,6 +178,7 @@ pub struct CreateRecording {
     pub content_hash: String,
     pub file_key: String,
     pub mime_type: String,
+    pub content_length: i64,
     #[serde(default)]
     pub visibility: Visibility,
 }
@@ -195,6 +197,7 @@ pub struct RecordingFeedItem {
     pub created_at: chrono::DateTime<chrono::Utc>,
     pub file_key: String,
     pub mime_type: String,
+    pub content_length: i64,
     pub notes: Option<String>,
     pub visibility: Visibility,
 }
