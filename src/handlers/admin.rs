@@ -643,7 +643,10 @@ pub async fn admin_recording_fetch_metadata(
         return StatusCode::FORBIDDEN.into_response();
     }
 
-    match storage.get_content("recordings", &params.file_key, None).await {
+    match storage
+        .get_content("recordings", &params.file_key, None)
+        .await
+    {
         Ok(res) => {
             let html = format!(
                 r#"<input type="number" name="content_length" id="content_length" value="{}" required class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light">"#,
