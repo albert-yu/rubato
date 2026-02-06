@@ -182,6 +182,39 @@
           </div>
         </div>
 
+        <div>
+          <label
+            for="visibility"
+            class="block text-[10px] uppercase tracking-widest font-light text-sonata-slate mb-2"
+            >Visibility</label
+          >
+          <select
+            name="visibility"
+            id="visibility"
+            required
+            class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light appearance-none"
+          >
+            <option
+              value="public"
+              {% if recording.visibility == Visibility::Public %}selected{% endif %}
+            >
+              Public
+            </option>
+            <option
+              value="unlisted"
+              {% if recording.visibility == Visibility::Unlisted %}selected{% endif %}
+            >
+              Unlisted
+            </option>
+            <option
+              value="private"
+              {% if recording.visibility == Visibility::Private %}selected{% endif %}
+            >
+              Private
+            </option>
+          </select>
+        </div>
+
         <div
           class="pt-8 border-t border-sonata-border/30 flex justify-between items-center"
         >
