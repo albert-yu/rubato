@@ -12,6 +12,7 @@ use tokio_util::sync::CancellationToken;
 
 use crate::db::*;
 use crate::extractors::AuthUser;
+use crate::storage::StorageService;
 use crate::view::*;
 
 #[derive(Deserialize)]
@@ -476,13 +477,14 @@ pub async fn admin_recording_create(
     if !matches!(auth.0.role, UserRole::Root) {
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
-    let _ = sqlx::query("INSERT INTO recordings (artist_id, composition_id, movement_id, content_hash, file_key, mime_type, visibility) VALUES ($1, $2, $3, $4, $5, $6, $7)")
+    let _ = sqlx::query("INSERT INTO recordings (artist_id, composition_id, movement_id, content_hash, file_key, mime_type, content_length, visibility) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)")
         .bind(form.artist_id)
         .bind(form.composition_id)
         .bind(form.movement_id)
         .bind(form.content_hash)
         .bind(form.file_key)
         .bind(form.mime_type)
+        .bind(form.content_length)
         .bind(form.visibility)
         .execute(&pool)
         .await
@@ -594,7 +596,7 @@ pub async fn admin_recording_update(
         return (StatusCode::NOT_FOUND, HtmlTemplate(NotFoundTemplate)).into_response();
     }
     let _ = sqlx::query(
-        "UPDATE recordings SET artist_id = $1, composition_id = $2, movement_id = $3, content_hash = $4, file_key = $5, mime_type = $6, visibility = $7 WHERE id = $8",
+        "UPDATE recordings SET artist_id = $1, composition_id = $2, movement_id = $3, content_hash = $4, file_key = $5, mime_type = $6, content_length = $7, visibility = $8 WHERE id = $9",
     )
     .bind(form.artist_id)
     .bind(form.composition_id)
@@ -602,6 +604,7 @@ pub async fn admin_recording_update(
     .bind(form.content_hash)
     .bind(form.file_key)
     .bind(form.mime_type)
+    .bind(form.content_length)
     .bind(form.visibility)
     .bind(id)
     .execute(&pool)
@@ -624,6 +627,35 @@ pub async fn admin_recording_delete(
         .await
         .unwrap();
     Redirect::to("/admin/recordings").into_response()
+}
+
+#[derive(Deserialize)]
+pub struct FetchMetadataParams {
+    pub file_key: String,
+}
+
+pub async fn admin_recording_fetch_metadata(
+    auth: AuthUser,
+    State(storage): State<Arc<dyn StorageService>>,
+    Query(params): Query<FetchMetadataParams>,
+) -> impl IntoResponse {
+    if !matches!(auth.0.role, UserRole::Root | UserRole::Admin) {
+        return StatusCode::FORBIDDEN.into_response();
+    }
+
+    match storage.get_content("recordings", &params.file_key, None).await {
+        Ok(res) => {
+            let html = format!(
+                r#"<input type="number" name="content_length" id="content_length" value="{}" required class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light">"#,
+                res.content_length
+            );
+            axum::response::Html(html).into_response()
+        }
+        Err(e) => {
+            tracing::error!("Failed to fetch metadata for {}: {}", params.file_key, e);
+            StatusCode::NOT_FOUND.into_response()
+        }
+    }
 }
 
 // --- Import Logic ---

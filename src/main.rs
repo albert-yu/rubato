@@ -253,6 +253,10 @@ async fn main() -> anyhow::Result<()> {
             "/admin/recordings",
             get(admin::admin_recordings).post(admin::admin_recording_create),
         )
+        .route(
+            "/admin/recordings/fetch-metadata",
+            get(admin::admin_recording_fetch_metadata),
+        )
         .route("/admin/recording/new", get(admin::admin_recording_new))
         .route(
             "/admin/recording/{id}",
