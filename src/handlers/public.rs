@@ -263,8 +263,8 @@ pub async fn upload_post(
         return render_error("Failed to save file.".to_string());
     }
 
-    let _ = sqlx::query(
-        "INSERT INTO recordings (artist_id, composition_id, movement_id, content_hash, file_key, mime_type, content_length, notes, visibility) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)"
+    let slug_id: i32 = sqlx::query_scalar(
+        "INSERT INTO recordings (artist_id, composition_id, movement_id, content_hash, file_key, mime_type, content_length, notes, visibility) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING slug_id"
     )
     .bind(auth.0.musician_id)
     .bind(comp_id)
@@ -275,11 +275,11 @@ pub async fn upload_post(
     .bind(data.len() as i64)
     .bind(notes)
     .bind(visibility)
-    .execute(&pool)
+    .fetch_one(&pool)
     .await
     .unwrap();
 
-    Redirect::to("/").into_response()
+    Redirect::to(&format!("/{}/recordings/{}", auth.0.handle, slug_id)).into_response()
 }
 
 pub async fn serve_audio(
