@@ -16,6 +16,7 @@
     --card-gradient: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
     --hero-gradient: linear-gradient(135deg, #ffffff 0%, #a0a0a0 100%);
     --card-shine-gradient: linear-gradient(90deg, transparent, #fff, transparent);
+    --sonata-button-border: 26 26 26; /* #1a1a1a - Same as charcoal */
   }
 
   @media (prefers-color-scheme: light) {
@@ -28,6 +29,7 @@
       --sonata-border: 229 231 235; /* #e5e7eb (gray-200) */
       --sonata-border-hover: 209 213 219; /* #d1d5db (gray-300) */
       --sonata-highlight: 0 0 0; /* #000000 */
+      --sonata-button-border: 209 213 219; /* #d1d5db (gray-300) - Same as border-hover */
 
       --card-gradient: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%);
       --hero-gradient: linear-gradient(135deg, #111827 0%, #4b5563 100%);
@@ -74,7 +76,7 @@
     }
 
     .sonata-btn {
-        @apply px-6 py-3 md:px-10 md:py-4 bg-transparent border border-sonata-charcoal text-sonata-pearl text-xs tracking-widest uppercase cursor-pointer transition-all duration-300 rounded-sm font-light;
+        @apply px-6 py-3 md:px-10 md:py-4 bg-transparent border border-sonata-button-border text-sonata-pearl text-xs tracking-widest uppercase cursor-pointer transition-all duration-300 rounded-sm font-light;
     }
 
     .sonata-btn:hover {
@@ -82,7 +84,7 @@
     }
 
     .sonata-btn-outline {
-        @apply px-6 py-3 md:px-10 md:py-4 bg-transparent border border-sonata-charcoal text-sonata-slate text-xs tracking-widest uppercase cursor-pointer transition-all duration-300 rounded-sm font-light;
+        @apply px-6 py-3 md:px-10 md:py-4 bg-transparent border border-sonata-button-border text-sonata-slate text-xs tracking-widest uppercase cursor-pointer transition-all duration-300 rounded-sm font-light;
     }
 
     .sonata-btn-outline:hover {

@@ -11,6 +11,7 @@ module.exports = {
         'sonata-border': 'rgb(var(--sonata-border) / <alpha-value>)',
         'sonata-border-hover': 'rgb(var(--sonata-border-hover) / <alpha-value>)',
         'sonata-highlight': 'rgb(var(--sonata-highlight) / <alpha-value>)',
+        'sonata-button-border': 'rgb(var(--sonata-button-border) / <alpha-value>)',
       },
       backgroundImage: {
         'card-gradient': 'var(--card-gradient)',

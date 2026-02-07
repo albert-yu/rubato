@@ -463,6 +463,8 @@ video {
   --card-gradient: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
   --hero-gradient: linear-gradient(135deg, #ffffff 0%, #a0a0a0 100%);
   --card-shine-gradient: linear-gradient(90deg, transparent, #fff, transparent);
+  --sonata-button-border: 26 26 26;
+  /* #1a1a1a - Same as charcoal */
 }
 
 @media (prefers-color-scheme: light) {
@@ -482,6 +484,8 @@ video {
     /* #d1d5db (gray-300) */
     --sonata-highlight: 0 0 0;
     /* #000000 */
+    --sonata-button-border: 209 213 219;
+    /* #d1d5db (gray-300) - Same as border-hover */
     --card-gradient: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%);
     --hero-gradient: linear-gradient(135deg, #111827 0%, #4b5563 100%);
     --card-shine-gradient: linear-gradient(90deg, transparent, #000, transparent);
@@ -679,7 +683,7 @@ video {
   border-radius: 0.125rem;
   border-width: 1px;
   --tw-border-opacity: 1;
-  border-color: rgb(var(--sonata-charcoal) / var(--tw-border-opacity));
+  border-color: rgb(var(--sonata-button-border) / var(--tw-border-opacity));
   background-color: transparent;
   padding-left: 1.5rem;
   padding-right: 1.5rem;
@@ -720,7 +724,7 @@ video {
   border-radius: 0.125rem;
   border-width: 1px;
   --tw-border-opacity: 1;
-  border-color: rgb(var(--sonata-charcoal) / var(--tw-border-opacity));
+  border-color: rgb(var(--sonata-button-border) / var(--tw-border-opacity));
   background-color: transparent;
   padding-left: 1.5rem;
   padding-right: 1.5rem;
