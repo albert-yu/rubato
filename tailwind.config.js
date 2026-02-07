@@ -10,6 +10,7 @@ module.exports = {
         'sonata-pearl': 'rgb(var(--sonata-pearl) / <alpha-value>)',
         'sonata-border': 'rgb(var(--sonata-border) / <alpha-value>)',
         'sonata-border-hover': 'rgb(var(--sonata-border-hover) / <alpha-value>)',
+        'sonata-highlight': 'rgb(var(--sonata-highlight) / <alpha-value>)',
       },
       backgroundImage: {
         'card-gradient': 'var(--card-gradient)',
