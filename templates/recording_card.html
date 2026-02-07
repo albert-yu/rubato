@@ -30,7 +30,7 @@
           {{ recording.composition_title }}
         </div>
         <h3
-          class="text-xl font-light tracking-tight text-sonata-pearl group-hover:text-white transition-colors"
+          class="text-xl font-light tracking-tight text-sonata-pearl group-hover:text-sonata-highlight transition-colors"
         >
           <a
             href="/{{ recording.artist_handle }}/recordings/{{ recording.slug_id }}"
@@ -43,7 +43,7 @@
         </h3>
       {% else %}
         <h3
-          class="text-xl font-light tracking-tight text-sonata-pearl group-hover:text-white transition-colors"
+          class="text-xl font-light tracking-tight text-sonata-pearl group-hover:text-sonata-highlight transition-colors"
         >
           <a
             href="/{{ recording.artist_handle }}/recordings/{{ recording.slug_id }}"
@@ -64,7 +64,7 @@
         href="/{{ recording.artist_handle }}"
         hx-boost="true"
         hx-target="#main-content"
-        class="text-xs tracking-widest uppercase font-light text-sonata-pearl hover:text-white transition-colors relative z-10"
+        class="text-xs tracking-widest uppercase font-light text-sonata-pearl hover:text-sonata-highlight transition-colors relative z-10"
         >@{{ recording.artist_handle }}</a
       >
       <span

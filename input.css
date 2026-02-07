@@ -2,10 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  :root {
+    /* Default Dark Theme */
+    --sonata-black: 10 10 10; /* #0a0a0a */
+    --sonata-charcoal: 26 26 26; /* #1a1a1a */
+    --sonata-slate: 160 160 160; /* #a0a0a0 */
+    --sonata-pearl: 232 232 232; /* #e8e8e8 */
+    --sonata-border: 42 42 42; /* #2a2a2a */
+    --sonata-border-hover: 58 58 58; /* #3a3a3a */
+    --sonata-highlight: 255 255 255; /* #ffffff */
+    
+    --card-gradient: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+    --hero-gradient: linear-gradient(135deg, #ffffff 0%, #a0a0a0 100%);
+    --card-shine-gradient: linear-gradient(90deg, transparent, #fff, transparent);
+    --sonata-button-border: 26 26 26; /* #1a1a1a - Same as charcoal */
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root {
+      /* Light Theme */
+      --sonata-black: 255 255 255; /* #ffffff */
+      --sonata-charcoal: 243 244 246; /* #f3f4f6 (gray-100) */
+      --sonata-slate: 107 114 128; /* #6b7280 (gray-500) */
+      --sonata-pearl: 55 65 81; /* #374151 (gray-700) */
+      --sonata-border: 229 231 235; /* #e5e7eb (gray-200) */
+      --sonata-border-hover: 209 213 219; /* #d1d5db (gray-300) */
+      --sonata-highlight: 0 0 0; /* #000000 */
+      --sonata-button-border: 209 213 219; /* #d1d5db (gray-300) - Same as border-hover */
+
+      --card-gradient: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%);
+      --hero-gradient: linear-gradient(135deg, #111827 0%, #4b5563 100%);
+      --card-shine-gradient: linear-gradient(90deg, transparent, #000, transparent);
+    }
+  }
+}
+
 @layer components {
     .sonata-hero-h1 {
         @apply text-6xl md:text-8xl font-light tracking-tighter mb-5;
-        background: linear-gradient(135deg, #ffffff 0%, #a0a0a0 100%);
+        background-image: var(--hero-gradient);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -36,11 +72,11 @@
     .sonata-card-interactive::before {
         content: '';
         @apply absolute top-0 left-0 right-0 h-[1px] opacity-0 transition-opacity duration-500;
-        background: linear-gradient(90deg, transparent, #fff, transparent);
+        background: var(--card-shine-gradient);
     }
 
     .sonata-btn {
-        @apply px-6 py-3 md:px-10 md:py-4 bg-transparent border border-sonata-charcoal text-sonata-pearl text-xs tracking-widest uppercase cursor-pointer transition-all duration-300 rounded-sm font-light;
+        @apply px-6 py-3 md:px-10 md:py-4 bg-transparent border border-sonata-button-border text-sonata-pearl text-xs tracking-widest uppercase cursor-pointer transition-all duration-300 rounded-sm font-light;
     }
 
     .sonata-btn:hover {
@@ -48,7 +84,7 @@
     }
 
     .sonata-btn-outline {
-        @apply px-6 py-3 md:px-10 md:py-4 bg-transparent border border-sonata-charcoal text-sonata-slate text-xs tracking-widest uppercase cursor-pointer transition-all duration-300 rounded-sm font-light;
+        @apply px-6 py-3 md:px-10 md:py-4 bg-transparent border border-sonata-button-border text-sonata-slate text-xs tracking-widest uppercase cursor-pointer transition-all duration-300 rounded-sm font-light;
     }
 
     .sonata-btn-outline:hover {
