@@ -297,10 +297,35 @@
           updatePositionState();
         });
 
+        let lastFormattedTime = "";
+
+        // Update UI when tab becomes visible
+        document.addEventListener("visibilitychange", () => {
+          if (!document.hidden && audio && !isNaN(audio.currentTime)) {
+            seekSlider.value = audio.currentTime;
+            const timeStr = formatTime(audio.currentTime);
+            if (timeStr !== lastFormattedTime) {
+              currentTimeElem.textContent = timeStr;
+              lastFormattedTime = timeStr;
+            }
+            updateSliderFill(seekSlider);
+          }
+        });
+
         audio.addEventListener("timeupdate", () => {
           if (!isSeeking) {
+            // Skip UI updates if the tab is hidden to save battery
+            if (document.hidden) return;
+
             seekSlider.value = audio.currentTime;
-            currentTimeElem.textContent = formatTime(audio.currentTime);
+
+            const timeStr = formatTime(audio.currentTime);
+            // Only update DOM if text actually changed
+            if (timeStr !== lastFormattedTime) {
+              currentTimeElem.textContent = timeStr;
+              lastFormattedTime = timeStr;
+            }
+
             updateSliderFill(seekSlider);
           }
         });
