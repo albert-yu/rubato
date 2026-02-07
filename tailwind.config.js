@@ -4,16 +4,16 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        'sonata-black': '#0a0a0a',
-        'sonata-charcoal': '#1a1a1a',
-        'sonata-slate': '#a0a0a0',
-        'sonata-pearl': '#e8e8e8',
-        'sonata-border': '#2a2a2a',
-        'sonata-border-hover': '#3a3a3a',
+        'sonata-black': 'rgb(var(--sonata-black) / <alpha-value>)',
+        'sonata-charcoal': 'rgb(var(--sonata-charcoal) / <alpha-value>)',
+        'sonata-slate': 'rgb(var(--sonata-slate) / <alpha-value>)',
+        'sonata-pearl': 'rgb(var(--sonata-pearl) / <alpha-value>)',
+        'sonata-border': 'rgb(var(--sonata-border) / <alpha-value>)',
+        'sonata-border-hover': 'rgb(var(--sonata-border-hover) / <alpha-value>)',
       },
       backgroundImage: {
-        'card-gradient': 'linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%)',
-        'hero-gradient': 'linear-gradient(135deg, #ffffff 0%, #a0a0a0 100%)',
+        'card-gradient': 'var(--card-gradient)',
+        'hero-gradient': 'var(--hero-gradient)',
       }
     },
   },
