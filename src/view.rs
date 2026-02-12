@@ -191,6 +191,16 @@ pub struct SignupTemplate {
 }
 
 #[derive(Template)]
+#[template(path = "terms.html")]
+pub struct TermsTemplate {
+    pub current_user: Option<User>,
+}
+
+#[derive(Template)]
+#[template(path = "terms_content.html")]
+pub struct TermsContentTemplate;
+
+#[derive(Template)]
 #[template(path = "404.html")]
 pub struct NotFoundTemplate;
 
