@@ -20,7 +20,8 @@ use crate::view::{
     CompositionPickerTemplate, HtmlTemplate, IndexContentTemplate, IndexTemplate, NotFoundTemplate,
     PlayerTemplate, ProfileContentTemplate, ProfileTemplate, RecordingContentTemplate,
     RecordingEditContentTemplate, RecordingEditTemplate, RecordingTemplate,
-    SettingsContentTemplate, SettingsTemplate, UploadContentTemplate, UploadTemplate,
+    SettingsContentTemplate, SettingsTemplate, TermsContentTemplate, TermsTemplate,
+    UploadContentTemplate, UploadTemplate,
 };
 
 #[derive(Deserialize)]
@@ -1029,4 +1030,15 @@ pub async fn player(
     };
 
     HtmlTemplate(PlayerTemplate { recording }).into_response()
+}
+
+pub async fn terms(auth: OptionalAuthUser, htmx: HtmxRequest) -> Response {
+    if htmx.is_hx_boosted {
+        HtmlTemplate(TermsContentTemplate).into_response()
+    } else {
+        HtmlTemplate(TermsTemplate {
+            current_user: auth.0,
+        })
+        .into_response()
+    }
 }

@@ -213,6 +213,7 @@ async fn main() -> anyhow::Result<()> {
         )
         .route("/upload/reset-composition", get(public::reset_composition))
         .route("/audio/{key}", get(public::serve_audio))
+        .route("/terms", get(public::terms))
         .route("/login", get(auth::login_form).post(auth::login_post))
         .route("/signup", get(auth::signup_form).post(auth::signup_post))
         .route("/logout", post(auth::logout))
