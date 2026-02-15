@@ -655,10 +655,8 @@ video {
   }
 
   .sonata-play-button:hover {
-    --tw-border-opacity: 1;
-    border-color: rgb(var(--sonata-pearl) / var(--tw-border-opacity));
-    --tw-bg-opacity: 1;
-    background-color: rgb(var(--sonata-pearl) / var(--tw-bg-opacity));
+    border-color: rgb(var(--sonata-pearl) / 0.8);
+    background-color: rgb(var(--sonata-pearl) / 0.8);
     --tw-text-opacity: 1;
     color: rgb(var(--sonata-black) / var(--tw-text-opacity));
   }
@@ -683,8 +681,9 @@ video {
   border-radius: 0.75rem;
   border-width: 1px;
   --tw-border-opacity: 1;
-  border-color: rgb(var(--sonata-button-border) / var(--tw-border-opacity));
-  background-color: transparent;
+  border-color: rgb(var(--sonata-pearl) / var(--tw-border-opacity));
+  --tw-bg-opacity: 1;
+  background-color: rgb(var(--sonata-pearl) / var(--tw-bg-opacity));
   padding-left: 1.5rem;
   padding-right: 1.5rem;
   padding-top: 0.75rem;
@@ -695,7 +694,7 @@ video {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   --tw-text-opacity: 1;
-  color: rgb(var(--sonata-pearl) / var(--tw-text-opacity));
+  color: rgb(var(--sonata-black) / var(--tw-text-opacity));
   transition-property: all;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 300ms;
@@ -711,12 +710,8 @@ video {
 }
 
 .sonata-btn:hover {
-  --tw-border-opacity: 1;
-  border-color: rgb(var(--sonata-pearl) / var(--tw-border-opacity));
-  --tw-bg-opacity: 1;
-  background-color: rgb(var(--sonata-pearl) / var(--tw-bg-opacity));
-  --tw-text-opacity: 1;
-  color: rgb(var(--sonata-black) / var(--tw-text-opacity));
+  border-color: rgb(var(--sonata-pearl) / 0.8);
+  background-color: rgb(var(--sonata-pearl) / 0.8);
 }
 
 .sonata-btn-outline {
@@ -752,10 +747,8 @@ video {
 }
 
 .sonata-btn-outline:hover {
-  --tw-border-opacity: 1;
-  border-color: rgb(var(--sonata-pearl) / var(--tw-border-opacity));
-  --tw-bg-opacity: 1;
-  background-color: rgb(var(--sonata-pearl) / var(--tw-bg-opacity));
+  border-color: rgb(var(--sonata-pearl) / 0.8);
+  background-color: rgb(var(--sonata-pearl) / 0.8);
   --tw-text-opacity: 1;
   color: rgb(var(--sonata-black) / var(--tw-text-opacity));
 }

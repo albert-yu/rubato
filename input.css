@@ -65,7 +65,7 @@
         }
 
         .sonata-play-button:hover {
-            @apply bg-sonata-pearl text-sonata-black border-sonata-pearl;
+            @apply bg-sonata-pearl/80 text-sonata-black border-sonata-pearl/80;
         }
     }
 
@@ -76,11 +76,11 @@
     }
 
     .sonata-btn {
-        @apply px-6 py-3 md:px-10 md:py-4 bg-transparent border border-sonata-button-border text-sonata-pearl text-xs tracking-widest uppercase cursor-pointer transition-all duration-300 rounded font-light;
+        @apply px-6 py-3 md:px-10 md:py-4 bg-sonata-pearl border border-sonata-pearl text-sonata-black text-xs tracking-widest uppercase cursor-pointer transition-all duration-300 rounded font-light;
     }
 
     .sonata-btn:hover {
-        @apply bg-sonata-pearl text-sonata-black border-sonata-pearl;
+        @apply bg-sonata-pearl/80 border-sonata-pearl/80;
     }
 
     .sonata-btn-outline {
@@ -88,7 +88,7 @@
     }
 
     .sonata-btn-outline:hover {
-        @apply bg-sonata-pearl text-sonata-black border-sonata-pearl;
+        @apply bg-sonata-pearl/80 text-sonata-black border-sonata-pearl/80;
     }
 }
 
