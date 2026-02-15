@@ -2207,6 +2207,10 @@ video {
     --tw-shadow-colored: 0 0 #0000;
     box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
   }
+
+  .md\:hover\:bg-sonata-pearl\/10:hover {
+    background-color: rgb(var(--sonata-pearl) / 0.1);
+  }
 }
 
 @media (min-width: 1024px) {
