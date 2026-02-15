@@ -16,6 +16,12 @@ module.exports = {
       backgroundImage: {
         'card-gradient': 'var(--card-gradient)',
         'hero-gradient': 'var(--hero-gradient)',
+      },
+      borderRadius: {
+        'sm': '0.5rem',
+        'DEFAULT': '0.75rem',
+        'md': '1rem',
+        'lg': '1.5rem',
       }
     },
   },

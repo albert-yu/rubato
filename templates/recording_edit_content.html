@@ -36,7 +36,7 @@
             <input type="hidden" name="movement_id" value="{{ mid }}" />
           {% endif %}
           <div
-            class="flex items-center justify-between p-4 border border-sonata-charcoal rounded-sm bg-sonata-black"
+            class="flex items-center justify-between p-4 border border-sonata-charcoal rounded bg-sonata-black"
           >
             <span class="text-xs font-light text-sonata-pearl"
               >{{ display }}</span
@@ -79,7 +79,7 @@
         id="notes"
         name="notes"
         rows="10"
-        class="w-full bg-sonata-black border border-sonata-charcoal text-sonata-pearl p-4 focus:border-sonata-pearl focus:outline-none transition-colors font-light leading-relaxed resize-y"
+        class="w-full bg-sonata-black border border-sonata-charcoal text-sonata-pearl p-4 focus:border-sonata-pearl focus:outline-none transition-colors font-light leading-relaxed resize-y rounded"
       >
 {% if let Some(notes) = recording.notes %}{{ notes }}{% endif %}</textarea
       >
@@ -99,7 +99,7 @@
         <select
           name="visibility"
           id="visibility"
-          class="block w-full appearance-none bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light uppercase tracking-widest cursor-pointer"
+          class="block w-full appearance-none bg-sonata-black border border-sonata-charcoal rounded py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light uppercase tracking-widest cursor-pointer"
         >
           <option
             value="public"
@@ -148,7 +148,7 @@
       <div class="flex gap-4">
         <a
           href="/{{ recording.artist_handle }}/recordings/{{ recording.slug_id }}"
-          class="sonata-btn-secondary px-6 py-3 text-xs"
+          class="sonata-btn-outline !px-6 !py-3 text-xs rounded"
           >Cancel</a
         >
         <button type="submit" class="sonata-btn px-8 py-3 text-xs">

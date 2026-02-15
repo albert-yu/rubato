@@ -75,7 +75,7 @@
     </div>
 
     <button
-      class="sonata-play-button w-10 h-10 flex items-center justify-center rounded-full border border-sonata-border transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-sonata-charcoal md:bg-transparent"
+      class="sonata-play-button w-10 h-10 flex items-center justify-center rounded-full transition-all opacity-100 bg-sonata-charcoal"
       hx-get="/player/{{ recording.artist_handle }}/{{ recording.slug_id }}"
       hx-target="#player-container"
       hx-swap="outerHTML"
@@ -83,10 +83,10 @@
       data-slug-id="{{ recording.slug_id }}"
       onclick="window.handlePlayButtonClick(event, this)"
     >
-      <span class="icon-play w-4 h-4 ml-0.5"
+      <span class="icon-play w-4 h-4 ml-0.5 text-inherit"
         >{% include "icons/play.svg" %}</span
       >
-      <span class="icon-pause w-4 h-4 hidden"
+      <span class="icon-pause w-4 h-4 hidden text-inherit"
         >{% include "icons/pause.svg" %}</span
       >
     </button>

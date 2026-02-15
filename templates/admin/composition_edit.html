@@ -45,7 +45,7 @@
               id="title"
               value="{{ composition.title }}"
               required
-              class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
+              class="block w-full bg-sonata-black border border-sonata-charcoal rounded py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
             />
           </div>
 
@@ -61,7 +61,7 @@
               id="slug"
               value="{{ composition.slug }}"
               required
-              class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
+              class="block w-full bg-sonata-black border border-sonata-charcoal rounded py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
             />
           </div>
 
@@ -76,7 +76,7 @@
               name="publish_date"
               id="publish_date"
               value="{% if let Some(date) = composition.publish_date %}{{ date }}{% endif %}"
-              class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light [color-scheme:dark]"
+              class="block w-full bg-sonata-black border border-sonata-charcoal rounded py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light [color-scheme:dark]"
             />
           </div>
 
@@ -92,7 +92,7 @@
               id="composer_id"
               value="{% if composition.id != 0 %}{{ composition.composer_id }}{% endif %}"
               required
-              class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
+              class="block w-full bg-sonata-black border border-sonata-charcoal rounded py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
             />
           </div>
         </div>
@@ -214,7 +214,7 @@
                 type="number"
                 name="index"
                 required
-                class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-2 px-3 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-xs font-light"
+                class="block w-full bg-sonata-black border border-sonata-charcoal rounded py-2 px-3 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-xs font-light"
               />
             </div>
             <div class="md:col-span-2">
@@ -226,7 +226,7 @@
                 type="text"
                 name="title"
                 required
-                class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-2 px-3 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-xs font-light"
+                class="block w-full bg-sonata-black border border-sonata-charcoal rounded py-2 px-3 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-xs font-light"
               />
             </div>
             <div>
@@ -238,7 +238,7 @@
                 type="text"
                 name="slug"
                 required
-                class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-2 px-3 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-xs font-light"
+                class="block w-full bg-sonata-black border border-sonata-charcoal rounded py-2 px-3 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-xs font-light"
               />
             </div>
             <div class="md:col-span-4 flex justify-end">

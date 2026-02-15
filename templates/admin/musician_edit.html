@@ -40,7 +40,7 @@
             id="handle"
             value="{{ musician.handle }}"
             required
-            class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
+            class="block w-full bg-sonata-black border border-sonata-charcoal rounded py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
           />
           <p class="text-[10px] text-sonata-slate/50 mt-2 italic">
             Unique identifier for URLs.
@@ -60,7 +60,7 @@
               id="given_name"
               value="{{ musician.given_name }}"
               required
-              class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
+              class="block w-full bg-sonata-black border border-sonata-charcoal rounded py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
             />
           </div>
           <div>
@@ -75,7 +75,7 @@
               id="family_name"
               value="{{ musician.family_name }}"
               required
-              class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
+              class="block w-full bg-sonata-black border border-sonata-charcoal rounded py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
             />
           </div>
         </div>
@@ -92,7 +92,7 @@
               name="birth_date"
               id="birth_date"
               value="{% if let Some(date) = musician.birth_date %}{{ date }}{% endif %}"
-              class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light [color-scheme:dark]"
+              class="block w-full bg-sonata-black border border-sonata-charcoal rounded py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light [color-scheme:dark]"
             />
           </div>
           <div>
@@ -106,7 +106,7 @@
               name="death_date"
               id="death_date"
               value="{% if let Some(date) = musician.death_date %}{{ date }}{% endif %}"
-              class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light [color-scheme:dark]"
+              class="block w-full bg-sonata-black border border-sonata-charcoal rounded py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light [color-scheme:dark]"
             />
           </div>
         </div>

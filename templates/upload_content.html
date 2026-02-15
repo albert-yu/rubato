@@ -18,7 +18,7 @@
   <div class="sonata-card">
     {% if let Some(err) = error %}
       <div
-        class="bg-red-900/20 border border-red-900/50 text-red-400 px-4 py-3 rounded-sm mb-6 text-xs tracking-wide"
+        class="bg-red-900/20 border border-red-900/50 text-red-400 px-4 py-3 rounded mb-6 text-xs tracking-wide"
       >
         {{ err }}
       </div>
@@ -47,7 +47,7 @@
                   file:mr-8 file:py-2 file:px-6
                   file:border file:border-sonata-charcoal file:bg-transparent
                   file:text-[10px] file:uppercase file:tracking-widest file:font-light
-                  file:text-sonata-pearl
+                  file:text-sonata-pearl file:rounded
                   hover:file:bg-sonata-pearl hover:file:text-sonata-black
                   transition-all cursor-pointer
                 "
@@ -64,7 +64,7 @@
           <select
             name="visibility"
             id="visibility"
-            class="block w-full appearance-none bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light uppercase tracking-widest cursor-pointer"
+            class="block w-full appearance-none bg-sonata-black border border-sonata-charcoal rounded py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light uppercase tracking-widest cursor-pointer"
           >
             <option value="public" selected>Public</option>
             <option value="unlisted">Unlisted</option>
@@ -92,7 +92,7 @@
           name="notes"
           id="notes"
           rows="4"
-          class="block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
+          class="block w-full bg-sonata-black border border-sonata-charcoal rounded py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
           placeholder="Optional notes..."
         ></textarea>
       </div>
