@@ -12,8 +12,6 @@
     --sonata-border: 42 42 42; /* #2a2a2a */
     --sonata-border-hover: 58 58 58; /* #3a3a3a */
     --sonata-highlight: 255 255 255; /* #ffffff */
-    --sonata-accent: 96 165 250; /* #60a5fa (blue-400) */
-    --sonata-accent-hover: 147 197 253; /* #93c5fd (blue-300) */
     
     --card-gradient: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
     --hero-gradient: linear-gradient(135deg, #ffffff 0%, #a0a0a0 100%);
@@ -31,22 +29,12 @@
       --sonata-border: 229 231 235; /* #e5e7eb (gray-200) */
       --sonata-border-hover: 209 213 219; /* #d1d5db (gray-300) */
       --sonata-highlight: 0 0 0; /* #000000 */
-      --sonata-accent: 37 99 235; /* #2563eb (blue-600) */
-      --sonata-accent-hover: 29 78 216; /* #1d4ed8 (blue-700) */
       --sonata-button-border: 209 213 219; /* #d1d5db (gray-300) - Same as border-hover */
 
       --card-gradient: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%);
       --hero-gradient: linear-gradient(135deg, #111827 0%, #4b5563 100%);
       --card-shine-gradient: linear-gradient(90deg, transparent, #000, transparent);
     }
-  }
-
-  a {
-    @apply text-sonata-accent transition-colors duration-300;
-  }
-
-  a:hover {
-    @apply text-sonata-accent-hover;
   }
 }
 
