@@ -460,6 +460,10 @@ video {
   /* #3a3a3a */
   --sonata-highlight: 255 255 255;
   /* #ffffff */
+  --sonata-accent: 96 165 250;
+  /* #60a5fa (blue-400) */
+  --sonata-accent-hover: 147 197 253;
+  /* #93c5fd (blue-300) */
   --card-gradient: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
   --hero-gradient: linear-gradient(135deg, #ffffff 0%, #a0a0a0 100%);
   --card-shine-gradient: linear-gradient(90deg, transparent, #fff, transparent);
@@ -484,12 +488,29 @@ video {
     /* #d1d5db (gray-300) */
     --sonata-highlight: 0 0 0;
     /* #000000 */
+    --sonata-accent: 37 99 235;
+    /* #2563eb (blue-600) */
+    --sonata-accent-hover: 29 78 216;
+    /* #1d4ed8 (blue-700) */
     --sonata-button-border: 209 213 219;
     /* #d1d5db (gray-300) - Same as border-hover */
     --card-gradient: linear-gradient(135deg, #ffffff 0%, #f3f4f6 100%);
     --hero-gradient: linear-gradient(135deg, #111827 0%, #4b5563 100%);
     --card-shine-gradient: linear-gradient(90deg, transparent, #000, transparent);
   }
+}
+
+a {
+  --tw-text-opacity: 1;
+  color: rgb(var(--sonata-accent) / var(--tw-text-opacity));
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 300ms;
+}
+
+a:hover {
+  --tw-text-opacity: 1;
+  color: rgb(var(--sonata-accent-hover) / var(--tw-text-opacity));
 }
 
 *, ::before, ::after {
@@ -1844,6 +1865,11 @@ video {
   color: rgb(127 29 29 / 0.7);
 }
 
+.text-sonata-accent {
+  --tw-text-opacity: 1;
+  color: rgb(var(--sonata-accent) / var(--tw-text-opacity));
+}
+
 .text-sonata-black {
   --tw-text-opacity: 1;
   color: rgb(var(--sonata-black) / var(--tw-text-opacity));
@@ -2073,14 +2099,14 @@ video {
   color: rgb(127 29 29 / var(--tw-text-opacity));
 }
 
+.hover\:text-sonata-accent-hover:hover {
+  --tw-text-opacity: 1;
+  color: rgb(var(--sonata-accent-hover) / var(--tw-text-opacity));
+}
+
 .hover\:text-sonata-black:hover {
   --tw-text-opacity: 1;
   color: rgb(var(--sonata-black) / var(--tw-text-opacity));
-}
-
-.hover\:text-sonata-highlight:hover {
-  --tw-text-opacity: 1;
-  color: rgb(var(--sonata-highlight) / var(--tw-text-opacity));
 }
 
 .hover\:text-sonata-pearl:hover {
