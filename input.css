@@ -55,18 +55,12 @@
         @apply transition-all duration-500 cursor-pointer;
     }
 
-    @media (hover: hover) {
-        .sonata-card-interactive:hover {
-            @apply border-sonata-border-hover;
-        }
+    .sonata-play-button {
+        @apply bg-transparent border border-sonata-button-border text-sonata-slate transition-all duration-300 font-light;
+    }
 
-        .sonata-card-interactive:hover::before {
-            @apply opacity-30;
-        }
-
-        .sonata-play-button:hover {
-            @apply bg-sonata-pearl/80 text-sonata-black border-sonata-pearl/80;
-        }
+    .sonata-play-button:hover {
+        @apply bg-sonata-pearl/80 text-sonata-black border-sonata-pearl/80;
     }
 
     .sonata-card-interactive::before {

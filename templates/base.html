@@ -124,11 +124,11 @@
               pauseText?.classList.add("hidden");
             }
             // Active state style for card buttons
-            if (!btn.classList.contains("sonata-btn")) {
+            if (!btn.classList.contains("sonata-btn") && !btn.classList.contains("sonata-btn-outline")) {
               btn.classList.remove("md:opacity-0");
+              btn.classList.add("bg-sonata-pearl");
+              btn.classList.add("text-sonata-black");
               btn.classList.add("border-sonata-pearl");
-              btn.classList.add("text-sonata-pearl");
-              btn.classList.add("bg-sonata-charcoal");
             }
           } else {
             // Not current track
@@ -138,12 +138,11 @@
             pauseText?.classList.add("hidden");
 
             // Reset active state style for card buttons
-            if (btn.dataset.slugId && !btn.classList.contains("sonata-btn")) {
+            if (btn.dataset.slugId && !btn.classList.contains("sonata-btn") && !btn.classList.contains("sonata-btn-outline")) {
               btn.classList.add("md:opacity-0");
+              btn.classList.remove("bg-sonata-pearl");
+              btn.classList.remove("text-sonata-black");
               btn.classList.remove("border-sonata-pearl");
-              btn.classList.remove("text-sonata-pearl");
-              btn.classList.add("text-sonata-border");
-              btn.classList.remove("bg-sonata-charcoal");
             }
           }
         });
