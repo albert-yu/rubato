@@ -127,6 +127,7 @@
             if (!btn.classList.contains("sonata-btn")) {
               btn.classList.remove("md:opacity-0");
               btn.classList.add("border-sonata-pearl");
+              btn.classList.add("text-sonata-pearl");
               btn.classList.add("bg-sonata-charcoal");
             }
           } else {
@@ -140,6 +141,8 @@
             if (btn.dataset.slugId && !btn.classList.contains("sonata-btn")) {
               btn.classList.add("md:opacity-0");
               btn.classList.remove("border-sonata-pearl");
+              btn.classList.remove("text-sonata-pearl");
+              btn.classList.add("text-sonata-border");
               btn.classList.remove("bg-sonata-charcoal");
             }
           }
