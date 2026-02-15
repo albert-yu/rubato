@@ -24,7 +24,7 @@
             name="q"
             placeholder="Search..."
             value="{% match q %}{% when Some with (query) %}{{ query }}{% when None %}{% endmatch %}"
-            class="bg-sonata-black border border-sonata-charcoal rounded-sm px-4 py-2 text-xs font-light text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors w-64"
+            class="bg-sonata-black border border-sonata-charcoal rounded px-4 py-2 text-xs font-light text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors w-64"
             hx-get="/admin/compositions"
             hx-trigger="keyup[key=='Enter'], search"
             hx-target="#compositions-container"

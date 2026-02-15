@@ -629,7 +629,7 @@ video {
 .sonata-card {
   position: relative;
   overflow: hidden;
-  border-radius: 0.125rem;
+  border-radius: 0.75rem;
   border-width: 1px;
   --tw-border-opacity: 1;
   border-color: rgb(var(--sonata-border) / var(--tw-border-opacity));
@@ -680,7 +680,7 @@ video {
 
 .sonata-btn {
   cursor: pointer;
-  border-radius: 0.125rem;
+  border-radius: 0.75rem;
   border-width: 1px;
   --tw-border-opacity: 1;
   border-color: rgb(var(--sonata-button-border) / var(--tw-border-opacity));
@@ -721,7 +721,7 @@ video {
 
 .sonata-btn-outline {
   cursor: pointer;
-  border-radius: 0.125rem;
+  border-radius: 0.75rem;
   border-width: 1px;
   --tw-border-opacity: 1;
   border-color: rgb(var(--sonata-button-border) / var(--tw-border-opacity));
@@ -1333,7 +1333,7 @@ video {
 }
 
 .rounded {
-  border-radius: 0.25rem;
+  border-radius: 0.75rem;
 }
 
 .rounded-full {
@@ -1341,7 +1341,7 @@ video {
 }
 
 .rounded-sm {
-  border-radius: 0.125rem;
+  border-radius: 0.5rem;
 }
 
 .border {
@@ -1511,6 +1511,11 @@ video {
 .\!py-2 {
   padding-top: 0.5rem !important;
   padding-bottom: 0.5rem !important;
+}
+
+.\!py-3 {
+  padding-top: 0.75rem !important;
+  padding-bottom: 0.75rem !important;
 }
 
 .px-1 {
@@ -1952,6 +1957,10 @@ video {
 
 .file\:mr-8::file-selector-button {
   margin-right: 2rem;
+}
+
+.file\:rounded::file-selector-button {
+  border-radius: 0.75rem;
 }
 
 .file\:border::file-selector-button {

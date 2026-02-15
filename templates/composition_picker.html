@@ -13,7 +13,7 @@
         id="composition_search"
         name="q"
         required
-        class="peer block w-full bg-sonata-black border border-sonata-charcoal rounded-sm py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
+        class="peer block w-full bg-sonata-black border border-sonata-charcoal rounded py-3 px-4 text-sonata-pearl focus:outline-none focus:border-sonata-slate transition-colors text-sm font-light"
         placeholder="Search repertoire..."
         autocomplete="off"
         hx-get="/search/compositions"
@@ -25,7 +25,7 @@
 
       <div
         id="search-skeleton"
-        class="htmx-indicator absolute z-20 w-full bg-sonata-charcoal shadow-2xl rounded-sm mt-1 border border-sonata-border overflow-hidden"
+        class="htmx-indicator absolute z-20 w-full bg-sonata-charcoal shadow-2xl rounded mt-1 border border-sonata-border overflow-hidden"
       >
         <div class="animate-pulse p-4 space-y-4">
           <div class="flex flex-col space-y-2">
@@ -40,7 +40,7 @@
       </div>
       <div
         id="search_results"
-        class="peer-placeholder-shown:hidden absolute z-10 w-full bg-sonata-charcoal shadow-2xl rounded-sm mt-1 max-h-60 overflow-auto empty:hidden border border-sonata-border"
+        class="peer-placeholder-shown:hidden absolute z-10 w-full bg-sonata-charcoal shadow-2xl rounded mt-1 max-h-60 overflow-auto empty:hidden border border-sonata-border"
       ></div>
     </div>
   </div>

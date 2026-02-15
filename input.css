@@ -48,7 +48,7 @@
     }
 
     .sonata-card {
-        @apply bg-card-gradient border border-sonata-border rounded-sm p-6 relative overflow-hidden;
+        @apply bg-card-gradient border border-sonata-border rounded p-6 relative overflow-hidden;
     }
 
     .sonata-card-interactive {
@@ -76,7 +76,7 @@
     }
 
     .sonata-btn {
-        @apply px-6 py-3 md:px-10 md:py-4 bg-transparent border border-sonata-button-border text-sonata-pearl text-xs tracking-widest uppercase cursor-pointer transition-all duration-300 rounded-sm font-light;
+        @apply px-6 py-3 md:px-10 md:py-4 bg-transparent border border-sonata-button-border text-sonata-pearl text-xs tracking-widest uppercase cursor-pointer transition-all duration-300 rounded font-light;
     }
 
     .sonata-btn:hover {
@@ -84,7 +84,7 @@
     }
 
     .sonata-btn-outline {
-        @apply px-6 py-3 md:px-10 md:py-4 bg-transparent border border-sonata-button-border text-sonata-slate text-xs tracking-widest uppercase cursor-pointer transition-all duration-300 rounded-sm font-light;
+        @apply px-6 py-3 md:px-10 md:py-4 bg-transparent border border-sonata-button-border text-sonata-slate text-xs tracking-widest uppercase cursor-pointer transition-all duration-300 rounded font-light;
     }
 
     .sonata-btn-outline:hover {
