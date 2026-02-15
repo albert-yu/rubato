@@ -117,18 +117,21 @@
               pauseIcon?.classList.remove("hidden");
               playText?.classList.add("hidden");
               pauseText?.classList.remove("hidden");
+
+              // Actively playing: show as hovered (solid)
+              btn.classList.add("bg-sonata-pearl/80");
+              btn.classList.add("text-sonata-black");
+              btn.classList.add("border-sonata-pearl/80");
             } else {
               playIcon?.classList.remove("hidden");
               pauseIcon?.classList.add("hidden");
               playText?.classList.remove("hidden");
               pauseText?.classList.add("hidden");
-            }
-            // Active state style for card buttons
-            if (!btn.classList.contains("sonata-btn") && !btn.classList.contains("sonata-btn-outline")) {
-              btn.classList.remove("md:opacity-0");
-              btn.classList.add("bg-sonata-pearl");
-              btn.classList.add("text-sonata-black");
-              btn.classList.add("border-sonata-pearl");
+
+              // Paused: revert to outline style
+              btn.classList.remove("bg-sonata-pearl/80");
+              btn.classList.remove("text-sonata-black");
+              btn.classList.remove("border-sonata-pearl/80");
             }
           } else {
             // Not current track
@@ -137,13 +140,10 @@
             playText?.classList.remove("hidden");
             pauseText?.classList.add("hidden");
 
-            // Reset active state style for card buttons
-            if (btn.dataset.slugId && !btn.classList.contains("sonata-btn") && !btn.classList.contains("sonata-btn-outline")) {
-              btn.classList.add("md:opacity-0");
-              btn.classList.remove("bg-sonata-pearl");
-              btn.classList.remove("text-sonata-black");
-              btn.classList.remove("border-sonata-pearl");
-            }
+            // Reset styles
+            btn.classList.remove("bg-sonata-pearl/80");
+            btn.classList.remove("text-sonata-black");
+            btn.classList.remove("border-sonata-pearl/80");
           }
         });
       };

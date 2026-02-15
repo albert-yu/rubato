@@ -75,7 +75,7 @@
     </div>
 
     <button
-      class="sonata-play-button w-10 h-10 flex items-center justify-center rounded-full transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 bg-sonata-charcoal md:bg-transparent"
+      class="sonata-play-button w-10 h-10 flex items-center justify-center rounded-full transition-all opacity-100 bg-sonata-charcoal"
       hx-get="/player/{{ recording.artist_handle }}/{{ recording.slug_id }}"
       hx-target="#player-container"
       hx-swap="outerHTML"
